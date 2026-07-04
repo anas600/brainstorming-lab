@@ -374,10 +374,10 @@ main { min-width: 0; }
 
     <!-- ===== Status Banner ===== -->
     <div class="status-banner recovery">
-      <div class="icon">🟡</div>
+      <div class="icon">🟢</div>
       <div class="text">
-        <h3>RECOVERY MODE — خطة إنقاذ نشطة</h3>
-        <p>الملفات الـ uncommitted موجودة فعلياً (6 من data agent + 2 من backend). الـ DEC-001 ينفّذ Phase 1 الآن.</p>
+        <h3>PHASE 1 COMPLETE — Phase 1.5 (Verification) جارٍ</h3>
+        <p>3 commits نظيفة (140KB+ من الملفات). 6 bugs found & fixed. Build نظيف (0/0). HF Space يبني على SHA f01ad77.</p>
       </div>
     </div>
 
@@ -407,12 +407,12 @@ main { min-width: 0; }
 
     <!-- ===== Active Decision ===== -->
     <div class="decision-box">
-      <h3>⚖️ Decision #001 — Rescue Plan (Hybrid: Manual + Relaunch)</h3>
-      <p><strong>Phase 1:</strong> Manual commit by Mavis (30 min) · <strong>Phase 2:</strong> Relaunch agents with shorter prompts (1-2h) · <strong>Phase 3:</strong> Hourly checkpoints</p>
+      <h3>⚖️ Decisions #001 & #002 — Phase 1 ✅ + Verification جارٍ</h3>
+      <p><strong>DEC-001 ✅:</strong> Rescue Plan executed (Phase 1 done in 20 min!) · <strong>DEC-002 🚧:</strong> Phase 1.5 Verification (10 min) → Phase 2 Agent Relaunch</p>
       <div class="meta">
-        <span>📅 2026-07-04 23:30 Berlin</span>
-        <span>👤 Owner: Mavis</span>
-        <span>🔄 Status: In Progress</span>
+        <span>📅 2026-07-04 23:40 Berlin</span>
+        <span>👤 Owner: Mavis + Deep Researcher</span>
+        <span>🔄 Status: Phase 1 ✅ · Phase 1.5 🚧</span>
       </div>
     </div>
 
@@ -496,6 +496,24 @@ main { min-width: 0; }
           </div>
           <div class="feed-title">🔍 Cycle 01 — HALT Assessment → Rescue Plan</div>
           <div class="feed-sub">5 expert analysis + decision made</div>
+        </a>
+
+        <a href="feedback-loop/from-erp/07-04-2340-phase1-complete.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type from-erp">FROM ERP</span>
+            <span class="feed-time">2026-07-04 23:40</span>
+          </div>
+          <div class="feed-title">🎉 Phase 1 Complete — 3 commits + 6 bugs fixed</div>
+          <div class="feed-sub">f01ad77 · 11 files committed · Build 0/0 · HF Space rebuilding</div>
+        </a>
+
+        <a href="feedback-loop/to-erp/07-04-2340-direction.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type to-erp">TO ERP</span>
+            <span class="feed-time">2026-07-04 23:40</span>
+          </div>
+          <div class="feed-title">📤 Direction: Phase 1.5 Verification → Phase 2</div>
+          <div class="feed-sub">DEC-002 · 10 min verification · then agents relaunch</div>
         </a>
       </div>
     </section>

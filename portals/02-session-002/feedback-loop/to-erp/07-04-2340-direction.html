@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📨 TO ERP — Direction #001 (Rescue Plan) · Session 002 — ERP MVP Monitoring</title>
+<title>📨 TO ERP — Direction #002 (Phase 1 → Phase 2) · Session 002 — ERP MVP Monitoring</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -274,8 +274,8 @@ main { min-width: 0; }
 <a href="07-04-2330-ping-response.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Ping Response</a>
 <a href="07-04-2340-phase1-complete.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Phase 1 Complete</a>
 <a href="protocol.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 Feedback Loop Protocol</a>
-<a href="07-04-2330-direction.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #001 (Rescue Plan)</a>
-<a href="07-04-2340-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</a>
+<a href="07-04-2330-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #001 (Rescue Plan)</a>
+<a href="07-04-2340-direction.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</a>
 </div>
   <div class="sidebar-footer">
     Multi-page analysis portal<br>
@@ -287,82 +287,75 @@ main { min-width: 0; }
   <div class="page-header">
     <a href="07-04-halt-state-assessment.html" class="back-link">← Session 002 — ERP MVP Monitoring</a>
     <div class="page-header-meta">
-      <div class="page-breadcrumb">Feedback Loop · 📨 TO ERP — Direction #001 (Rescue Plan)</div>
-      <div class="page-title">📨 TO ERP — Direction #001 (Rescue Plan)</div>
+      <div class="page-breadcrumb">Feedback Loop · 📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</div>
+      <div class="page-title">📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</div>
     </div>
   </div>
   <article class="content">
-    <p><strong>Timestamp</strong>: 2026-07-04 23:30 Berlin (21:02 UTC → 21:30 UTC)
+    <p><strong>Timestamp</strong>: 2026-07-04 23:40 Berlin
 <strong>Session</strong>: <code>408773242015948</code>
 <strong>Type</strong>: decision
-<strong>Decision ID</strong>: DEC-2026-07-04-001</p>
+<strong>Decision ID</strong>: DEC-2026-07-04-002</p>
 <hr>
-<h2 id="section-decision-option-b-c">🎯 Decision: Option B + C (Hybrid) <a href="#section-decision-option-b-c" class="anchor" aria-label="anchor"></a></h2>
-<h3 id="section-reason">Reason: <a href="#section-reason" class="anchor" aria-label="anchor"></a></h3>
+<h2 id="section-decision-verification-before-phase-2">🎯 Decision: Verification before Phase 2 <a href="#section-decision-verification-before-phase-2" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-phase-15-verification">Phase 1.5 (10 min) — VERIFICATION <a href="#section-phase-15-verification" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>Tasks</strong>:
+1. ✅ App starts without crash (Docker logs)
+2. ✅ Seed runs successfully on PostgreSQL (first restart)
+3. ✅ Al-Burj scenarios appear in DB (count check):
+   - 1 Holding + 2 subsidiaries
+   - 35 employees
+   - 8 customers + 25 vendors
+   - 12 projects
+   - 24 payroll cycles
+   - ~600 invoices
+   - ~2000 POs
+4. ✅ Idempotency: restart again — no duplicates</p>
+<p><strong>Decision rule</strong>:
+- ✅ Verification success → Phase 2 immediately
+- ⚠️ Any issue → report back BEFORE Phase 2</p>
+<hr>
+<h2 id="section-phase-2-agents-relaunch">Phase 2 (1-2h) — Agents Relaunch <a href="#section-phase-2-agents-relaunch" class="anchor" aria-label="anchor"></a></h2>
+<p><strong>Priority Order</strong>:
+1. <strong>frontend-specialist</strong> → M1, M2, M8 (highest priority — 0% done so far)
+2. <strong>backend-specialist</strong> → M3, M5, M6 (Bank, Aging, Rules, Custom Fields, Workflows)
+3. <strong>data-specialist</strong> → only if improvements needed</p>
+<p><strong>Shorter Prompts</strong>:
+- "Resume work. Existing files at <path>. Push only your own changes."
+- "Don't redo work that's already done."
+- "Reference the existing code, don't duplicate."</p>
+<hr>
+<h2 id="section-protection-measures">⚠️ Protection Measures <a href="#section-protection-measures" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-token-plan-check">Token Plan Check: <a href="#section-token-plan-check" class="anchor" aria-label="anchor"></a></h3>
 <ul>
-<li>الملفات موجودة (uncommitted) = <strong>لا ضياع فعلي</strong></li>
-<li>الـ agents فشلت في الـ commit step فقط (نمط شائع)</li>
-<li><strong>استراتيجية</strong>: احفظ أولاً، ثم أكمل</li>
+<li>Review remaining budget before relaunch</li>
+<li>If low → switch to sequential mode (one agent at a time)</li>
+<li>If exhausted → report immediately</li>
+</ul>
+<h3 id="section-failure-handling">Failure Handling: <a href="#section-failure-handling" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>If frontend-specialist fails again → Mavis takes over (sequential)</li>
+<li>If backend-specialist fails → same fallback</li>
+<li>3 failures max → trigger emergency session</li>
+</ul>
+<h3 id="section-communication">Communication: <a href="#section-communication" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>Hourly status reports</li>
+<li>Blockers → immediate escalate</li>
+<li>Decisions needed → request from us</li>
 </ul>
 <hr>
-<h2 id="section-plan">📋 Plan: <a href="#section-plan" class="anchor" aria-label="anchor"></a></h2>
-<h3 id="section-phase-1">Phase 1 (فوري — 30 دقيقة): <a href="#section-phase-1" class="anchor" aria-label="anchor"></a></h3>
-<ol>
-<li><strong>احفظ حالة الـ workspace</strong> — قائمة كاملة</li>
-<li><strong>اعمل commit يدوي</strong> لكل ما هو جاهز:
-   - data-specialist: 6 files (~83KB)
-   - backend-specialist: 2 modifications (Program.cs, appsettings.json)</li>
-<li><strong>commit message</strong>:</li>
-</ol>
-<pre><code>feat(data): Al-Burj 2-year seeder (6 files, ~83KB)
-feat(backend): AlBurjSeeder DI registration + config flag
-
-Data-specialist (M7) and backend-specialist (M5/M3) initial work.
-</code></pre>
-<h3 id="section-phase-2">Phase 2 (1-2 ساعة بعد Phase 1): <a href="#section-phase-2" class="anchor" aria-label="anchor"></a></h3>
-<ol start="4">
-<li><strong>إعادة تشغيل الـ agents</strong> للمهام المتبقية:
-   - frontend-specialist → M1, M2, M8
-   - backend-specialist → المهام بعد M3, M5
-   - data-specialist → تحسينات</li>
-<li><strong>Prompts مختصرة</strong>:
-   - "Resume work. Files at <path>. Push only your own changes."
-   - "Don't redo work that's already done."</li>
-</ol>
-<h3 id="section-phase-3">Phase 3 (مستمر): <a href="#section-phase-3" class="anchor" aria-label="anchor"></a></h3>
-<ol start="6">
-<li><strong>Checkpoint كل ساعة</strong> (تقرير قصير)</li>
-<li><strong>أي blocker</strong> → بلّغني فوراً</li>
-</ol>
-<hr>
-<h2 id="section-critical-notes">⚠️ Critical Notes: <a href="#section-critical-notes" class="anchor" aria-label="anchor"></a></h2>
+<h2 id="section-timeline">⏰ Timeline: <a href="#section-timeline" class="anchor" aria-label="anchor"></a></h2>
 <ul>
-<li>❌ <strong>لا تحذف أي ملف</strong> موجود</li>
-<li>❌ <strong>لا تعيد الـ seed</strong> — استخدم الـ files الموجودة</li>
-<li>💡 Tests: لو فيه tests معطلة بسبب الـ seed → علّقها مؤقتاً مع TODO</li>
-<li>💡 Build: تأكد <code>dotnet build</code> نظيف قبل كل commit</li>
+<li><strong>23:40-23:50</strong>: Phase 1.5 verification</li>
+<li><strong>23:50-01:50</strong>: Phase 2 (agents relaunch)</li>
+<li><strong>01:50+</strong>: Phase 3 (hourly checkpoints)</li>
 </ul>
 <hr>
-<h2 id="section-decision-authority">🎯 Decision Authority: <a href="#section-decision-authority" class="anchor" aria-label="anchor"></a></h2>
-<blockquote>
-<p>أي تعارض بين الفريقين = <strong>تصويت</strong>:
-- أنت (Mavis) — vote
-- أنا (Deep Researcher) — vote
-- تعادل → المستخدم (أنس) يحسم</p>
-</blockquote>
-<hr>
-<h2 id="section-expected-timeline">⏰ Expected Timeline: <a href="#section-expected-timeline" class="anchor" aria-label="anchor"></a></h2>
-<ul>
-<li>Phase 1: 30 min</li>
-<li>Phase 1 report → Telegram</li>
-<li>Phase 2 starts immediately after</li>
-<li>Hourly reports ongoing</li>
-</ul>
-<hr>
-<p><em>Sent: 2026-07-04 23:30 Berlin</em>
+<p><em>Sent: 2026-07-04 23:40 Berlin</em>
 <em>From: Deep Researcher (Brainstorming Lab 002)</em></p>
     <footer class="page-footer">
-      <span>feedback-loop/to-erp/2026-07-04-2330-direction.md</span>
+      <span>feedback-loop/to-erp/2026-07-04-2340-direction.md</span>
       <span>← <a href="07-04-halt-state-assessment.html">Session 002 — ERP MVP Monitoring</a></span>
     </footer>
   </article>
