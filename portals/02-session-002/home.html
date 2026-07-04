@@ -3,137 +3,516 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مختبر العصف الذهني — Session 002: ERP MVP Monitoring · مدخل محمي</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Session 002 — ERP MVP Monitoring · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: #f7f5f0; color: #14171e;
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
-  }
-  .gate {
-    background: #ffffff; border: 1px solid #e9e3d6;
-    border-radius: 16px; padding: 48px 40px;
-    width: 100%; max-width: 440px;
-    box-shadow: 0 4px 32px rgba(20, 23, 30, 0.06);
-    text-align: center;
-  }
-  .gate-mark {
-    width: 56px; height: 56px; margin: 0 auto 20px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #2f6f5e 0%, #1f4f43 100%);
-    display: flex; align-items: center; justify-content: center;
-    color: white;
-    font-family: 'DM Serif Display', serif; font-size: 28px;
-  }
-  .gate h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px; font-weight: 400;
-    margin-bottom: 6px; color: #14171e;
-  }
-  .gate-sub { font-size: 13px; color: #7c7a72; margin-bottom: 28px; }
-  .gate-label {
-    display: block; text-align: right;
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    color: #7c7a72; margin-bottom: 8px;
-  }
-  .gate-input {
-    width: 100%; padding: 14px 16px;
-    border: 1px solid #e9e3d6; border-radius: 10px;
-    font-size: 15px;
-    font-family: 'JetBrains Mono', monospace;
-    background: #faf8f3; color: #14171e;
-    outline: none; transition: all 0.15s;
-    direction: ltr; text-align: left;
-  }
-  .gate-input:focus {
-    border-color: #2f6f5e; background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.10);
-  }
-  .gate-btn {
-    margin-top: 14px; width: 100%; padding: 14px;
-    background: #2f6f5e; color: white;
-    border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-    font-family: 'Outfit', sans-serif;
-  }
-  .gate-btn:hover { background: #1f4f43; }
-  .gate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .gate-error {
-    margin-top: 12px; font-size: 13px; color: #b06367;
-    min-height: 18px;
-  }
-  .gate-foot {
-    margin-top: 28px; padding-top: 20px;
-    border-top: 1px solid #f0ebde;
-    font-size: 11px; color: #7c7a72; line-height: 1.6;
-  }
-  .gate-foot strong { color: #14171e; }
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --bg-deep: #14171e;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+  --warn: #b88a2e;
+  --warn-light: rgba(184, 138, 46, 0.10);
+  --danger: #b14a3a;
+  --danger-light: rgba(177, 74, 58, 0.10);
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.shell { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+
+/* ===== Sidebar ===== */
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 20px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; font-weight: 400; color: var(--ink); margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+  font-weight: 600;
+}
+.sidebar-link .icon { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+
+/* ===== Main ===== */
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 24px 40px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.page-header-left { flex: 1; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400; color: var(--ink); line-height: 1.2;
+}
+.page-header-right { display: flex; gap: 8px; }
+.back-hub {
+  padding: 8px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-hub:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+.content { padding: 32px 40px 64px; max-width: 1100px; margin: 0 auto; }
+
+/* ===== Status Banner ===== */
+.status-banner {
+  padding: 20px 24px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 16px;
+  border: 1px solid;
+}
+.status-banner.recovery {
+  background: var(--warn-light);
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.status-banner .icon { font-size: 32px; }
+.status-banner .text h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.status-banner .text p { font-size: 13px; color: var(--ink-soft); margin: 0; }
+
+/* ===== Section ===== */
+.section { margin-bottom: 36px; }
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title .badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px;
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: 100px;
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ===== Stats ===== */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 14px; text-align: center;
+}
+.stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; color: var(--primary); line-height: 1; margin-bottom: 6px;
+}
+.stat-num.warn { color: var(--warn); }
+.stat-num.danger { color: var(--danger); }
+.stat-num.success { color: var(--success); }
+.stat-label {
+  font-size: 10px; color: var(--ink-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+
+/* ===== Flow Visualization ===== */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.flow-side {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px;
+}
+.flow-side h4 {
+  font-size: 13px; font-weight: 700;
+  color: var(--ink); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.flow-side p { font-size: 12px; color: var(--ink-soft); margin: 0; }
+.flow-arrow {
+  font-size: 24px; color: var(--primary);
+  font-weight: 700;
+}
+
+/* ===== Files Tree ===== */
+.tree {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+}
+.tree-line { padding: 4px 0; color: var(--ink-soft); }
+.tree-line.depth-1 { padding-right: 16px; }
+.tree-line.depth-2 { padding-right: 32px; color: var(--ink-muted); }
+.tree-line.depth-3 { padding-right: 48px; color: var(--ink-muted); }
+.tree-line.depth-4 { padding-right: 64px; color: var(--ink-muted); }
+.tree-file { color: var(--primary); }
+.tree-folder { color: var(--accent); font-weight: 700; }
+
+/* ===== Feed ===== */
+.feed {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.feed-item {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px;
+  text-decoration: none; color: inherit;
+  transition: all 0.2s;
+  display: block;
+}
+.feed-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+.feed-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.feed-type {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 100px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.feed-type.from-erp { background: var(--accent-light); color: var(--accent); }
+.feed-type.to-erp { background: var(--primary-light); color: var(--primary); }
+.feed-type.decision { background: var(--warn-light); color: var(--warn); }
+.feed-type.cycle { background: var(--success-light); color: var(--success); }
+.feed-time {
+  font-size: 11px; color: var(--ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.feed-title {
+  font-size: 15px; font-weight: 600; color: var(--ink);
+  margin-bottom: 4px;
+}
+.feed-sub {
+  font-size: 12px; color: var(--ink-soft);
+}
+
+/* ===== Decision Box ===== */
+.decision-box {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--warn-light) 100%);
+  border: 1px solid var(--warn);
+  border-radius: 12px; padding: 20px;
+  margin-bottom: 20px;
+}
+.decision-box h3 {
+  font-size: 16px; font-weight: 700;
+  color: var(--ink); margin-bottom: 8px;
+}
+.decision-box p {
+  font-size: 13px; color: var(--ink-soft); margin: 0;
+}
+.decision-box .meta {
+  margin-top: 12px;
+  display: flex; gap: 16px;
+  font-size: 12px; color: var(--ink-muted);
+}
+
+/* ===== Footer ===== */
+.foot {
+  margin-top: 48px; padding: 20px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 12px; color: var(--ink-muted);
+}
+.foot a { color: var(--primary); text-decoration: none; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; }
+  .content { padding: 24px 20px 48px; }
+  .flow { grid-template-columns: 1fr; }
+  .flow-arrow { transform: rotate(90deg); justify-self: center; }
+}
 </style>
 </head>
 <body>
-<div class="gate">
-  <div class="gate-mark">A</div>
-  <h1>مختبر العصف الذهني — Session 002: ERP MVP Monitoring</h1>
-  <div class="gate-sub">Analysis Portal · Password required</div>
 
-  <label class="gate-label" for="pw">Password</label>
-  <input id="pw" class="gate-input" type="password" autocomplete="off"
-         placeholder="••••••••••••••" autofocus />
-  <button id="go" class="gate-btn">Enter</button>
-  <div id="err" class="gate-error"></div>
+<div class="shell">
 
-  <div class="gate-foot">
-    Private workspace · access by password only<br>
-    <strong>Do not share this link</strong>
+<!-- ===== Sidebar ===== -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">🔍 Session 002</div>
+    <div class="sidebar-brand-tag">ERP MVP Monitoring</div>
   </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">📊 لوحة المراقبة</div>
+    <a href="home.html" class="sidebar-link active">
+      <span class="icon">🏠</span>
+      <span>Dashboard (الرئيسية)</span>
+    </a>
+    <a href="session.html" class="sidebar-link">
+      <span class="icon">📋</span>
+      <span>SESSION.md (البروتوكول)</span>
+    </a>
+    <a href="critical-state-report.html" class="sidebar-link">
+      <span class="icon">🚨</span>
+      <span>Critical State Report</span>
+    </a>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">🔄 دورات التحليل</div>
+    <a href="cycles/07-04-halt-state-assessment.html" class="sidebar-link">
+      <span class="icon">🔍</span>
+      <span>Cycle 01: HALT Assessment</span>
+    </a>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">🌐 Feedback Loop</div>
+    <a href="feedback-loop/protocol.html" class="sidebar-link">
+      <span class="icon">📜</span>
+      <span>Protocol</span>
+    </a>
+    <a href="feedback-loop/from-erp/07-04-2330-ping-response.html" class="sidebar-link">
+      <span class="icon">📨</span>
+      <span>From ERP (آخر رسالة)</span>
+    </a>
+    <a href="feedback-loop/to-erp/07-04-2330-direction.html" class="sidebar-link">
+      <span class="icon">📤</span>
+      <span>To ERP (التوجيه)</span>
+    </a>
+    <a href="feedback-loop/decisions/dec-2026-07-04-001-rescue-plan.html" class="sidebar-link">
+      <span class="icon">⚖️</span>
+      <span>Decision #001</span>
+    </a>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">🏠 Hub</div>
+    <a href="../../index.html" class="sidebar-link" style="color: var(--accent);">
+      <span class="icon">←</span>
+      <span>العودة للـ Hub الموحّد</span>
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    Built by <strong>Deep Researcher</strong><br>
+    Observation-Only Mode · v1.0<br>
+    آخر تحديث: 2026-07-04 23:32 Berlin
+  </div>
+</aside>
+
+<!-- ===== Main ===== -->
+<main>
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-breadcrumb">🔍 Brainstorming Lab · Session 002 · ERP MVP Monitoring</div>
+      <div class="page-title">لوحة المراقبة الديناميكية</div>
+    </div>
+    <div class="page-header-right">
+      <a href="../../index.html" class="back-hub">← Hub الموحّد</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== Status Banner ===== -->
+    <div class="status-banner recovery">
+      <div class="icon">🟡</div>
+      <div class="text">
+        <h3>RECOVERY MODE — خطة إنقاذ نشطة</h3>
+        <p>الملفات الـ uncommitted موجودة فعلياً (6 من data agent + 2 من backend). الـ DEC-001 ينفّذ Phase 1 الآن.</p>
+      </div>
+    </div>
+
+    <!-- ===== Stats ===== -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-num success">30%</div>
+        <div class="stat-label">نسبة الإنجاز</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num warn">3</div>
+        <div class="stat-label">Agents Failed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">8</div>
+        <div class="stat-label">ملفات Uncommitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num warn">1</div>
+        <div class="stat-label">Decision Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">6h</div>
+        <div class="stat-label">منذ آخر Commit</div>
+      </div>
+    </div>
+
+    <!-- ===== Active Decision ===== -->
+    <div class="decision-box">
+      <h3>⚖️ Decision #001 — Rescue Plan (Hybrid: Manual + Relaunch)</h3>
+      <p><strong>Phase 1:</strong> Manual commit by Mavis (30 min) · <strong>Phase 2:</strong> Relaunch agents with shorter prompts (1-2h) · <strong>Phase 3:</strong> Hourly checkpoints</p>
+      <div class="meta">
+        <span>📅 2026-07-04 23:30 Berlin</span>
+        <span>👤 Owner: Mavis</span>
+        <span>🔄 Status: In Progress</span>
+      </div>
+    </div>
+
+    <!-- ===== Flow Visualization ===== -->
+    <section class="section">
+      <h2 class="section-title">🔄 Closed-Loop Steering <span class="badge">Active</span></h2>
+
+      <div class="flow">
+        <div class="flow-side">
+          <h4>📡 ERP Session (Execution)</h4>
+          <p>Mavis (Coordinator) + 3 agents</p>
+          <p style="margin-top: 8px;">Status: <strong style="color: var(--warn);">PARTIAL</strong></p>
+        </div>
+        <div class="flow-arrow">↔</div>
+        <div class="flow-side">
+          <h4>🧠 Brainstorming Lab 002</h4>
+          <p>Deep Researcher + 5 experts</p>
+          <p style="margin-top: 8px;">Status: <strong style="color: var(--success);">ANALYZING</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Project Structure ===== -->
+    <section class="section">
+      <h2 class="section-title">📂 Project Structure <span class="badge">Hierarchical</span></h2>
+
+      <div class="tree">
+        <div class="tree-line"><span class="tree-folder">portals/02-session-002/</span></div>
+        <div class="tree-line depth-1"><span class="tree-file">home.html</span> ← أنت هنا</div>
+        <div class="tree-line depth-1"><span class="tree-file">session.html</span></div>
+        <div class="tree-line depth-1"><span class="tree-file">critical-state-report.html</span></div>
+        <div class="tree-line depth-1"><span class="tree-folder">cycles/</span></div>
+        <div class="tree-line depth-2"><span class="tree-file">2026-07-04-halt-state-assessment.html</span></div>
+        <div class="tree-line depth-1"><span class="tree-folder">feedback-loop/</span></div>
+        <div class="tree-line depth-2"><span class="tree-file">protocol.html</span></div>
+        <div class="tree-line depth-2"><span class="tree-folder">from-erp/</span></div>
+        <div class="tree-line depth-3"><span class="tree-file">2026-07-04-2330-ping-response.html</span></div>
+        <div class="tree-line depth-2"><span class="tree-folder">to-erp/</span></div>
+        <div class="tree-line depth-3"><span class="tree-file">2026-07-04-2330-direction.html</span></div>
+        <div class="tree-line depth-2"><span class="tree-folder">decisions/</span></div>
+        <div class="tree-line depth-3"><span class="tree-file">DEC-2026-07-04-001-rescue-plan.html</span></div>
+      </div>
+    </section>
+
+    <!-- ===== Recent Activity Feed ===== -->
+    <section class="section">
+      <h2 class="section-title">📰 آخر النشاطات <span class="badge">Live</span></h2>
+
+      <div class="feed">
+        <a href="feedback-loop/from-erp/07-04-2330-ping-response.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type from-erp">FROM ERP</span>
+            <span class="feed-time">2026-07-04 23:30</span>
+          </div>
+          <div class="feed-title">📨 Ping Response — تفاصيل الحالة من Mavis</div>
+          <div class="feed-sub">Status: PARTIAL · 6 seeder files + 2 backend modifications uncommitted</div>
+        </a>
+
+        <a href="feedback-loop/decisions/dec-2026-07-04-001-rescue-plan.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type decision">DECISION</span>
+            <span class="feed-time">2026-07-04 23:32</span>
+          </div>
+          <div class="feed-title">⚖️ Decision #001 — Rescue Plan (Hybrid)</div>
+          <div class="feed-sub">Phase 1: Manual commit · Phase 2: Relaunch · Phase 3: Checkpoints</div>
+        </a>
+
+        <a href="feedback-loop/to-erp/07-04-2330-direction.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type to-erp">TO ERP</span>
+            <span class="feed-time">2026-07-04 23:32</span>
+          </div>
+          <div class="feed-title">📤 Direction to Mavis — خطة التنفيذ</div>
+          <div class="feed-sub">Phase 1 في 30 دقيقة · ثم Phase 2 (relaunch)</div>
+        </a>
+
+        <a href="cycles/07-04-halt-state-assessment.html" class="feed-item">
+          <div class="feed-meta">
+            <span class="feed-type cycle">CYCLE 01</span>
+            <span class="feed-time">2026-07-04 23:32</span>
+          </div>
+          <div class="feed-title">🔍 Cycle 01 — HALT Assessment → Rescue Plan</div>
+          <div class="feed-sub">5 expert analysis + decision made</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <div class="foot">
+      🧠 أُنشئت بواسطة <strong>Deep Researcher</strong> (Facilitator) ·
+      <a href="../../index.html">Hub الموحّد</a> ·
+      <a href="feedback-loop/protocol.html">Protocol</a>
+      <br>
+      آخر تحديث: 2026-07-04 23:32 Berlin · Observation Mode Active
+    </div>
+
+  </div>
+</main>
+
 </div>
 
-<script>
-(async function() {
-  var KEY = "brainstorming_lab_session_002";
-  var EXPECTED = "67b909e3094ed7b545727edde6146d165c8ed70e3e787b4c352a84b4c54715b9";
-  if (localStorage.getItem(KEY) === "1") {
-    var first = document.querySelector("a.sidebar-link");
-    if (first) window.location.replace(first.getAttribute("href"));
-    return;
-  }
-  async function sha256(text) {
-    var buf = new TextEncoder().encode(text);
-    var hash = await crypto.subtle.digest("SHA-256", buf);
-    return Array.from(new Uint8Array(hash))
-      .map(function(b) { return b.toString(16).padStart(2, "0"); })
-      .join("");
-  }
-  var input = document.getElementById("pw");
-  var btn = document.getElementById("go");
-  var err = document.getElementById("err");
-  async function tryEnter() {
-    var pw = input.value.trim();
-    if (!pw) { err.textContent = "Enter password first"; return; }
-    btn.disabled = true; btn.textContent = "Verifying...";
-    var h = await sha256(pw);
-    if (h === EXPECTED) {
-      localStorage.setItem(KEY, "1");
-      var first = document.querySelector("a.sidebar-link");
-      if (first) window.location.replace(first.getAttribute("href"));
-    } else {
-      err.textContent = "✗ Wrong password";
-      input.value = ""; input.focus();
-      btn.disabled = false; btn.textContent = "Enter";
-    }
-  }
-  btn.addEventListener("click", tryEnter);
-  input.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") tryEnter();
-  });
-})();
-</script>
 </body>
 </html>

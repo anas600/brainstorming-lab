@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #001 — Rescue Plan for ERP MVP HALT · Session 002 — ERP MVP Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+}
+.sidebar-link.current { font-weight: 600; }
+.sidebar-link .icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 28px 56px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 16px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-link:hover {
+  background: var(--primary-light); color: var(--primary);
+  border-color: var(--primary);
+}
+.page-header-meta { flex: 1; min-width: 0; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.content {
+  padding: 48px 56px 96px;
+  max-width: 920px; margin: 0 auto;
+}
+.content h1, .content h2, .content h3, .content h4 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400; color: var(--ink);
+  letter-spacing: -0.005em;
+  scroll-margin-top: 110px;
+}
+.content h1 {
+  font-size: 38px; margin: 8px 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.2;
+}
+.content h2 {
+  font-size: 26px; margin: 56px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.content h3 { font-size: 20px; margin: 36px 0 12px; color: var(--ink-soft); }
+.content h4 { font-size: 16px; margin: 24px 0 10px; color: var(--ink-soft); font-weight: 600; font-family: 'Outfit', sans-serif; }
+.content p { margin-bottom: 14px; color: var(--ink-soft); }
+.content strong { color: var(--ink); font-weight: 600; }
+.content em { color: var(--ink-soft); }
+.content ul, .content ol { margin: 12px 0 16px 24px; color: var(--ink-soft); }
+.content li { margin-bottom: 6px; padding-right: 4px; }
+.content ul li::marker { color: var(--accent); }
+.content blockquote {
+  border-right: 3px solid var(--primary);
+  background: var(--primary-light);
+  padding: 14px 22px; margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--ink); font-style: normal;
+}
+.content blockquote p { margin: 0; color: var(--ink); }
+.content blockquote strong { color: var(--primary); }
+.content table {
+  width: 100%; border-collapse: collapse;
+  margin: 18px 0; font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.content thead { background: var(--bg); }
+.content th {
+  text-align: right; padding: 12px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+.content td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: var(--bg-soft); }
+.content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+  border: 1px solid var(--line-soft);
+}
+.content pre {
+  background: #14171e; color: #e9e3d6;
+  padding: 18px 22px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  direction: ltr; text-align: left;
+}
+.content pre code {
+  background: transparent; border: none;
+  color: inherit; padding: 0; font-size: 13px;
+}
+.xref {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; margin: 0 2px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.xref:hover {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+}
+.xref::before { content: "→"; font-size: 10px; opacity: 0.7; }
+.content h2 .anchor, .content h3 .anchor, .content h4 .anchor {
+  margin-right: 12px; opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+}
+.content h2:hover .anchor,
+.content h3:hover .anchor,
+.content h4:hover .anchor { opacity: 1; }
+.content h2 .anchor::before { content: "#"; }
+.content hr {
+  border: none; border-top: 1px dashed var(--line);
+  margin: 40px 0;
+}
+.page-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-footer a { color: var(--accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static; height: auto;
+    border-left: none; border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .sidebar-group-title, .sidebar-link { padding-right: 16px; padding-left: 16px; }
+  .content { padding: 32px 24px 64px; }
+  .page-header { padding: 16px 24px; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">Session 002 — ERP MVP Monitoring</div>
+    <div class="sidebar-brand-tag">5 documents</div>
+  </div>
+  <div class="sidebar-group">
+<div class="sidebar-group-title">Cycles</div>
+<a href="07-04-halt-state-assessment.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔍 Cycle 01: HALT State Assessment → RESCUE Plan</a>
+</div>
+<div class="sidebar-group">
+<div class="sidebar-group-title">Feedback Loop</div>
+<a href="dec-2026-07-04-001-rescue-plan.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📋 DECISION #001 — Rescue Plan for ERP MVP HALT</a>
+<a href="07-04-2330-ping-response.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Ping Response</a>
+<a href="protocol.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 Feedback Loop Protocol</a>
+<a href="07-04-2330-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #001 (Rescue Plan)</a>
+</div>
+  <div class="sidebar-footer">
+    Multi-page analysis portal<br>
+    cross-references active
+  </div>
+</aside>
+
+<main>
+  <div class="page-header">
+    <a href="07-04-halt-state-assessment.html" class="back-link">← Session 002 — ERP MVP Monitoring</a>
+    <div class="page-header-meta">
+      <div class="page-breadcrumb">Feedback Loop · 📋 DECISION #001 — Rescue Plan for ERP MVP HALT</div>
+      <div class="page-title">📋 DECISION #001 — Rescue Plan for ERP MVP HALT</div>
+    </div>
+  </div>
+  <article class="content">
+    <p><strong>Date</strong>: 2026-07-04 23:30 Berlin
+<strong>Decision Authority</strong>: Deep Researcher (Product Owner) + Mavis (Tech Lead) — voted both for Option B+C
+<strong>Status</strong>: ✅ ACTIVE — Implementation in progress</p>
+<hr>
+<h2 id="section-context">🎯 Context <a href="#section-context" class="anchor" aria-label="anchor"></a></h2>
+<p><strong>Problem</strong>: 
+- 3 من 3 background agents في حالة FAILED
+- لا commits جديدة منذ 6 ساعات
+- HF Space نفسه شغّال لكن بدون تحديث</p>
+<p><strong>Discovery</strong> (من ping response):
+- الملفات الـ uncommitted <strong>موجودة فعلاً</strong> في الـ workspace
+- data-specialist: 6 files كاملة (~83KB)
+- backend-specialist: 2 modifications
+- frontend-specialist: 0 files (لم يبدأ)</p>
+<p><strong>Critical Insight</strong>: الـ agents فشلت في <strong>commit step</strong> فقط، ليس في الإنتاج.</p>
+<hr>
+<h2 id="section-decision-hybrid-approach">✅ Decision: Hybrid Approach (B + C) <a href="#section-decision-hybrid-approach" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-phase-1-manual-commit">Phase 1 — Manual Commit (30 min) <a href="#section-phase-1-manual-commit" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>Owner</strong>: Mavis</p>
+<p><strong>Tasks</strong>:
+1. List all uncommitted files
+2. Manual commit for data-specialist (6 files)
+3. Manual commit for backend-specialist (2 mods)
+4. Verify build passes</p>
+<h3 id="section-phase-2-relaunch-agents">Phase 2 — Relaunch Agents (1-2h) <a href="#section-phase-2-relaunch-agents" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>Owner</strong>: Mavis</p>
+<p><strong>Tasks</strong>:
+1. Relaunch frontend-specialist (priority) → M1, M2, M8
+2. Relaunch backend-specialist → M5, M6 (post-Phase 1)
+3. Relaunch data-specialist → improvements only
+4. Use shorter prompts: "Resume, don't redo"</p>
+<h3 id="section-phase-3-hourly-checkpoints">Phase 3 — Hourly Checkpoints (ongoing) <a href="#section-phase-3-hourly-checkpoints" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>Owner</strong>: Mavis + Deep Researcher</p>
+<p><strong>Tasks</strong>:
+1. Hourly reports from ERP Session
+2. On-demand analysis from Brainstorming Lab
+3. Blockers escalation</p>
+<hr>
+<h2 id="section-expected-outcomes">📊 Expected Outcomes <a href="#section-expected-outcomes" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-best-case">Best Case (60% probability): <a href="#section-best-case" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>Phase 1 done in 30 min</li>
+<li>Phase 2 done in 1-2 hours</li>
+<li>Frontend work resumes</li>
+<li>HF Space updates by midnight Berlin</li>
+</ul>
+<h3 id="section-moderate-case">Moderate Case (30% probability): <a href="#section-moderate-case" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>Phase 1 done</li>
+<li>Frontend fails again</li>
+<li>Decision: switch to sequential (Mavis does it manually)</li>
+</ul>
+<h3 id="section-worst-case">Worst Case (10% probability): <a href="#section-worst-case" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>Multiple agent failures</li>
+<li>Token Plan exhausted</li>
+<li>Decision: open new session for rescue</li>
+</ul>
+<hr>
+<h2 id="section-voting-record">🔄 Voting Record <a href="#section-voting-record" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>Voter</th>
+<th>Vote</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deep Researcher (Brainstorming)</td>
+<td>✅ Option B+C</td>
+<td>Files exist, just need commit</td>
+</tr>
+<tr>
+<td>Mavis (ERP Session)</td>
+<td>⏳ Awaiting confirmation</td>
+<td>Sent direction, awaiting response</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-follow-up-actions">📌 Follow-up Actions <a href="#section-follow-up-actions" class="anchor" aria-label="anchor"></a></h2>
+<ul>
+<li>[x] Send direction to Mavis</li>
+<li>[ ] Await Phase 1 completion (30 min)</li>
+<li>[ ] Verify commit on GitHub</li>
+<li>[ ] Update Hub dashboard</li>
+<li>[ ] Send report to user via Telegram</li>
+</ul>
+<hr>
+<p><em>Decision logged: 2026-07-04 23:30 Berlin</em>
+<em>Logged by: Deep Researcher (Facilitator)</em></p>
+    <footer class="page-footer">
+      <span>feedback-loop/decisions/DEC-2026-07-04-001-rescue-plan.md</span>
+      <span>← <a href="07-04-halt-state-assessment.html">Session 002 — ERP MVP Monitoring</a></span>
+    </footer>
+  </article>
+</main>
+
+</div>
+</body>
+</html>
