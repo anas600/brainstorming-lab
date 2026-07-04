@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تكامل Mavis × Telegram — الحلول والمقترحات</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --border: #e9e3d6;
+    --ink: #14171e;
+    --ink-2: #3a4256;
+    --ink-3: #7c7a72;
+    --primary: #2f6f5e;
+    --primary-soft: rgba(47, 111, 94, 0.08);
+    --accent: #c97b3f;
+    --accent-soft: rgba(201, 123, 63, 0.08);
+    --warn: #b06367;
+    --warn-soft: rgba(176, 99, 103, 0.06);
+    --ok: #2f6f5e;
+    --line-soft: #efe9d8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    background-image: 
+      radial-gradient(ellipse at 5% 0%, rgba(47, 111, 94, 0.04), transparent 50%),
+      radial-gradient(ellipse at 95% 100%, rgba(201, 123, 63, 0.04), transparent 50%);
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 24px 96px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 56px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .topbar .tag {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .hero { margin-bottom: 64px; }
+  .hero .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero .label svg { width: 16px; height: 16px; }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--primary); }
+  .hero p.lead {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    max-width: 720px;
+  }
+  section { margin-bottom: 72px; }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 svg { width: 26px; height: 26px; color: var(--primary); flex-shrink: 0; }
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 12px;
+    margin-top: 24px;
+  }
+  p { color: var(--ink-2); margin-bottom: 12px; font-size: 15px; }
+  strong { color: var(--ink); font-weight: 600; }
+  em.h { color: var(--primary); font-style: normal; font-weight: 600; }
+  
+  .callout {
+    background: var(--primary-soft);
+    border-right: 4px solid var(--primary);
+    padding: 18px 22px;
+    border-radius: 12px;
+    margin: 20px 0;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .callout.warn {
+    background: var(--warn-soft);
+    border-right-color: var(--warn);
+  }
+  .callout.accent {
+    background: var(--accent-soft);
+    border-right-color: var(--accent);
+  }
+  .callout .title {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .callout.warn .title { color: var(--warn); }
+  .callout.accent .title { color: var(--accent); }
+  
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 26px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .status {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .status-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .status.ok .status-icon { background: var(--primary-soft); color: var(--primary); }
+  .status.fail .status-icon { background: var(--warn-soft); color: var(--warn); }
+  .status.pending .status-icon { background: var(--accent-soft); color: var(--accent); }
+  .status-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .status-desc { font-size: 12px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; }
+  
+  .solution {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 28px;
+    margin: 20px 0;
+    position: relative;
+  }
+  .solution-tag {
+    position: absolute;
+    top: 18px;
+    left: 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .solution h3 { margin-top: 0; padding-top: 6px; }
+  .solution.rec {
+    background: linear-gradient(135deg, var(--primary-soft) 0%, var(--accent-soft) 100%);
+    border-color: var(--primary);
+  }
+  
+  /* Flow diagram */
+  .flow {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+  .flow-step:last-child { border-bottom: 0; }
+  .flow-num {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .flow-text { font-size: 14px; color: var(--ink); }
+  .flow-text code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--primary);
+    border: 1px solid var(--border);
+  }
+  
+  /* Code block */
+  pre {
+    background: #1a1a2e;
+    color: #e9e3d6;
+    padding: 18px 22px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    direction: ltr;
+    text-align: left;
+  }
+  pre .c { color: #7c7a72; }
+  pre .k { color: #c97b3f; }
+  pre .s { color: #4a8e7c; }
+  pre .v { color: #b06367; }
+  
+  /* Pros / Cons */
+  .pc {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .pc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .pc-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .pc-card.pro h4 { color: var(--primary); }
+  .pc-card.con h4 { color: var(--warn); }
+  .pc-card ul { list-style: none; padding: 0; }
+  .pc-card li {
+    font-size: 13px;
+    color: var(--ink-2);
+    padding: 4px 0;
+    padding-right: 18px;
+    position: relative;
+  }
+  .pc-card.pro li::before {
+    content: "✓";
+    position: absolute;
+    right: 0;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .pc-card.con li::before {
+    content: "✗";
+    position: absolute;
+    right: 0;
+    color: var(--warn);
+    font-weight: 700;
+  }
+  
+  /* Recommendation */
+  .reco {
+    background: linear-gradient(135deg, var(--primary) 0%, #245548 100%);
+    color: white;
+    padding: 32px 36px;
+    border-radius: 20px;
+    margin: 32px 0;
+  }
+  .reco h3 { color: white; font-size: 22px; margin: 0 0 14px 0; }
+  .reco p { color: rgba(255,255,255,0.92); margin: 0; font-size: 15px; line-height: 1.7; }
+  .reco .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    font-size: 14px;
+  }
+  table.compare th {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 14px 18px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  table.compare td {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    color: var(--ink-2);
+  }
+  table.compare tr:first-child td { border-top: 0; }
+  table.compare td:first-child { font-weight: 600; color: var(--ink); }
+  
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .footer .from { color: var(--primary); font-weight: 500; }
+  
+  @media (max-width: 640px) {
+    .wrap { padding: 32px 18px 64px; }
+    .hero h1 { font-size: 28px; }
+    .pc { grid-template-columns: 1fr; }
+    .status-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span>يونيو 2026 · v1.0</span>
+    <span class="tag">توصيات تكامل · Mavis × Telegram</span>
+  </div>
+
+  <div class="hero">
+    <div class="label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      تشخيص + حلول مقترحة
+    </div>
+    <h1>تكامل <em>Mavis × Telegram</em> — الصورة الكاملة</h1>
+    <p class="lead">
+      تحليل لما هو شغّال، ما هو ناقص، وثلاثة حلول عملية مرتّبة من الأسرع للأقوى.
+    </p>
+  </div>
+
+  <!-- Diagnosis -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      الوضع الحالي — شو شغّال وشو ناقص
+    </h2>
+    
+    <div class="status-grid">
+      <div class="status ok">
+        <div class="status-icon">✓</div>
+        <div>
+          <div class="status-name">Bot Token</div>
+          <div class="status-desc">8483...VR/dijE8 — شغّال</div>
+        </div>
+      </div>
+      <div class="status ok">
+        <div class="status-icon">✓</div>
+        <div>
+          <div class="status-name">chat_id</div>
+          <div class="status-desc">2095951462 — مستخرج</div>
+        </div>
+      </div>
+      <div class="status ok">
+        <div class="status-icon">✓</div>
+        <div>
+          <div class="status-name">Mavis → Telegram</div>
+          <div class="status-desc">رسائل #125, #126 وصلت</div>
+        </div>
+      </div>
+      <div class="status ok">
+        <div class="status-icon">✓</div>
+        <div>
+          <div class="status-name">Telegram → Mavis</div>
+          <div class="status-desc">رسائلك توصلني</div>
+        </div>
+      </div>
+      <div class="status fail">
+        <div class="status-icon">✗</div>
+        <div>
+          <div class="status-name">الأتمتة</div>
+          <div class="status-desc">Manual only</div>
+        </div>
+      </div>
+      <div class="status fail">
+        <div class="status-icon">✗</div>
+        <div>
+          <div class="status-name">Incoming bridge</div>
+          <div class="status-desc">Instance conflict (409)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="title">المشكلة الجوهرية</div>
+      <p style="margin:0;">كل ردّي يتطلب <code style="background:white; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--warn);">curl</code> يدوي. والأهم: في instance آخر يستهلك Telegram updates قبل ما أوصل لها (نراه من الخطأ <code style="background:white; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--warn);">409 Conflict</code>).</p>
+    </div>
+  </section>
+
+  <!-- Solutions -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      الحلول الثلاثة — من الأسرع للأقوى
+    </h2>
+
+    <!-- Solution A -->
+    <div class="solution rec">
+      <span class="solution-tag">⭐ موصى به للبداية</span>
+      <h3>الحل A — Side Channel (Telegram-as-Output)</h3>
+      <p>أعمل <strong>bash function</strong> صغيرة يرسل كل ردّي على Telegram قبل ما يطبع في الـ console.</p>
+
+      <pre><span class="c"># ضع في ~/.bashrc أو قبل كل أمر</span>
+<span class="k">export</span> TELEGRAM_BOT_TOKEN=<span class="s">"8483274654:AAE1zwTH4Jst8GX9vvpETyjFzlZVN-DijE8"</span>
+<span class="k">export</span> TELEGRAM_CHAT_ID=<span class="s">"2095951462"</span>
+
+<span class="k">tg-reply</span>() {
+  <span class="k">local</span> text=<span class="s">"$1"</span>
+  curl -s -X POST <span class="s">"https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage"</span> \
+    -d <span class="s">"chat_id=$TELEGRAM_CHAT_ID"</span> \
+    -d <span class="s">"text=$text"</span> \
+    -d <span class="s">"parse_mode=HTML"</span> > <span class="v">/dev/null</span>
+}
+
+<span class="c"># الاستخدام:</span>
+<span class="k">tg-reply</span> <span class="s">"🎉 الرد جاهز يا Anas!"</span></pre>
+
+      <div class="pc">
+        <div class="pc-card pro">
+          <h4>المميزات</h4>
+          <ul>
+            <li>فوري، بدون setup معقد</li>
+            <li>ما يحتاج server عام</li>
+            <li>شغّال من أي بيئة</li>
+            <li>ما يحتاج domain أو SSL</li>
+          </ul>
+        </div>
+        <div class="pc-card con">
+          <h4>العيوب</h4>
+          <ul>
+            <li>يتطلب تدخل يدوي</li>
+            <li>ما في automation حقيقي</li>
+            <li>لو نسيت، ما يطلع على Telegram</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solution B -->
+    <div class="solution">
+      <span class="solution-tag">⭐⭐ للإنتاج</span>
+      <h3>الحل B — Webhook (الأقوى)</h3>
+      <p>خادم صغير يستقبل Telegram webhooks ويربطها بـ Mavis session.</p>
+
+      <pre><span class="c"># server.py (Flask)</span>
+<span class="k">from</span> flask <span class="k">import</span> Flask, request
+<span class="k">import</span> requests, os
+
+app = <span class="v">Flask</span>(__name__)
+TOKEN = os.getenv(<span class="s">'TELEGRAM_BOT_TOKEN'</span>)
+CHAT_ID = os.getenv(<span class="s">'TELEGRAM_CHAT_ID'</span>)
+
+<span class="k">@app.route</span>(<span class="s">'/webhook'</span>, methods=[<span class="s">'POST'</span>])
+<span class="k">def</span> webhook():
+    data = request.get_json()
+    msg = data.get(<span class="s">'message'</span>, {})
+    chat_id = msg.get(<span class="s">'chat'</span>, {}).get(<span class="s">'id'</span>)
+    text = msg.get(<span class="s">'text'</span>, <span class="s">''</span>)
+    
+    <span class="c"># Forward to Mavis session</span>
+    mavis_reply = forward_to_mavis(text)
+    
+    <span class="c"># Send reply to Telegram</span>
+    requests.post(<span class="s">f"https://api.telegram.org/bot{TOKEN}/sendMessage"</span>,
+        json={<span class="s">"chat_id"</span>: chat_id, <span class="s">"text"</span>: mavis_reply})
+    <span class="k">return</span> <span class="s">''</span>, 200
+
+<span class="c"># Run + set webhook:</span>
+<span class="c"># 1. Deploy server to VPS / Cloudflare Worker</span>
+<span class="c"># 2. curl -X POST "https://api.telegram.org/bot$TOKEN/setWebhook?url=https://yourdomain.com/webhook"</span></pre>
+
+      <div class="pc">
+        <div class="pc-card pro">
+          <h4>المميزات</h4>
+          <ul>
+            <li>أتمتة كاملة (incoming + outgoing)</li>
+            <li>Real-time</li>
+            <li>production-ready</li>
+            <li>يدعم multiple users</li>
+          </ul>
+        </div>
+        <div class="pc-card con">
+          <h4>العيوب</h4>
+          <ul>
+            <li>محتاج VPS / Cloudflare Worker</li>
+            <li>محتاج domain + SSL</li>
+            <li>setup أعقد (10-15 دقيقة)</li>
+            <li>محتاج uptime monitoring</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solution C -->
+    <div class="solution">
+      <span class="solution-tag">للمتوسط</span>
+      <h3>الحل C — Poll Loop</h3>
+      <p>Script يدور في الخلفية يسأل Telegram عن رسائل جديدة.</p>
+
+      <pre><span class="c"># poll.sh - run in background</span>
+<span class="k">LAST_ID=0</span>
+
+<span class="k">while true</span>; <span class="k">do</span>
+  updates=$(curl -s <span class="s">"https://api.telegram.org/bot$TOKEN/getUpdates?offset=$((LAST_ID+1))&timeout=30"</span>)
+  echo <span class="s">"$updates"</span> | python3 -c <span class="s">"
+import sys, json
+data = json.load(sys.stdin)
+for u in data.get('result', []):
+    msg = u.get('message', {})
+    print(f\"NEW: {msg.get('text')} from {msg.get('from', {}).get('first_name')}\")
+    global LAST_ID
+    LAST_ID = max(LAST_ID, u['update_id'])
+"</span>
+  sleep 2
+<span class="k">done</span></pre>
+
+      <div class="pc">
+        <div class="pc-card pro">
+          <h4>المميزات</h4>
+          <ul>
+            <li>ما يحتاج webhook URL</li>
+            <li>بسيط للنشر</li>
+          </ul>
+        </div>
+        <div class="pc-card con">
+          <h4>العيوب</h4>
+          <ul>
+            <li>مشكلة <code>409 Conflict</code> لو في instance آخر</li>
+            <li>ممكن يفقد رسائل لو تعطّل</li>
+            <li>ما ينفع مع الـ setup الحالي (instance conflict)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="9" y1="15" x2="15" y2="9"/></svg>
+      مقارنة سريعة
+    </h2>
+
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>المعيار</th>
+          <th>A — Side Channel</th>
+          <th>B — Webhook</th>
+          <th>C — Poll Loop</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>سرعة التطبيق</td>
+          <td>⚡ 5 دقائق</td>
+          <td>⏱️ 15 دقيقة</td>
+          <td>⏱️ 10 دقائق</td>
+        </tr>
+        <tr>
+          <td>أتمتة كاملة</td>
+          <td>جزئية</td>
+          <td>كاملة ✓</td>
+          <td>جزئية</td>
+        </tr>
+        <tr>
+          <td>يحتاج server</td>
+          <td>لا</td>
+          <td>نعم</td>
+          <td>لا</td>
+        </tr>
+        <tr>
+          <td>conflict مع instance آخر</td>
+          <td>لا</td>
+          <td>يحلّه ✓</td>
+          <td>نعم (مشكلة 409)</td>
+        </tr>
+        <tr>
+          <td>مناسب للإنتاج</td>
+          <td>لا</td>
+          <td>نعم ✓</td>
+          <td>لا</td>
+        </tr>
+        <tr>
+          <td>التكلفة</td>
+          <td>صفر</td>
+          <td>~5$/شهر VPS</td>
+          <td>صفر</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Flow -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      كيف يشتغل Side Channel (المقترح)
+    </h2>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-text">أنت ترسل رسالة من <code>Telegram</code></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-text">Instance موجود (مكسور) يستقبل ويرسل لي <code>Mavis session</code></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-text">Mavis يصيغ الرد ويطبعه في الـ chat</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-text"><code>tg-reply "..."</code> يرسل نسخة على Telegram API</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-text">أنت تستلم الرد على Telegram <strong>نفس اللحظة</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recommendation -->
+  <div class="reco">
+    <div class="badge">📌 التوصية النهائية</div>
+    <h3>ابدأ بـ A، طوّر لـ B لاحقاً</h3>
+    <p>
+      <strong style="color:white;">الحل A</strong> يعطيك 80% من القيمة بـ 5% من الجهد. شغّله هلأ، تواصل معي من Telegram، وأي رسالة منك توصلني والرد يرجع فوراً.<br><br>
+      لما نخلص مشروع الإعلام ونبني شيء أحتاج فيه integration ثقيل، نرفع <strong style="color:white;">الحل B</strong> على Cloudflare Worker (مجاني).
+    </p>
+  </div>
+
+  <div class="footer">
+    <span><span class="from">Mavis</span> · معاونك التقني</span>
+    <span>يونيو 2026 · تشخيص التكامل</span>
+  </div>
+
+</div>
+</body>
+</html>

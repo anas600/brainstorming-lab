@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مختبر العصف الذهني · Hub الموحّد</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --bg-deep: #14171e;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --primary-dark: #1f4a3e;
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+  --gold: #b88a2e;
+  --info: #2563eb;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ===== Navigation Top ===== */
+.topnav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247, 245, 240, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  color: white;
+}
+.brand-tag {
+  font-size: 11px;
+  color: var(--ink-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.topnav-links {
+  display: flex; gap: 28px;
+}
+.topnav-link {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.topnav-link:hover { color: var(--primary); }
+
+/* ===== Hero ===== */
+.hero {
+  padding: 80px 48px 60px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+  position: relative;
+}
+.hero-eyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 24px;
+}
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+.hero-title .accent {
+  color: var(--primary);
+  font-style: italic;
+}
+.hero-sub {
+  font-size: 19px;
+  color: var(--ink-soft);
+  max-width: 720px;
+  margin: 0 auto 36px;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 32px;
+}
+.meta {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.meta .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.meta .dot.gold { background: var(--gold); }
+.meta .dot.accent { background: var(--accent); }
+
+/* ===== Section ===== */
+.section {
+  padding: 60px 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.section-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.section-desc {
+  font-size: 16px;
+  color: var(--ink-soft);
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+/* ===== Portal Cards ===== */
+.portals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+.portal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 36px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 380px;
+}
+.portal-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: var(--gradient);
+  opacity: 0.85;
+}
+.portal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(20, 23, 30, 0.10);
+  border-color: transparent;
+}
+.portal-card[data-theme="primary"] { --gradient: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%); }
+.portal-card[data-theme="accent"] { --gradient: linear-gradient(90deg, var(--accent) 0%, #a85d28 100%); }
+
+.portal-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.portal-icon {
+  width: 64px; height: 64px;
+  background: var(--primary-light);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.portal-card[data-theme="accent"] .portal-icon {
+  background: var(--accent-light);
+}
+.portal-badge {
+  padding: 4px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.portal-card[data-theme="primary"] .portal-badge { color: var(--primary); border-color: var(--primary); }
+.portal-card[data-theme="accent"] .portal-badge { color: var(--accent); border-color: var(--accent); }
+
+.portal-card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.portal-card-en {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+.portal-card-desc {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+.portal-stats {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.portal-stat {
+  font-size: 12px;
+  color: var(--ink-muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.portal-stat strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.portal-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: var(--primary);
+  color: white;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  align-self: flex-start;
+  transition: background 0.2s;
+}
+.portal-card[data-theme="accent"] .portal-cta { background: var(--accent); }
+.portal-cta:hover { background: var(--primary-dark); }
+.portal-card[data-theme="accent"] .portal-cta:hover { background: #a85d28; }
+.portal-cta .arrow { transition: transform 0.2s; }
+.portal-card:hover .portal-cta .arrow { transform: translateX(-4px); }
+
+/* ===== Timeline ===== */
+.timeline-section {
+  background: var(--bg-deep);
+  color: white;
+  padding: 80px 48px;
+}
+.timeline-section .section-eyebrow { color: var(--accent); }
+.timeline-section .section-title { color: white; }
+.timeline-section .section-desc { color: rgba(255,255,255,0.7); }
+
+.timeline-track {
+  position: relative;
+  margin-top: 48px;
+  padding: 40px 0;
+}
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.15);
+}
+.timeline-items {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.timeline-step {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+.timeline-dot {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  border: 4px solid var(--bg-deep);
+  position: relative;
+}
+.timeline-step.done .timeline-dot { background: var(--primary); }
+.timeline-date {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.timeline-label {
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.timeline-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== Quick Stats ===== */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.qs-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.qs-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--accent);
+  line-height: 1;
+}
+.qs-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* ===== Footer ===== */
+.foot {
+  padding: 48px;
+  background: var(--bg-deep);
+  color: rgba(255,255,255,0.6);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
+}
+.foot strong { color: white; }
+.foot a { color: var(--accent); text-decoration: none; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .topnav { padding: 12px 20px; }
+  .topnav-links { display: none; }
+  .hero { padding: 48px 20px; }
+  .section { padding: 40px 20px; }
+  .timeline-section { padding: 48px 20px; }
+  .timeline-items { flex-direction: column; gap: 20px; }
+  .timeline-track::before { display: none; }
+  .foot { padding: 32px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">
+    <div class="brand-icon">🧠</div>
+    <div>
+      <div>مختبر العصف الذهني</div>
+      <div class="brand-tag">Brainstorming Lab · Hub</div>
+    </div>
+  </div>
+  <div class="topnav-links">
+    <a href="#portals" class="topnav-link">البوابات</a>
+    <a href="#timeline" class="topnav-link">التاريخ</a>
+    <a href="https://github.com/anas600/brainstorming-lab" class="topnav-link">GitHub</a>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <span class="hero-eyebrow">منصة موحدة · Brainstorming Lab</span>
+  <h1 class="hero-title">
+    كل المواقع السابقة في<br>
+    <span class="accent">بوابة واحدة</span> موحدة
+  </h1>
+  <p class="hero-sub">
+    أدلة تحليل، لوحات جلسات، تقارير، ومواقع معرفية من مشروع مختبر العصف الذهني —
+    مرتبة بشكل ذكي، يمكن التنقل بينها بحرية.
+  </p>
+  <div class="hero-meta">
+    <span class="meta"><span class="dot"></span> 2 بوابة نشطة</span>
+    <span class="meta"><span class="dot accent"></span> 11 ملف HTML</span>
+    <span class="meta"><span class="dot gold"></span> ~370 KB محتوى</span>
+    <span class="meta"><span class="dot"></span> 🔒 محمي بكلمة مرور</span>
+  </div>
+</section>
+
+<!-- ===== Portals Grid ===== -->
+<section class="section" id="portals">
+  <span class="section-eyebrow">Portal Catalog · كتالوج البوابات</span>
+  <h2 class="section-title">اختر البوابة التي تريد دخولها</h2>
+  <p class="section-desc">
+    كل بوابة هي مشروع منفصل بذاته، يمكن تصفحها بشكل مستقل. اضغط على أي بطاقة للدخول.
+  </p>
+
+  <div class="portals-grid">
+    <!-- ERP-FRD -->
+    <a href="portals/00-erp-frd/index.html" class="portal-card" data-theme="primary">
+      <div class="portal-card-header">
+        <div class="portal-icon">📋</div>
+        <span class="portal-badge">v1.0 · Portal #00</span>
+      </div>
+      <h3 class="portal-card-title">بوابة ERP-FRD</h3>
+      <div class="portal-card-en">ERP Functional Requirements · Holding Libya</div>
+      <p class="portal-card-desc">
+        تحليل متطلبات نظام ERP لشركة قابضة ليبيرية متعددة القطاعات (مقاولات، ورش، نظافة، إعاشة).
+        الوثيقة المرجعية الأولى في رحلة مختبر العصف الذهني.
+      </p>
+      <div class="portal-stats">
+        <span class="portal-stat">📄 <strong>6</strong> صفحات</span>
+        <span class="portal-stat">📝 <strong>~70 KB</strong></span>
+        <span class="portal-stat">🏷️ FRD + Recs + Methodology</span>
+        <span class="portal-stat">📅 <strong>2026-06-30</strong></span>
+      </div>
+      <span class="portal-cta">
+        ادخل البوابة
+        <span class="arrow">←</span>
+      </span>
+    </a>
+
+    <!-- Session 001 -->
+    <a href="portals/01-session-001/home.html" class="portal-card" data-theme="accent">
+      <div class="portal-card-header">
+        <div class="portal-icon">🎯</div>
+        <span class="portal-badge">v3.0 · Portal #01</span>
+      </div>
+      <h3 class="portal-card-title">جلسة 001 — FRD MVP</h3>
+      <div class="portal-card-en">Brainstorming Lab · Holding Co. · Stage 2/5</div>
+      <p class="portal-card-desc">
+        جلسة العصف الذهني الكاملة لمشروع FRD لـ MVP. 5 خبراء، 14 عملية محاسبية،
+        سيناريو Holding واقعي، جداول محاسبية بأرقام تقديرية، ونقد مُعمَّق.
+      </p>
+      <div class="portal-stats">
+        <span class="portal-stat">📄 <strong>5</strong> صفحات</span>
+        <span class="portal-stat">📝 <strong>~190 KB</strong></span>
+        <span class="portal-stat">🏷️ Ideation + Critique + Deep Dive</span>
+        <span class="portal-stat">📅 <strong>2026-07-04</strong></span>
+      </div>
+      <span class="portal-cta">
+        ادخل الجلسة
+        <span class="arrow">←</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<!-- ===== Timeline ===== -->
+<section class="timeline-section" id="timeline">
+  <div class="section" style="padding-left: 0; padding-right: 0; max-width: none;">
+    <span class="section-eyebrow">Evolution Timeline · خط الزمن</span>
+    <h2 class="section-title">كيف تطور مختبر العصف الذهني</h2>
+    <p class="section-desc">
+      من مشروع ERP-FRD إلى جلسات الـ Brainstorming — تتبع المراحل الرئيسية عبر الزمن.
+    </p>
+
+    <div class="quick-stats">
+      <div class="qs-card">
+        <div class="qs-num">2</div>
+        <div class="qs-label">بوابات مكتملة</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-num">5</div>
+        <div class="qs-label">خبراء افتراضيين</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-num">56+</div>
+        <div class="qs-label">فكرة مولّدة</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-num">8</div>
+        <div class="qs-label">جداول محاسبية</div>
+      </div>
+      <div class="qs-card">
+        <div class="qs-num">10</div>
+        <div class="qs-label">ثغرات حرجة</div>
+      </div>
+    </div>
+
+    <div class="timeline-track">
+      <div class="timeline-items">
+        <div class="timeline-step done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">30 يونيو 2026</div>
+          <div class="timeline-label">ERP-FRD Portal</div>
+          <div class="timeline-sub">FRD + Methodology + Recs</div>
+        </div>
+        <div class="timeline-step done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">2 يوليو 2026</div>
+          <div class="timeline-label">Session 001 v1</div>
+          <div class="timeline-sub">Setup + Cycle 1 (Ideation)</div>
+        </div>
+        <div class="timeline-step done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">4 يوليو 2026</div>
+          <div class="timeline-label">Session 001 v2</div>
+          <div class="timeline-sub">+ Deep Dive (8 جداول)</div>
+        </div>
+        <div class="timeline-step done">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">4 يوليو 2026</div>
+          <div class="timeline-label">Session 001 v3</div>
+          <div class="timeline-sub">+ Cycle 2 (Critique)</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">قريباً</div>
+          <div class="timeline-label">Cycle 3 + Final</div>
+          <div class="timeline-sub">Synthesis + Report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer class="foot">
+  <p>
+    🧠 <strong>مختبر العصف الذهني</strong> · Brainstorming Lab Hub
+    <br>
+    أُنشئ بواسطة <strong>Deep Researcher</strong> (Facilitator)
+    <br><br>
+    <a href="https://github.com/anas600/brainstorming-lab">GitHub Repo</a> ·
+    <a href="https://github.com/anas600/brainstorming-lab#readme">README</a>
+    <br><br>
+    © 2026 · جميع البوابات محمية بكلمة مرور · GitHub Pages Hosting
+  </p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script>
+(function() {
+  var KEY = "brainstorming_lab_session_001";
+  if (localStorage.getItem(KEY) !== "1") {
+    window.location.replace("index.html");
+  }
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔄 الدورة 1: توليد الأفكار (Ideation) · مختبر العصف الذهني — Session 001: FRD MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+}
+.sidebar-link.current { font-weight: 600; }
+.sidebar-link .icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 28px 56px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 16px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-link:hover {
+  background: var(--primary-light); color: var(--primary);
+  border-color: var(--primary);
+}
+.page-header-meta { flex: 1; min-width: 0; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.content {
+  padding: 48px 56px 96px;
+  max-width: 920px; margin: 0 auto;
+}
+.content h1, .content h2, .content h3, .content h4 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400; color: var(--ink);
+  letter-spacing: -0.005em;
+  scroll-margin-top: 110px;
+}
+.content h1 {
+  font-size: 38px; margin: 8px 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.2;
+}
+.content h2 {
+  font-size: 26px; margin: 56px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.content h3 { font-size: 20px; margin: 36px 0 12px; color: var(--ink-soft); }
+.content h4 { font-size: 16px; margin: 24px 0 10px; color: var(--ink-soft); font-weight: 600; font-family: 'Outfit', sans-serif; }
+.content p { margin-bottom: 14px; color: var(--ink-soft); }
+.content strong { color: var(--ink); font-weight: 600; }
+.content em { color: var(--ink-soft); }
+.content ul, .content ol { margin: 12px 0 16px 24px; color: var(--ink-soft); }
+.content li { margin-bottom: 6px; padding-right: 4px; }
+.content ul li::marker { color: var(--accent); }
+.content blockquote {
+  border-right: 3px solid var(--primary);
+  background: var(--primary-light);
+  padding: 14px 22px; margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--ink); font-style: normal;
+}
+.content blockquote p { margin: 0; color: var(--ink); }
+.content blockquote strong { color: var(--primary); }
+.content table {
+  width: 100%; border-collapse: collapse;
+  margin: 18px 0; font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.content thead { background: var(--bg); }
+.content th {
+  text-align: right; padding: 12px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+.content td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: var(--bg-soft); }
+.content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+  border: 1px solid var(--line-soft);
+}
+.content pre {
+  background: #14171e; color: #e9e3d6;
+  padding: 18px 22px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  direction: ltr; text-align: left;
+}
+.content pre code {
+  background: transparent; border: none;
+  color: inherit; padding: 0; font-size: 13px;
+}
+.xref {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; margin: 0 2px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.xref:hover {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+}
+.xref::before { content: "→"; font-size: 10px; opacity: 0.7; }
+.content h2 .anchor, .content h3 .anchor, .content h4 .anchor {
+  margin-right: 12px; opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+}
+.content h2:hover .anchor,
+.content h3:hover .anchor,
+.content h4:hover .anchor { opacity: 1; }
+.content h2 .anchor::before { content: "#"; }
+.content hr {
+  border: none; border-top: 1px dashed var(--line);
+  margin: 40px 0;
+}
+.page-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-footer a { color: var(--accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static; height: auto;
+    border-left: none; border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .sidebar-group-title, .sidebar-link { padding-right: 16px; padding-left: 16px; }
+  .content { padding: 32px 24px 64px; }
+  .page-header { padding: 16px 24px; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">مختبر العصف الذهني — Session 001: FRD MVP</div>
+    <div class="sidebar-brand-tag">4 documents</div>
+  </div>
+  <div class="sidebar-group">
+<div class="sidebar-group-title">Main</div>
+<a href="analysis-holding-deep-dive.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية</a>
+<a href="cycle-1-ideation.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 الدورة 1: توليد الأفكار (Ideation)</a>
+<a href="cycle-2-critique.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔍 الدورة 2: النقد والتمحيص (Critique)</a>
+<a href="session.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع</a>
+</div>
+  <div class="sidebar-footer">
+    Multi-page analysis portal<br>
+    cross-references active
+  </div>
+</aside>
+
+<main>
+  <div class="page-header">
+    <a href="analysis-holding-deep-dive.html" class="back-link">← مختبر العصف الذهني — Session 001: FRD MVP</a>
+    <div class="page-header-meta">
+      <div class="page-breadcrumb">Main · 🔄 الدورة 1: توليد الأفكار (Ideation)</div>
+      <div class="page-title">🔄 الدورة 1: توليد الأفكار (Ideation)</div>
+    </div>
+  </div>
+  <article class="content">
+    <blockquote>
+<p><strong>الجلسة</strong>: 001 — FRD لـ MVP نواة محاسبية + إدارة مشاريع
+<strong>القيدَين الثابتين</strong>: ① المرونة ② قابلية الربط
+<strong>عدد الأفكار</strong>: 14 عملية × 4 خبراء = ~56 فكرة مبدئية
+<strong>التاريخ</strong>: 2026-07-02</p>
+</blockquote>
+<hr>
+<h2 id="section-السيناريو-العملي-الواقعي">📍 السيناريو العملي الواقعي (Case Study) <a href="#section-السيناريو-العملي-الواقعي" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-مشروع-برج-النخيل-التجاري-طرابلس">مشروع "برج النخيل التجاري" — طرابلس <a href="#section-مشروع-برج-النخيل-التجاري-طرابلس" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>البُعد</th>
+<th>القيمة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>نوع العقد</strong></td>
+<td>Lump-sum (مبلغ إجمالي)</td>
+</tr>
+<tr>
+<td><strong>قيمة العقد</strong></td>
+<td>5,000,000 د.ل</td>
+</tr>
+<tr>
+<td><strong>المدة</strong></td>
+<td>18 شهر</td>
+</tr>
+<tr>
+<td><strong>نسبة الـ Retainage</strong></td>
+<td>10% (5% ضمان + 5% تنفيذ)</td>
+</tr>
+<tr>
+<td><strong>شركاء JV</strong></td>
+<td>شركتنا (60%) + شريك محلي (40%)</td>
+</tr>
+<tr>
+<td><strong>مواد من تصنيع الورش</strong></td>
+<td>30% من الأعمال المعدنية</td>
+</tr>
+<tr>
+<td><strong>المستودعات</strong></td>
+<td>رئيسي في الموقع + فرعي في بنغازي</td>
+</tr>
+<tr>
+<td><strong>الصرف</strong></td>
+<td>د.ل + دولار (مختلط)</td>
+</tr>
+<tr>
+<td><strong>عدد المراحل</strong></td>
+<td>3 مراحل مع تقسيم مستقل للفواتير</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-7">7 تحديات يفرضها السيناريو (تستدعي مرونة النظام): <a href="#section-7" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li><strong>JV</strong> — حسابات inter-company إلزامية</li>
+<li><strong>Retainage 10%</strong> — flow مالي متشعّب</li>
+<li><strong>مواد من ورشنا</strong> — تكامل manufacturing ↔ project costing</li>
+<li><strong>مستودعان</strong> — Inter-warehouse transfers</li>
+<li><strong>Lump-sum + Variation Orders</strong> — كل تغيير = سطر منفصل</li>
+<li><strong>صرف مختلط</strong> — عملات متعددة</li>
+<li><strong>3 مراحل</strong> — تقسيم للفواتير وقياس ربحية المرحلة</li>
+</ol>
+<hr>
+<h2 id="section-فريق-الدورة">👥 فريق الدورة (Expert Panel) <a href="#section-فريق-الدورة" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>الخبير</th>
+<th>التخصص</th>
+<th>المنظور</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>[CFO أحمد]</strong></td>
+<td>كبير ماليين افتراضي</td>
+<td>GAAP، IFRS، ضوابط، ضرائب ليبيا</td>
+</tr>
+<tr>
+<td><strong>[م. عمر]</strong></td>
+<td>مهندس مدني + PM</td>
+<td>Job costing، Retainage، WIP، JVs</td>
+</tr>
+<tr>
+<td><strong>[CTO ليلى]</strong></td>
+<td>Tech Lead</td>
+<td>Modular Monolith، Event-Driven، Schema مرن</td>
+</tr>
+<tr>
+<td><strong>[PO سارة]</strong></td>
+<td>Product Owner</td>
+<td>User stories، edge cases، قابلية الاستخدام</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-الأفكار-لكل-عملية">🧠 الأفكار لكل عملية <a href="#section-الأفكار-لكل-عملية" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-1">1️⃣ الذمم (AR / AP) + Aging + تحصيل <a href="#section-1" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: فاتورة للعميل 500,000 د.ل (المرحلة 1) — أجل 60 يوم. مورد الحديد 150,000 د.ل — أجل 30 يوم.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: Aging report افتراضي بـ 4 خانات (0-30 / 31-60 / 61-90 / +90) — يولّد تنبيهات تلقائية في اليوم 45 لأي عميل تأخّر. شطب الديون المشكوك فيها يكون بحركة منفصلة، لا بحذف، وبموافقة CFO فقط.</li>
+<li><strong>[م. عمر]</strong>: ربط الفاتورة بـ <strong>Progress Certificate</strong> (شهادة إنجاز) — لا فاتورة بدون PC معتمد. الـ Retention يُحجز تلقائياً (10%) في حساب مستقل "Retention Receivable"، ولا يدخل في AR النشط.</li>
+<li><strong>[CTO ليلى]</strong>: كل "ذمة" في الجدول هي <strong>كيان مستقل</strong> مرتبط بـ <code>customer_id</code> و <code>invoice_id</code> فقط — هذا يسمح لاحقاً بإضافة موديول "تحصيلات متقدّم" أو "تقسيط" بدون كسر النواة.</li>
+<li><strong>[PO سارة]</strong>: زر "تذكير سريع" يولّد رسالة واتساب/إيميل بالعربي والإنجليزي، مع رابط الدفع. الـ user يقدر يطبع كشف حساب العميل PDF بنقرة واحدة، مع توقيع العميل الإلكتروني.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الذمم ليست مجرد "مستحقات" — هي <strong>عقد حيّ</strong> يربط الفاتورة بـ PC والـ Retention ووسائل التحصيل. لازم تكون مرنة بحيث نضيف "تنبيهات ذكية" لاحقاً.</p>
+<hr>
+<h3 id="section-2">2️⃣ البنوك + تسوية + عملات متعددة <a href="#section-2" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: حساب في المصرف التجاري (د.ل) + حساب في North Africa Bank (دولار). تحويلات بين الحسابين لحظية، وفروقات صرف.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: تسوية بنكية جزئية وآلية — النظام يطابق bank statement مع قيودنا أوتوماتيكياً، ويعرض الفروقات للمدير (Manual Matching). فروقات الصرف تُسجَّل في حساب منفصل "فروقات عملات" — ليس أرباح.</li>
+<li><strong>[م. عمر]</strong>: ربط كل دفعة مقدمة من العميل بـ <strong>مرحلة المشروع</strong> + سعر صرف مُثبَّت (تاريخ الدفعة) — هذا يحمي المشروع من تذبذب سعر الصرف خلال 18 شهر.</li>
+<li><strong>[CTO ليلى]</strong>: حقل <code>currency_id</code> في كل جدول مالي — وليس فقط في الـ invoice. الـ Exchange Rate يُسجَّل كسجل تاريخي (Time-series) وليس كقيمة ثابتة. هذا يدعم لاحقاً إعادة تقييم الأصول بتقلبات السوق.</li>
+<li><strong>[PO سارة]</strong>: واجهة "Multi-Bank Dashboard" — ترى كل الحسابات في شاشة واحدة، بميزان موحّد (بالدينار المعادل). التحويلات بين البنوك تتم في 3 خطوات، مع تأكيد مزدوج للمبالغ الكبيرة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: النظام يجب أن يعامل <strong>كل عملة كمواطن من الدرجة الأولى</strong> — وليس "تحويل إلى د.ل في الأخير". الـ Time-series على سعر الصرف هو المفتاح للتوسع المستقبلي.</p>
+<hr>
+<h3 id="section-3">3️⃣ الأصول الثابتة + إهلاك + سجل أصول <a href="#section-3" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: رافعة شوكية جديدة (45,000 د.ل)، عمرها الإنتاجي 5 سنوات، إهلاك قسري. كمبيوتر محمول للمدير (1,500 د.ل) — يُهلك في 3 سنوات.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: طريقتا إهلاك متوازيتان (Straight-line و Declining-balance)، قابلة للتغيير لكل أصل. الـ Disposal (بيع/شطب) لا يحذف الأصل من السجل — بل يُعلِّمه "مُستبعَد"، مع تاريخ الاستبعاد وسببه. سجل التدقيق (Audit Trail) إجباري.</li>
+<li><strong>[م. عمر]</strong>: ربط الأصل بموقع المشروع — لو الرافعة في "برج النخيل"، المصروف يُخصم على المشروع. عندما تنتقل لمشروع آخر، يُعاد حساب الإهلاك المرتبط بالمشروعين (مرونة في allocation).</li>
+<li><strong>[CTO ليلى]</strong>: الـ <code>Asset</code> جدول مستقل تماماً، مع <code>AssetCategory</code>، <code>DepreciationMethod</code>، <code>UsefulLife</code>. هذا يسمح لنا لاحقاً بإضافة "تأجير الأصول" أو "إعادة التقييم" (Revaluation) دون لمس الـ Core.</li>
+<li><strong>[PO سارة]</strong>: صفحة "بطاقة الأصل" تظهر صورته، موقعه، إهلاكه التراكمي، الـ Net Book Value، وتاريخ آخر صيانة. الـ user يقدر يعمل Inventory للأصول سنوياً بمسح QR Code من الموبايل.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الأصول الثابتة في قلب "إدارة الممتلكات" — يجب أن تكون <strong>موثّقة بالكامل</strong>، قابلة للتتبع، ومرنة بحيث يدعم التوسع في "تأجير" و"إعادة تقييم" بدون إعادة هيكلة.</p>
+<hr>
+<h3 id="section-4">4️⃣ الرواتب + تأمينات + خصومات <a href="#section-4" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: 25 موظف، منهم 10 في الموقع (برج النخيل) و15 في المكتب. رواتب بالدينار، خصومات تشمل سلف وقروض.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: خصم التأمينات الاجتماعية (GOSI / الضمان الاجتماعي) <strong>يُحسب تلقائياً</strong> من الجدول الرسمي، وقابل للتحديث بقرار وزاري. صافي الراتب يُحسب ويُرحَّل لحساب الموظف في البنك (تحويل مجمع بنهاية الشهر).</li>
+<li><strong>[م. عمر]</strong>: <strong>توزيع الرواتب على المشاريع</strong> — كل موظف له <code>default_project_id</code>، لكن ممكن توزيع نسبة (مثلاً 70% برج النخيل / 30% مشروع آخر). هذا يظهر "تكلفة العمالة الفعلية" لكل مشروع.</li>
+<li><strong>[CTO ليلى]</strong>: <code>PayrollRun</code> كيان مستقل (مو جدول ثابت)، يدعم Multi-Currency، Multi-period، Retroactive adjustments. قابل للتوسع لاحقاً إلى "Bonus calculation" أو "Performance-linked pay".</li>
+<li><strong>[PO سارة]</strong>: كل موظف له <strong>Self-Service Portal</strong> — يقدر يحمل كشف الراتب PDF، يطلب سلفة، يحدّث بياناته. HR يوافق/يرفض من نفس الواجهة. خصومات السلف تُحسب تلقائياً حتى تنتهي.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الرواتب ليست مجرد "رقم" — هي <strong>عقد حيّ</strong> بين الشركة والموظف. يجب أن تدعم التوزيع على المشاريع، التحديثات بأثر رجعي، وخدمة ذاتية للموظفين.</p>
+<hr>
+<h3 id="section-5">5️⃣ مراكز التكلفة / المشاريع (Job Costing) <a href="#section-5" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: مشروع "برج النخيل" — فيه 5 بنود رئيسية (حفر، هيكل، تشطيبات، MEP، تسليم). كل بند له ميزانية منفصلة.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: كل مصروف (فاتورة، سند صرف، استهلاك أصل، راتب) يُسأل: "إلى أي مركز تكلفة؟" بدون إجابة = مرفوض. الـ Cost Center hierarchy (Project → Phase → Activity) — يدعم 3 مستويات ابتداءً، قابل للتوسيع.</li>
+<li><strong>[م. عمر]</strong>: <strong>ميزانية المشروع</strong> تُدخل عند التعاقد (BoQ — Bill of Quantities)، وتُقارَن بالـ Actual في Real-Time. Variance &gt; 10% = تنبيه أوتوماتيكي للمدير. الـ EVM (Earned Value Management) يُحسب شهرياً.</li>
+<li><strong>[CTO ليلى]</strong>: <code>Project</code> كيان مستقل، يربط كل شيء (فواتير، مخزون، أصول، رواتب، فواتير) عن طريق <code>project_id</code> — وليس عن طريق نسخ البيانات. هذا يجعل التقارير Project-Centric ممكنة بسهولة.</li>
+<li><strong>[PO سارة]</strong>: شاشة "لوحة المشروع" — في 5 ثوانٍ تشاهد: الميزانية، المصروف الفعلي، المتبقي، الـ Progress %، نسبة الإنجاز الفعلي مقابل المخطط. الـ PM يقدر يعمل Forecast بنقرة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: مراكز التكلفة هي <strong>العمود الفقري</strong> — كل شيء في النظام يجب أن يُسند لمشروع/مركز تكلفة. بدون هذا، لا يمكن قياس ربحية المشروع الحقيقي.</p>
+<hr>
+<h3 id="section-6">6️⃣ المصنع / الورش + BOM + WIP <a href="#section-6" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: ورشتنا تُصنع 200 باب حديد + 50 نافذة لمشروع "برج النخيل". الـ BOM لكل باب: 12 مكونات. بعض المواد في المستودع، وبعضها يُشترى من الموردين مباشرة.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الـ WIP (Work-in-Progress) يُقيَّم شهرياً بـ Standard Cost Method (مبسّط) — تكلفة المواد + تكلفة العمالة + 30% overhead. الفروقات في حساب "Production Variance" منفصل.</li>
+<li><strong>[م. عمر]</strong>: كل أمر تصنيع (Production Order) مُربوط بـ <code>project_id</code> (لأنه لمشروع "برج النخيل") + <code>boq_item_id</code> (البند في BoQ). هدر المواد &gt; 5% = تنبيه. الـ Output = كمية + تاريخ التسليم للموقع.</li>
+<li><strong>[CTO ليلى]</strong>: <code>BOM</code> كيان منفصل (ليس جدول في المصنع)، يدعم Multi-level BOM، وAlternative BOMs (نفس المنتج بمواد مختلفة). الـ Production Order يُنشِئ حركات أتمتوماتيكية في المخزون.</li>
+<li><strong>[PO سارة]</strong>: العامل في الورشة يفتح أمر التصنيع من التابلت، يُسجّل الكمية المُنتَجة، يُسجّل الهدر (مع صورة)، يطلب مواد إضافية. المدير يوافق من الموبايل.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: التصنيع يجب أن يكون <strong>مُدمَجاً</strong> مع المشروع + المخزون، وليس silo مستقل. الـ BOM متعدد المستويات ضروري، مع Real-time tracking للهدر.</p>
+<hr>
+<h3 id="section-7">7️⃣ التحويلات بين المستودعات (Inter-Warehouse) <a href="#section-7" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: طلب 50 طن حديد من المستودع الرئيسي (طرابلس) إلى المستودع الفرعي (بنغازي) للمرحلة 2 من "برج النخيل".</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: التحويل = حركتان متوازيتان (Out من مستودع + In لمستودع آخر) في نفس القيد. لا ربح/خسارة في التحويل — فقط تكلفة نقل تُضاف (تكلفة خدمات لوجستية منفصلة).</li>
+<li><strong>[م. عمر]</strong>: التحويل مُربوط بـ <code>project_id</code> + <code>boq_item_id</code> + <code>destination_warehouse_id</code>. الـ Approval: مدير المستودع المُرسِل + مدير المستودع المُستقبِل + PM. الـ Transit = حركة منفصلة ("في الطريق") حتى التسليم.</li>
+<li><strong>[CTO ليلى]</strong>: <code>Warehouse</code> و <code>StockTransfer</code> كيانات مستقلة — يدعم لاحقاً أكثر من مستودعين، و"تحويلات بين شركات" Inter-Company.</li>
+<li><strong>[PO سارة]</strong>: زر "طلب تحويل" → نموذج بـ 5 حقول فقط. الـ Tracking: في الطريق، مُسلَّم، مُرفوض. الـ Reporting: معدل دوران المخزون per warehouse.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: التحويلات بين المستودعات يجب أن تكون <strong>شفافة</strong> ومُؤمَّتة بالكامل، مع Transit states (في الطريق) — وليست "ظهور/اختفاء" مفاجئ.</p>
+<hr>
+<h3 id="section-8">8️⃣ التسويات الجردية (Stocktake) + فروقات + شطب <a href="#section-8" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: جرد شهري للمستودع الرئيسي — فروقات متوقعة 2-3% (هدر/سرقة/أخطاء). قيمة الفرق 3,000 د.ل (شطب بضاعة تالفة).</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الفروقات تُسجَّل في حساب "جرد وتالف" منفصل، ولا تذهب مباشرة على "المبيعات" أو "تكلفة المبيعات". قرار الشطب النهائي بحركة منفصلة بموافقة CFO، مع تبرير مكتوب.</li>
+<li><strong>[م. عمر]</strong>: الجرد Periodic + Cycle Counting (جرد دوري لكل فئة). الفروقات &gt; 3% لأي صنف = تحقيق تلقائي. الـ Variance Report شهري للـ PM.</li>
+<li><strong>[CTO ليلى]</strong>: <code>Stocktake</code> كيان منفصل يحتوي على سطور (<code>StocktakeLine</code>) مع الكمية الفعلية مقابل النظام. عند الاعتماد، النظام يُولّد حركات التعديل (Adjustment) أوتوماتيكياً.</li>
+<li><strong>[PO سارة]</strong>: الجرد من الموبايل — بمسح الباركود. الفرق يظهر فوراً مع آخر حركة (+/-). الـ Manager يوافق بـ Signature على الشاشة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: التسويات الجردية يجب أن تكون <strong>دقيقة</strong>، قابلة للتتبع، ولا "تخفي" الفروقات في الحسابات الأخرى.</p>
+<hr>
+<h3 id="section-9">9️⃣ الموازنات التقديرية (Budget vs Actual) <a href="#section-9" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: موازنة 2026 للشركة كلها — إيرادات 25M د.ل، مصروفات 22M د.ل. مقسّمة على 6 مشاريع نشطة.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الموازنة الـ Annual تُجزَّأ إلى 12 شهر (Budget Allocation). كل شهر، النظام يُقارَن: Actual vs Budgeted. الانحراف &gt; 15% = تنبيه. الـ Forecast يتماشى مع الاتجاه الفعلي.</li>
+<li><strong>[م. عمر]</strong>: الموازنة الـ Project-Specific (BoQ) منفصلة عن الموازنة الـ Annual. الـ BoQ تُستخدم للـ Project Control، والـ Annual تُستخدم للـ Company Control.</li>
+<li><strong>[CTO ليلى]</strong>: <code>Budget</code> و <code>BudgetLine</code> كيانات مستقلة، تدعم Multi-version (Original vs Revised). كل Real Cost يُقارَن بأحدث نسخة من الموازنة.</li>
+<li><strong>[PO سارة]</strong>: لوحة "Budget vs Actual" بـ Heatmap — أخضر (ضمن 5%)، أصفر (5-15%)، أحمر (&gt;15%). الـ Manager يقدر يحفر Drill-down لمركز التكلفة → البند → الفاتورة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الموازنة ليست "جدول" — هي <strong>أداة رقابة</strong> يومية. الانحرافات يجب أن تُكتشف مبكراً، لا بعد فوات الأوان.</p>
+<hr>
+<h3 id="section-القوائم-المالية-إغلاقات-شهريةسنوية">🔟 القوائم المالية + إغلاقات شهرية/سنوية <a href="#section-القوائم-المالية-إغلاقات-شهريةسنوية" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: إقفال شهر يونيو — يجب إنتاج: ميزان مراجعة، P&amp;L، ميزانية عمومية، Cash Flow Statement. 3 مستخدمين يقدرون يطلعوا عليها (CFO، CEO، مراجع خارجي).</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الـ Closing Process مرحلي: ① إقفال الفواتير → ② إقفال الأصول → ③ إقفال الرواتب → ④ إقفال المخزون → ⑤ إقفال البنوك → ⑥ إقفال البنوك → ⑦ إقفال الحسابات. كل مرحلة لها قفل (Lock) — لا يمكن تعديل فترة مُقفلة بدون إذن CFO.</li>
+<li><strong>[م. عمر]</strong>: إقفال المشروع منفصل عن إقفال الشهر — يمكن إقفال المرحلة 1 من "برج النخيل" في حين لا تزال المرحلة 2 نشطة. هذا يُمكِّن قياس ربحية المرحلة بدقة.</li>
+<li><strong>[CTO ليلى]</strong>: <code>AccountingPeriod</code> كيان منفصل (ليس مجرد حقل تاريخ). يدعم Multi-currency conversion، Prior period adjustments، Audit trail كامل. الـ Trial Balance يُحسب On-demand (لا يُخزَّن).</li>
+<li><strong>[PO سارة]</strong>: زر "إقفال الشهر" — خطوة واحدة، مع Validation قبل الإقفال (هل في فواتير معلقة؟ هل في تسويات بنكية لم تتم؟). الـ Reports تُولَّد PDF/Excel بنقرة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الإغلاقات ليست مجرد "إنهاء فترة" — هي <strong>ضمان نزاهة البيانات</strong>. النظام يجب أن يمنع أي تعديل بعد الإقفال إلا من خلال حركات Adjustment مُوَثَّقة.</p>
+<hr>
+<h3 id="section-1">1️⃣1️⃣ الضرائب + VAT/WHT حسب ليبيا <a href="#section-1" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: الشركة تخضع لـ: ضريبة قيمة مضافة (VAT 0% حالياً / 5% على بعض الخدمات)، خصم من المنبع (WHT 4% على خدمات المقاولين)، ضريبة الدخل.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: نظام ضريبي ليبي مُحدَّث — كل فاتورة شراء تطلب <strong>رقم ضريبي</strong> للمورّد. الـ WHT يُحسب تلقائياً ويُرحَّل لحساب "ضريبة خصم من المنبع". التقرير الشهري للضرائب يُولَّد في 30 ثانية.</li>
+<li><strong>[م. عمر]</strong>: ربط الفاتورة الضريبية بالـ Project — فواتير الاستيراد (مع ضرائب جمركية) تُخصم على المشروع المُستورَد له، وليس كـ Overhead عام.</li>
+<li><strong>[CTO ليلى]</strong>: <code>TaxCode</code> و <code>TaxRule</code> كيانات قابلة للتحديث بدون كود (Config-Driven). يدعم Multi-jurisdiction (لو وسّعنا لتونس أو الجزائر لاحقاً).</li>
+<li><strong>[PO سارة]</strong>: تنبيه عند إدخال فاتورة بدون رقم ضريبي. زر "تحقق من الرقم الضريبي" يتحقق فوراً من التنسيق. الـ Reports الضريبية بالعربية، مع QR Code للنظام الضريبي الليبي.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الضرائب الليبية <strong>ديناميكية</strong> وتتغير — النظام يجب أن يدعم تحديثات سريعة بدون كسر النواة، مع Configuration-driven tax rules.</p>
+<hr>
+<h3 id="section-1">1️⃣2️⃣ المعاملات بين الشركات (Inter-Company) <a href="#section-1" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: شركتنا (60% من JV "برج النخيل") بعت 100 طن حديد للشركة الشريكة (40%) بسعر تكلفته + 10% هامش. الحساب: 110,000 د.ل.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الـ Inter-Company Transaction يُسجَّل من <strong>الجانبين</strong> تلقائياً — قِيد في دفتر شركتنا + قيد عكسي في دفتر الشريك. الـ Matching التلقائي يكشف أي فروقات. الـ Elimination Entries تُحسب عند إعداد القوائم الموحَّدة.</li>
+<li><strong>[م. عمر]</strong>: ربط العملية بـ <code>project_id</code> (برج النخيل) و <code>partner_company_id</code> — لا حركة inter-company بدون شريك مُعرَّف. الـ Real-time visibility بين الشركاء (مع صلاحيات).</li>
+<li><strong>[CTO ليلى]</strong>: <code>Company</code> و <code>InterCompanyTransaction</code> كيانات مستقلة. الـ Event Bus بين الـ Company Instances (إذا كل شركة لها DB مستقلة) — أو Shared Schema (لو كل الشركات في DB واحد مع <code>company_id</code> filter).</li>
+<li><strong>[PO سارة]</strong>: شاشة "Inter-Company Dashboard" — ترى كل المعاملات بين شركاتنا. تنبيه عند فروقات في الـ Matching. تقارير فصلية للإدارة العليا.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: Inter-Company هو <strong>أساس الـ Holding</strong> — بدونه، لا يمكن عمل Consolidation. النظام يجب أن يدعم Multi-Company Architecture من اليوم الأول.</p>
+<hr>
+<h3 id="section-1">1️⃣3️⃣ سير الموافقات (Approval Workflow) <a href="#section-1" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: فاتورة مورد 25,000 د.ل — تحتاج موافقة PM + CFO. فاتورة &lt; 5,000 د.ل — تحتاج موافقة PM فقط. عقد جديد &gt; 100,000 د.ل — يحتاج موافقة CEO.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: Workflow قابل للبرمجة (Configurable) — كل نوع مستند له Base Amount threshold + Approvers. الـ Audit Trail كامل (من، متى، علّق، وافق، رفض، استأنف). إمكانية Delegation عند الإجازة.</li>
+<li><strong>[م. عمر]</strong>: ربط المستند بالـ Project — لو الفاتورة &gt; 10% من BoQ بند معين، تحتاج موافقة إضافية (PM + CEO). الـ Auto-escalation بعد 48 ساعة من عدم الرد.</li>
+<li><strong>[CTO ليلى]</strong>: <code>ApprovalRule</code> و <code>ApprovalStep</code> كيانات مستقلة، يدعم Multi-level، Parallel، Conditional. الـ Engine يستهلك Events (ما يعتمد على State داخلي معقّد).</li>
+<li><strong>[PO سارة]</strong>: Mobile App — الـ Manager يوافق على الفواتير من جواله، مع Comment. الـ Reject يكون مع Reason إجباري. الـ Notifications: Push + Email + WhatsApp.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: سير الموافقات يجب أن يكون <strong>مرن وقابل للتخصيص</strong>، بدون Hard-coded rules. هذا شرط أساسي لدخول السوق بسرعة مع عملاء مختلفين.</p>
+<hr>
+<h3 id="section-1">1️⃣4️⃣ الدفعات المقدمة / المصروفات المقدمة (Prepayments) <a href="#section-1" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>📍 السيناريو</strong>: دفعنا 50,000 د.ل للـ Sub-contractor (مقاول باطن) عند توقيع العقد. الـ Prepayment يُخصم من مستخلصاته على 6 أشهر.</p>
+<ul>
+<li><strong>[CFO أحمد]</strong>: الـ Prepayment يُسجَّل في حساب "دفعات مقدمة" (Asset، ليس Expense). عند كل خصم شهري، حركة Transfer إلى "تكلفة المشروع". الـ Reconciliation شهري.</li>
+<li><strong>[م. عمر]</strong>: ربط الـ Prepayment بـ <code>contract_id</code> + <code>subcontractor_id</code>. الـ Amortization Schedule (جدول الإطفاء) مُولَّد تلقائياً — 6 أقساط شهرية متساوية. تنبيه قبل شهر من انتهاء الإطفاء.</li>
+<li><strong>[CTO ليلى]</strong>: <code>Prepayment</code> كيان منفصل يدعم Multi-method (Straight-line، Usage-based، Custom). الـ Events: عند إصدار الـ Prepayment، تُجدوَل الأقساط كـ Scheduled Tasks.</li>
+<li><strong>[PO سارة]</strong>: شاشة "دفعات مقدمة" — جدول كامل بالـ Outstanding Amount، الـ Amortized، الـ Remaining. الـ Manager يقدر يعمل "خصم مقدّم" (Partial) أو "إلغاء المبلغ المتبقي" بضغطة واحدة.</li>
+</ul>
+<p><strong>📊 ملخص</strong>: الدفعات المقدمة شائعة في <strong>المقاولات</strong> — بدون نظام واضح، تصبح "مدفونة" في الحسابات. نظام متخصص ضرورة، وليس رفاهية.</p>
+<hr>
+<h2 id="section-ملخص-الدورة-1-الأنماط-المتكررة">📊 ملخص الدورة 1 — الأنماط المتكررة <a href="#section-ملخص-الدورة-1-الأنماط-المتكررة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الأنماط-الـ-5-التي-ظهرت-في-أكثر-من-عملية">🎯 الأنماط الـ 5 التي ظهرت في أكثر من عملية: <a href="#section-الأنماط-الـ-5-التي-ظهرت-في-أكثر-من-عملية" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>النمط</th>
+<th>العمليات المرتبطة</th>
+<th>السبب الجذري</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>كل شيء مُسند لـ Project</strong></td>
+<td>1، 4، 5، 6، 7، 9، 11</td>
+<td>الـ Holding يعمل بالمشاريع — لا عمل بدون مشروع</td>
+</tr>
+<tr>
+<td><strong>كيان منفصل لكل مفهوم</strong></td>
+<td>1، 3، 7، 12، 13، 14</td>
+<td>الـ Schema يجب أن يدعم الإضافات بدون كسر</td>
+</tr>
+<tr>
+<td><strong>Configurable Rules</strong></td>
+<td>11، 12، 13</td>
+<td>ليبيا + Multi-sector = قوانين مختلفة</td>
+</tr>
+<tr>
+<td><strong>Mobile-First Approval</strong></td>
+<td>1، 4، 6، 8، 13</td>
+<td>الميدان هو الحقيقة، المكتب متأخر</td>
+</tr>
+<tr>
+<td><strong>Audit Trail + Lock + Approval</strong></td>
+<td>3، 10، 13، 14</td>
+<td>الضوابط المالية الليبية + IFRS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-الـ-contradictions-التوتر-بين-الخبراء">⚠️ الـ Contradictions / التوتر بين الخبراء: <a href="#section-الـ-contradictions-التوتر-بين-الخبراء" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>التوتر</th>
+<th>الرأيان</th>
+<th>الاستنتاج</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CFO vs CTO على الـ Configurability</strong></td>
+<td>CFO: "افتراضي واحد صارم" / CTO: "كل شيء قابل للتخصيص"</td>
+<td>الحل: <strong>Core صارم + Extensions قابلة للتخصيص</strong></td>
+</tr>
+<tr>
+<td><strong>PM vs PO على الـ Workflow</strong></td>
+<td>PM: "موافقة تلقائية" / PO: "موافقة بشرية دائماً"</td>
+<td>الحل: <strong>Thresholds آلية + Approvals بشرية للمبالغ الكبيرة</strong></td>
+</tr>
+<tr>
+<td><strong>CTO vs CFO على الـ Schema</strong></td>
+<td>CTO: "Normalized" / CFO: "Denormalized for speed"</td>
+<td>الحل: <strong>CQRS-lite — Read-side Denormalized, Write-side Normalized</strong></td>
+</tr>
+<tr>
+<td><strong>PM vs CFO على الـ WIP</strong></td>
+<td>PM: "WIP live" / CFO: "WIP شهري"</td>
+<td>الحل: <strong>WIP Live + Valuation Monthly</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-الخلاصة-وخطوات-ما-بعد-الدورة-1">🎯 الخلاصة وخطوات ما بعد الدورة 1 <a href="#section-الخلاصة-وخطوات-ما-بعد-الدورة-1" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الآن-دورك">الآن دورك (المستخدم): <a href="#section-الآن-دورك" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>راجع الأفكار الـ 56</li>
+<li>حدّد الأفكار التي تريد <strong>النقد المُعمَّق</strong> عليها في الدورة 2 (Critique)</li>
+<li>أو حدّد إذا كان هناك <strong>ثغرات</strong> تبي تضيفها قبل بدء الدورة 2</li>
+</ul>
+<h3 id="section-الخطوة-التالية-بعد-موافقتك">الخطوة التالية بعد موافقتك: <a href="#section-الخطوة-التالية-بعد-موافقتك" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>الدورة 2 (Critique)</strong>: كل خبير ينتقد أفكار الآخرين → اكتشاف الثغرات</li>
+<li><strong>الدورة 3 (Synthesis)</strong>: تجميع أفضل الأفكار → خطة عمل نهائية</li>
+<li><strong>التقرير النهائي</strong>: من قائد الفريق</li>
+</ul>
+<hr>
+<h2 id="section-أسئلة-معلقة-قبل-الدورة-2">❓ أسئلة معلقة قبل الدورة 2: <a href="#section-أسئلة-معلقة-قبل-الدورة-2" class="anchor" aria-label="anchor"></a></h2>
+<ul>
+<li><strong>Q1</strong>: من الـ 14 عملية، هل كلها بنفس الأولوية؟ أم بعضها (مثلاً: 5، 10، 12) لها أولوية أعلى؟</li>
+<li><strong>Q2</strong>: من الـ 5 Contradictions في الأعلى، هل تريد <strong>قرار Facilitator</strong>، أم تريد <strong>جلسة نقاش</strong> عليها؟</li>
+<li><strong>Q3</strong>: هل تريد إضافة <strong>خبير خامس</strong> (مثلاً: خبير ضرائب ليبي، أو خبير ERP implementation)؟</li>
+</ul>
+<hr>
+<p><em>⚙️ أنتج بواسطة Deep Researcher — Facilitator</em>
+<em>الدورة 1 من 3 — جارية، بانتظار تقييم المستخدم</em></p>
+    <footer class="page-footer">
+      <span>CYCLE-1-IDEATION.md</span>
+      <span>← <a href="analysis-holding-deep-dive.html">مختبر العصف الذهني — Session 001: FRD MVP</a></span>
+    </footer>
+  </article>
+</main>
+
+</div>
+</body>
+</html>

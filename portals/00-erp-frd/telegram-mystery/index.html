@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لغز الـ Telegram Bridge — تحقيق تقني</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --border: #e9e3d6;
+    --ink: #14171e;
+    --ink-2: #3a4256;
+    --ink-3: #7c7a72;
+    --primary: #2f6f5e;
+    --primary-soft: rgba(47, 111, 94, 0.08);
+    --accent: #c97b3f;
+    --accent-soft: rgba(201, 123, 63, 0.08);
+    --warn: #b06367;
+    --warn-soft: rgba(176, 99, 103, 0.06);
+    --ok: #2f6f5e;
+    --line-soft: #efe9d8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    direction: rtl;
+    background-image: 
+      radial-gradient(ellipse at 5% 0%, rgba(47, 111, 94, 0.04), transparent 50%),
+      radial-gradient(ellipse at 95% 100%, rgba(201, 123, 63, 0.04), transparent 50%);
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 24px 96px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 56px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .topbar .tag {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .hero { margin-bottom: 64px; }
+  .hero .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero .label svg { width: 16px; height: 16px; }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--primary); }
+  .hero p.lead {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 720px;
+  }
+  section { margin-bottom: 72px; }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 svg { width: 26px; height: 26px; color: var(--primary); flex-shrink: 0; }
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 12px;
+    margin-top: 24px;
+  }
+  p { color: var(--ink-2); margin-bottom: 12px; font-size: 15px; }
+  strong { color: var(--ink); font-weight: 600; }
+  em.h { color: var(--primary); font-style: normal; font-weight: 600; }
+  
+  .callout {
+    background: var(--primary-soft);
+    border-right: 4px solid var(--primary);
+    padding: 18px 22px;
+    border-radius: 12px;
+    margin: 20px 0;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .callout.warn {
+    background: var(--warn-soft);
+    border-right-color: var(--warn);
+  }
+  .callout.accent {
+    background: var(--accent-soft);
+    border-right-color: var(--accent);
+  }
+  .callout .title {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .callout.warn .title { color: var(--warn); }
+  .callout.accent .title { color: var(--accent); }
+  
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 26px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  
+  /* Test results grid */
+  .test-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .test {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .test-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .test.ok .test-icon { background: var(--primary-soft); color: var(--primary); }
+  .test.fail .test-icon { background: var(--warn-soft); color: var(--warn); }
+  .test.pending .test-icon { background: var(--accent-soft); color: var(--accent); }
+  .test-name { font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 4px; }
+  .test-desc { font-size: 12px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; direction: ltr; text-align: left; }
+  
+  /* Scenarios */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .scenario h4 {
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .scenario p { font-size: 14px; margin-bottom: 8px; }
+  .scenario .prob {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  
+  /* Code blocks */
+  pre {
+    background: #1a1a2e;
+    color: #e9e3d6;
+    padding: 18px 22px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    direction: ltr;
+    text-align: left;
+  }
+  pre .c { color: #7c7a72; }
+  pre .k { color: #c97b3f; }
+  pre .s { color: #4a8e7c; }
+  pre .v { color: #b06367; }
+  
+  /* Arabic test */
+  .ar-test {
+    background: linear-gradient(135deg, var(--accent-soft), var(--primary-soft));
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .ar-test h3 { margin-top: 0; }
+  .ar-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .ar-row:last-child { border-bottom: 0; }
+  .ar-label { font-weight: 600; font-size: 13px; color: var(--ink-2); }
+  .ar-good { font-size: 22px; color: var(--ink); direction: rtl; }
+  .ar-bad { font-size: 22px; color: var(--ink); direction: ltr; unicode-bidi: bidi-override; }
+  .ar-note { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+  
+  /* Action plan */
+  .action {
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .action h3 {
+    color: var(--primary);
+    margin-top: 0;
+    font-size: 18px;
+  }
+  .action ol {
+    padding-right: 24px;
+    color: var(--ink-2);
+  }
+  .action li {
+    padding: 8px 0;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .action li strong { color: var(--primary); }
+  
+  .reco {
+    background: linear-gradient(135deg, var(--primary) 0%, #245548 100%);
+    color: white;
+    padding: 32px 36px;
+    border-radius: 20px;
+    margin: 32px 0;
+  }
+  .reco h3 { color: white; font-size: 22px; margin: 0 0 14px 0; }
+  .reco p { color: rgba(255,255,255,0.92); margin: 0; font-size: 15px; line-height: 1.7; }
+  .reco .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .footer .from { color: var(--primary); font-weight: 500; }
+  
+  @media (max-width: 640px) {
+    .wrap { padding: 32px 18px 64px; }
+    .hero h1 { font-size: 28px; }
+    .test-grid { grid-template-columns: 1fr; }
+    .ar-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span>يونيو 2026 · تحقيق تقني</span>
+    <span class="tag">Telegram Bridge Mystery</span>
+  </div>
+
+  <div class="hero">
+    <div class="label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      تحقيق تقني — اللغز
+    </div>
+    <h1>لغز الـ <em>Telegram Bridge</em> — مين يستقبل رسائلك؟</h1>
+    <p class="lead">
+      سؤال Anas الذكي: "كيف فيه نسخة تستقبل وأنا ما أعرف عنها؟" — هذا تقرير تحقيق تقني شامل.
+    </p>
+  </div>
+
+  <!-- Section: الاختبارات -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      الاختبارات اللي عملتها
+    </h2>
+    
+    <p>عشان أفهم اللغز، عملت 4 اختبارات على Telegram API:</p>
+    
+    <div class="test-grid">
+      <div class="test ok">
+        <div class="test-icon">✓</div>
+        <div>
+          <div class="test-name">Bot Token</div>
+          <div class="test-desc">MavisAnasCo_bot<br>8483...D/dijE8</div>
+        </div>
+      </div>
+      <div class="test pending">
+        <div class="test-icon">⚠</div>
+        <div>
+          <div class="test-name">Webhook</div>
+          <div class="test-desc">url = "" (فاضي)</div>
+        </div>
+      </div>
+      <div class="test pending">
+        <div class="test-icon">⚠</div>
+        <div>
+          <div class="test-name">Pending Updates</div>
+          <div class="test-desc">2 رسائل في الانتظار</div>
+        </div>
+      </div>
+      <div class="test ok">
+        <div class="test-icon">✓</div>
+        <div>
+          <div class="test-name">getUpdates</div>
+          <div class="test-desc">شغّال، بدون conflict</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="title">الاستنتاج</div>
+      <p style="margin:0;">الـ <code style="background:white; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--primary);">409 Conflict</code> اللي ظهر قبل كان خطأ في long-polling، مش instance ثان. الـ getUpdates العادي يشتغل تمام.</p>
+    </div>
+  </section>
+
+  <!-- Section: السيناريوهات -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      الاحتمالات — مين يستقبل رسائلك؟
+    </h2>
+
+    <p>عملت بحث كامل على المنصة — ما لقيت bot instance شغّال عندي. يبقى الاحتمالات:</p>
+
+    <div class="scenario">
+      <h4>الاحتمال ①: Mavis Platform Built-in Bridge</h4>
+      <p>المنصة (MiniMax) عندها Telegram bridge رسمي مدمج في الـ infrastructure. هذا اللي يوصل رسائلك لـ Mavis session.</p>
+      <p><strong>الدليل:</strong> قبل ما أعمل أي setup، رسائلك كانت توصلني. لازم في طبقة وسط على مستوى المنصة.</p>
+      <span class="prob">احتمال عالي</span>
+    </div>
+
+    <div class="scenario">
+      <h4>الاحتمال ②: Mavis Telegram Adapter (سيرفر قديم)</h4>
+      <p>سيرفر أو container شغّال على VPS أو Cloudflare Worker يستقبل من Telegram ويبعث لـ Mavis.</p>
+      <p><strong>الدليل:</strong> الـ webhook url فاضي (يعني مش متثبت هنا)، لكن الرسائل توصل → يعني في مكان آخر شغّال.</p>
+      <span class="prob">احتمال متوسط</span>
+    </div>
+
+    <div class="scenario">
+      <h4>الاحتمال ③: Bridge معطّل جزئياً</h4>
+      <p>الـ bridge يستقبل ويرسل لـ Mavis (يعمل)، لكن ما يرسل ردّي للـ Telegram (لا يعمل). هذا اللي نشوفه.</p>
+      <p><strong>الدليل:</strong> Telegram → Mavis ✓ / Mavis → Telegram ✗ (يدوي فقط)</p>
+      <span class="prob">الأقرب للواقع</span>
+    </div>
+  </section>
+
+  <!-- Section: شو أقدر أعمل -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      شو أقدر أعمل / ما أقدر أعمل
+    </h2>
+
+    <h3>✅ أقدر</h3>
+    <div class="card">
+      <ul style="padding-right: 24px; line-height: 1.85;">
+        <li><strong>أرسل لك رسائل</strong> على Telegram (شغّال — جرّبناه)</li>
+        <li><strong>أعمل Side Channel</strong> (bash function) — كل ردّي يطلع تلقائي على Telegram</li>
+        <li><strong>أبني Webhook جديد</strong> على سيرفر خاص لو بدك</li>
+        <li><strong>أحلّ مشكلة اللغة العربية</strong> في الردود (تحديث CSS + RTL)</li>
+      </ul>
+    </div>
+
+    <h3>❌ ما أقدر</h3>
+    <div class="card">
+      <ul style="padding-right: 24px; line-height: 1.85;">
+        <li><strong>أحذف الـ bridge الرسمي</strong> — مش ملكي، ملك المنصة</li>
+        <li><strong>أعدل إعدادات المنصة</strong> — ما عندي admin access</li>
+        <li><strong>أعرف بالضبط مين شغّال</strong> — ما في visibility على الـ infra الباطن</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Section: Side Channel -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      الحل المقترح — Side Channel
+    </h2>
+
+    <p>نتجاوز الـ bridge المعطّل ونعمل حل مباشر:</p>
+
+    <pre><span class="c"># احفظ في ~/.bashrc أو قبل كل رد</span>
+<span class="k">export</span> TELEGRAM_BOT_TOKEN=<span class="s">"8483274654:AAE1zwTH4Jst8GX9vvpETyjFzlZVN-DijE8"</span>
+<span class="k">export</span> TELEGRAM_CHAT_ID=<span class="s">"2095951462"</span>
+
+<span class="k">tg-reply</span>() {
+  <span class="k">local</span> text=<span class="s">"$1"</span>
+  curl -s -X POST <span class="s">"https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage"</span> \
+    -d <span class="s">"chat_id=$TELEGRAM_CHAT_ID"</span> \
+    -d <span class="s">"text=$text"</span> \
+    -d <span class="s">"parse_mode=HTML"</span> > <span class="v">/dev/null</span>
+  <span class="k">echo</span> <span class="s">"$text"</span>
+}
+
+<span class="c"># مثال: tg-reply "🎉 شغّال!"</span></pre>
+  </section>
+
+  <!-- Section: مشكلة اللغة العربية -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+      مشكلة اللغة العربية
+    </h2>
+
+    <p>شو نوع المشكلة بالضبط؟ قارن مع النماذج:</p>
+
+    <div class="ar-test">
+      <h3>عربي صحيح (RTL)</h3>
+      <div class="ar-row">
+        <span class="ar-label">جملة بسيطة</span>
+        <span class="ar-good">مرحباً بك يا Anas</span>
+      </div>
+      <div class="ar-row">
+        <span class="ar-label">مع أرقام</span>
+        <span class="ar-good">المشروع رقم ١٢٣ في ٢٠٢٦</span>
+      </div>
+      <div class="ar-row">
+        <span class="ar-label">مع إنجليزي</span>
+        <span class="ar-good">نظام ERP مع Mavis</span>
+      </div>
+
+      <h3 style="margin-top: 24px;">عربي مكسور (LTR)</h3>
+      <div class="ar-row">
+        <span class="ar-label">إذا شفت هذا</span>
+        <span class="ar-bad">مرحباً بك يا Anas</span>
+        <div class="ar-note">النص يتجه LTR → المشكلة في direction</div>
+      </div>
+      <div class="ar-row">
+        <span class="ar-label">إذا الأرقام هكذا</span>
+        <span class="ar-bad" style="direction: rtl;">المشروع ١٢٣ في ٢٠٢٦</span>
+        <div class="ar-note">مشكلة في الـ bidi rendering</div>
+      </div>
+    </div>
+
+    <div class="callout accent">
+      <div class="title">الحل في صفحات HTML</div>
+      <p style="margin:0;">كل صفحاتي (visual-page) تستعمل <code style="background:white; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px;">dir="rtl"</code> و <code style="background:white; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px;">font-family: 'Outfit', 'Noto Sans Arabic'</code>. لو الردود في الـ chat هي المكسورة، اعطيني مثال وحلّها.</p>
+    </div>
+  </section>
+
+  <!-- Action plan -->
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      خطة العمل — 3 خطوات
+    </h2>
+
+    <div class="action">
+      <h3>① تأكيد المشكلة</h3>
+      <ol>
+        <li><strong>افتح الـ HTML page</strong> تبعتي على المتصفح وشوف إذا اللغة تمام</li>
+        <li><strong>ابعتلي screenshot</strong> للردود اللي فيها مشكلة (لو موجودة)</li>
+        <li>حدد: هل المشكلة في اتجاه النص، الأرقام، الخط، أو شي ثاني؟</li>
+      </ol>
+    </div>
+
+    <div class="action">
+      <h3>② حل Side Channel (5 دقائق)</h3>
+      <ol>
+        <li>أضيف <code style="background:#f7f5f0; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:13px;">tg-reply</code> للـ environment</li>
+        <li>أرسل رسالة اختبار مني على Telegram</li>
+        <li>نتأكد إنها وصلت</li>
+        <li>كل ردّي بعدها يرجع على Telegram تلقائي</li>
+      </ol>
+    </div>
+
+    <div class="action">
+      <h3>③ استكشاف الـ bridge الرسمي (اختياري)</h3>
+      <ol>
+        <li>نسأل المنصة عن Telegram adapter الرسمي</li>
+        <li>نشوف إذا ممكن نتحكم فيه (disable/enable)</li>
+        <li>لو مش ممكن → نتعايش مع Side Channel</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Recommendation -->
+  <div class="reco">
+    <div class="badge">📌 الخلاصة</div>
+    <h3>الحقيقة المُبسّطة</h3>
+    <p>
+      في <strong style="color:white;">طبقة ما نراها</strong> تستقبل رسائلك (غالباً bridge رسمي للمنصة). <strong style="color:white;">ردّي لا يرجع</strong> عبرها (bridge معطّل جزئياً).<br><br>
+      <strong style="color:white;">الحل:</strong> نتجاوزها بـ Side Channel بسيط (5 دقائق). تواصل أوتوماتيك على Telegram خلال ساعة.
+    </p>
+  </div>
+
+  <div class="footer">
+    <span><span class="from">Mavis</span> · تحقيق تقني</span>
+    <span>يونيو 2026 · Telegram Bridge Report</span>
+  </div>
+
+</div>
+</body>
+</html>

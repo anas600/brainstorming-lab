@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script>
+(function() {
+  var KEY = "brainstorming_lab_session_001";
+  if (localStorage.getItem(KEY) !== "1") {
+    window.location.replace("index.html");
+  }
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية · مختبر العصف الذهني — Session 001: FRD MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+}
+.sidebar-link.current { font-weight: 600; }
+.sidebar-link .icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 28px 56px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 16px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-link:hover {
+  background: var(--primary-light); color: var(--primary);
+  border-color: var(--primary);
+}
+.page-header-meta { flex: 1; min-width: 0; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.content {
+  padding: 48px 56px 96px;
+  max-width: 920px; margin: 0 auto;
+}
+.content h1, .content h2, .content h3, .content h4 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400; color: var(--ink);
+  letter-spacing: -0.005em;
+  scroll-margin-top: 110px;
+}
+.content h1 {
+  font-size: 38px; margin: 8px 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.2;
+}
+.content h2 {
+  font-size: 26px; margin: 56px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.content h3 { font-size: 20px; margin: 36px 0 12px; color: var(--ink-soft); }
+.content h4 { font-size: 16px; margin: 24px 0 10px; color: var(--ink-soft); font-weight: 600; font-family: 'Outfit', sans-serif; }
+.content p { margin-bottom: 14px; color: var(--ink-soft); }
+.content strong { color: var(--ink); font-weight: 600; }
+.content em { color: var(--ink-soft); }
+.content ul, .content ol { margin: 12px 0 16px 24px; color: var(--ink-soft); }
+.content li { margin-bottom: 6px; padding-right: 4px; }
+.content ul li::marker { color: var(--accent); }
+.content blockquote {
+  border-right: 3px solid var(--primary);
+  background: var(--primary-light);
+  padding: 14px 22px; margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--ink); font-style: normal;
+}
+.content blockquote p { margin: 0; color: var(--ink); }
+.content blockquote strong { color: var(--primary); }
+.content table {
+  width: 100%; border-collapse: collapse;
+  margin: 18px 0; font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.content thead { background: var(--bg); }
+.content th {
+  text-align: right; padding: 12px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+.content td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: var(--bg-soft); }
+.content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+  border: 1px solid var(--line-soft);
+}
+.content pre {
+  background: #14171e; color: #e9e3d6;
+  padding: 18px 22px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  direction: ltr; text-align: left;
+}
+.content pre code {
+  background: transparent; border: none;
+  color: inherit; padding: 0; font-size: 13px;
+}
+.xref {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; margin: 0 2px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.xref:hover {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+}
+.xref::before { content: "→"; font-size: 10px; opacity: 0.7; }
+.content h2 .anchor, .content h3 .anchor, .content h4 .anchor {
+  margin-right: 12px; opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+}
+.content h2:hover .anchor,
+.content h3:hover .anchor,
+.content h4:hover .anchor { opacity: 1; }
+.content h2 .anchor::before { content: "#"; }
+.content hr {
+  border: none; border-top: 1px dashed var(--line);
+  margin: 40px 0;
+}
+.page-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-footer a { color: var(--accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static; height: auto;
+    border-left: none; border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .sidebar-group-title, .sidebar-link { padding-right: 16px; padding-left: 16px; }
+  .content { padding: 32px 24px 64px; }
+  .page-header { padding: 16px 24px; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">مختبر العصف الذهني — Session 001: FRD MVP</div>
+    <div class="sidebar-brand-tag">4 documents</div>
+  </div>
+  <div class="sidebar-group">
+<div class="sidebar-group-title">Main</div>
+<a href="analysis-holding-deep-dive.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية</a>
+<a href="cycle-1-ideation.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 الدورة 1: توليد الأفكار (Ideation)</a>
+<a href="cycle-2-critique.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔍 الدورة 2: النقد والتمحيص (Critique)</a>
+<a href="session.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع</a>
+</div>
+  <div class="sidebar-footer">
+    Multi-page analysis portal<br>
+    cross-references active
+  </div>
+</aside>
+
+<main>
+  <div class="page-header">
+    <a href="analysis-holding-deep-dive.html" class="back-link">← مختبر العصف الذهني — Session 001: FRD MVP</a>
+    <div class="page-header-meta">
+      <div class="page-breadcrumb">Main · 🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية</div>
+      <div class="page-title">🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية</div>
+    </div>
+  </div>
+  <article class="content">
+    <blockquote>
+<p><strong>الجلسة</strong>: 001 — FRD لـ MVP
+<strong>التاريخ</strong>: 2026-07-04
+<strong>Facilitator</strong>: Deep Researcher (ديب الباحث)
+<strong>النوع</strong>: Deep Dive Analysis (تحليل عميق مركّز بسيناريو واقعي)</p>
+</blockquote>
+<hr>
+<h2 id="section-وصف-الشركة-القابضة">🏢 وصف الشركة القابضة (Real-World Scenario) <a href="#section-وصف-الشركة-القابضة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الهيكل-التنظيمي">الهيكل التنظيمي <a href="#section-الهيكل-التنظيمي" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>                       ┌─────────────────────────┐
+                       │   الشركة القابضة (الام) │
+                       │      HOLDING Co.        │
+                       └───────────┬─────────────┘
+                                   │
+        ┌──────────────┬───────────┼───────────┬──────────────┐
+        │              │           │           │              │
+        ▼              ▼           ▼           ▼              ▼
+   ┌─────────┐  ┌──────────────┐ ┌─────────┐ ┌──────────────┐ ┌─────────┐
+   │شركة    │  │شركة PVC      │ │شركة    │ │شركة إعاشة   │ │شركة    │
+   │مقاولات │  │+ ألمنيوم +   │ │نظافة   │ │+ إدارة      │ │الاستيراد│
+   │(CONSTR)│  │ورش (PVC/W)   │ │(CLEAN) │ │مناطق سياحية │ │         │
+   └─────────┘  └──────┬───────┘ └─────────┘ └──────────────┘ └─────────┘
+                      │
+                      │ شركتين منفصلتين:
+                      ├─ شركة مقدّمة للخدمات (PVC-S)
+                      └─ شركة منفّذة للمشاريع (PVC-E)
+</code></pre>
+<h3 id="section-الأرقام-التقديرية">📊 الأرقام التقديرية (للعام 2026) <a href="#section-الأرقام-التقديرية" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>الشركة</th>
+<th>الإيرادات السنوية</th>
+<th>نسبة من الإجمالي</th>
+<th>عدد المشاريع</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>المقاولات</strong></td>
+<td>18,000,000 د.ل</td>
+<td>60%</td>
+<td>5 مشاريع نشطة</td>
+</tr>
+<tr>
+<td><strong>PVC-S (مقدّمة خدمات)</strong></td>
+<td>3,000,000 د.ل</td>
+<td>10%</td>
+<td>12 عقد خدمات</td>
+</tr>
+<tr>
+<td><strong>PVC-E (منفّذة مشاريع)</strong></td>
+<td>3,000,000 د.ل</td>
+<td>10%</td>
+<td>5 مشاريع</td>
+</tr>
+<tr>
+<td><strong>النظافة</strong></td>
+<td>2,500,000 د.ل</td>
+<td>8%</td>
+<td>8 عقود (طويلة الأجل)</td>
+</tr>
+<tr>
+<td><strong>الإعاشة + السياحة</strong></td>
+<td>2,000,000 د.ل</td>
+<td>7%</td>
+<td>4 عقود (طويلة الأجل)</td>
+</tr>
+<tr>
+<td><strong>استيراد (دعم)</strong></td>
+<td>1,500,000 د.ل</td>
+<td>5%</td>
+<td>supply chain</td>
+</tr>
+<tr>
+<td><strong>الإجمالي المجمّع</strong></td>
+<td><strong>30,000,000 د.ل</strong></td>
+<td>100%</td>
+<td>34 مشروع/عقد</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-طبيعة-العمليات-الجوهرية">🔄 طبيعة العمليات الجوهرية <a href="#section-طبيعة-العمليات-الجوهرية" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>
+<p><strong>التعامل بين الشركات (Inter-Company)</strong>
+   - شركة PVC-S تبيع ألواح للشركة المقاولات (Inter-company sale)
+   - شركة PVC-E تنفّذ أعمال لحساب المقاولات
+   - الإعاشة تقدّم وجبات لمواقع المشاريع
+   - النظافة تقدّم خدمات لمباني القابضة</p>
+</li>
+<li>
+<p><strong>فصل المشاريع (Project Isolation)</strong>
+   - كل مشروع يُخصم على الشركة المنفّذة فقط
+   - لو مشروع لمقاولات يُنفّذ في بنغازي → شركة المقاولات هي وحدها تتحمل التكاليف</p>
+</li>
+<li>
+<p><strong>الموردون الخارجيون</strong>
+   - فواتير شراء من موردين خارجيين
+   - سندات صرف مجدولة (مستخلصات)
+   - تأخر في صرف مستخلصات العقود من الجهات الحكومية</p>
+</li>
+<li>
+<p><strong>العقود طويلة الأجل</strong> (نظافة + إعاشة)
+   - مدتها 1-5 سنوات
+   - دفعات شهرية أو ربع سنوية
+   - تحتاج طريقة "نسبة الإنجاز" (POC) في IFRS 15</p>
+</li>
+</ol>
+<hr>
+<h2 id="section-النطاق-المعدل">📋 النطاق المُعدَّل (Updated Scope) <a href="#section-النطاق-المعدل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الـ-10-عمليات-المركز-عليها">✅ الـ 10 عمليات المُركَّز عليها: <a href="#section-الـ-10-عمليات-المركز-عليها" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>العملية</th>
+<th>الأولوية</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>الذمم (AR / AP)</td>
+<td>🔴 حرجة</td>
+</tr>
+<tr>
+<td>2</td>
+<td>الأصول الثابتة + إهلاك</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>مراكز التكلفة / المشاريع</strong></td>
+<td>🔴 حرجة جداً (جوهر السيناريو)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>المصنع / الورش (PVC-S + PVC-E)</strong></td>
+<td>🔴 حرجة (التفريق بين الشركتين)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>التسويات الجردية</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td>6</td>
+<td>الموازنات التقديرية</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>القوائم المالية + الإغلاقات</strong></td>
+<td>🔴 حرجة</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>المعاملات بين الشركات (Inter-Company)</strong></td>
+<td>🔴 حرجة (جوهر الـ Holding)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>سير الموافقات</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td>10</td>
+<td>الدفعات المقدمة / المصروفات المقدمة</td>
+<td>🟡 متوسطة</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-الـ-4-عمليات-المؤجلة">⏸️ الـ 4 عمليات المؤجّلة (لاحقاً أو مستبعدة): <a href="#section-الـ-4-عمليات-المؤجلة" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>❌ الضرائب (VAT/WHT) — ليست أولوية حالياً</li>
+<li>❌ التحويلات بين المستودعات — التبسيط</li>
+<li>❌ الرواتب — خارجية عن النواة (HR module مستقل لاحقاً)</li>
+<li>❌ البنوك المتعددة العملات — التبسيط</li>
+</ul>
+<hr>
+<h1 id="section-الجزء-الأول-تحليل-العقود-طويلة-الأجل">📘 الجزء الأول: تحليل العقود طويلة الأجل (Long-Term Contracts) <a href="#section-الجزء-الأول-تحليل-العقود-طويلة-الأجل" class="anchor" aria-label="anchor"></a></h1>
+<h2 id="section-السؤال-كيف-يحاسب-عقد-نظافة-5-سنوات-بقيمة-600000-دل">🎯 السؤال: كيف يُحاسَب عقد نظافة 5 سنوات بقيمة 600,000 د.ل؟ <a href="#section-السؤال-كيف-يحاسب-عقد-نظافة-5-سنوات-بقيمة-600000-دل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-المثال-التطبيقي">المثال التطبيقي: <a href="#section-المثال-التطبيقي" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>عقد خدمات نظافة لمبنى حكومي
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- العميل:         وزارة المالية الليبية
+- الشركة المنفّذة: شركة النظافة (تابعة)
+- القيمة الإجمالية: 600,000 د.ل
+- المدة:           60 شهر (5 سنوات)
+- الدفع:           شهري (10,000 د.ل / شهر)
+- Retainage:       5% (تُحرر عند نهاية العقد)
+- تاريخ البدء:     1 يناير 2026
+</code></pre>
+<h2 id="section-ifrs-15-revenue-from-contracts-with-customers">📚 IFRS 15 — Revenue from Contracts with Customers <a href="#section-ifrs-15-revenue-from-contracts-with-customers" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-المبدأ-الأساسي">المبدأ الأساسي <a href="#section-المبدأ-الأساسي" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>Revenue يُعترف به على مدى الفترة الزمنية</strong> (Over Time) لأن العميل يستهلك الفائدة باستمرار.</p>
+<h3 id="section-الطرق-المقبولة-لقياس-التقدم">الطرق المقبولة لقياس التقدم: <a href="#section-الطرق-المقبولة-لقياس-التقدم" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>الطريقة</th>
+<th>متى تُستخدم</th>
+<th>مزايا</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input Method</strong> (تكلفة)</td>
+<td>عقود خدمات (نظافة، إعاشة)</td>
+<td>بسيطة، سهلة التطبيق</td>
+</tr>
+<tr>
+<td><strong>Output Method</strong> (مخرجات)</td>
+<td>عقود بناء (مقاولات)</td>
+<td>دقيقة، تعكس القيمة</td>
+</tr>
+<tr>
+<td><strong>Time-based</strong></td>
+<td>عقود إيجار، اشتراكات</td>
+<td>مباشرة</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-اختيارنا-stronginput-method-strong">📌 اختيارنا: <strong>Input Method (Cost-to-Cost)</strong> <a href="#section-اختيارنا-stronginput-method-strong" class="anchor" aria-label="anchor"></a></h3>
+<p>لأن عقود النظافة والإعاشة:
+- لا تنتج "مخرجات" قابلة للقياس بسهولة
+- التكلفة (رواتب، مواد) = المؤشر الأفضل للتقدم</p>
+<hr>
+<h2 id="section-الجداول-المطلوبة-للعقود-طويلة-الأجل">📊 الجداول المطلوبة للعقود طويلة الأجل <a href="#section-الجداول-المطلوبة-للعقود-طويلة-الأجل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-جدول-1-سجل-العقود">📋 جدول 1: سجل العقود (Contract Register) <a href="#section-جدول-1-سجل-العقود" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>Contract ID</th>
+<th>العميل</th>
+<th>الشركة المنفّذة</th>
+<th>النوع</th>
+<th>القيمة</th>
+<th>المدة</th>
+<th>تاريخ البدء</th>
+<th>تاريخ الانتهاء</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-2026-001</td>
+<td>وزارة المالية</td>
+<td>النظافة</td>
+<td>خدمات نظافة</td>
+<td>600,000</td>
+<td>60 شهر</td>
+<td>2026-01-01</td>
+<td>2030-12-31</td>
+<td>🟢 نشط</td>
+</tr>
+<tr>
+<td>C-2026-002</td>
+<td>فندق كورنثيا</td>
+<td>الإعاشة</td>
+<td>إدارة إعاشة</td>
+<td>480,000</td>
+<td>48 شهر</td>
+<td>2026-03-01</td>
+<td>2030-02-28</td>
+<td>🟢 نشط</td>
+</tr>
+<tr>
+<td>C-2026-003</td>
+<td>جامعة طرابلس</td>
+<td>الإعاشة</td>
+<td>إدارة كافيتيريا</td>
+<td>360,000</td>
+<td>36 شهر</td>
+<td>2026-06-01</td>
+<td>2029-05-31</td>
+<td>🟢 نشط</td>
+</tr>
+<tr>
+<td>C-2026-004</td>
+<td>مطار معيتيقة</td>
+<td>النظافة</td>
+<td>نظافة عامة</td>
+<td>1,200,000</td>
+<td>60 شهر</td>
+<td>2025-09-01</td>
+<td>2030-08-31</td>
+<td>🟡 متأخر</td>
+</tr>
+<tr>
+<td>C-2026-005</td>
+<td>منتجع سياحي</td>
+<td>السياحة</td>
+<td>إدارة منتجع</td>
+<td>800,000</td>
+<td>24 شهر</td>
+<td>2026-02-01</td>
+<td>2028-01-31</td>
+<td>🟢 نشط</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الإجمالي النشط</strong>: 3,440,000 د.ل موزعة على <strong>5 سنوات</strong></p>
+<hr>
+<h3 id="section-جدول-2-قياس-التقدم-الشهري">📋 جدول 2: قياس التقدم الشهري (Monthly Progress) <a href="#section-جدول-2-قياس-التقدم-الشهري" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>مثال — عقد C-2026-001 (نظافة مبنى وزارة المالية)</strong></p>
+<table>
+<thead>
+<tr>
+<th>الشهر</th>
+<th>التكلفة الفعلية</th>
+<th>التكلفة المخططة</th>
+<th>% التقدم</th>
+<th>الإيراد المعترف</th>
+<th>الفاتورة</th>
+<th>التحصيل</th>
+<th>الرصيد المستحق</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-01</td>
+<td>9,500</td>
+<td>10,000</td>
+<td>1.58%</td>
+<td>9,500</td>
+<td>10,000</td>
+<td>10,000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2026-02</td>
+<td>9,800</td>
+<td>10,000</td>
+<td>3.22%</td>
+<td>9,800</td>
+<td>10,000</td>
+<td>10,000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2026-03</td>
+<td>10,200</td>
+<td>10,000</td>
+<td>4.92%</td>
+<td>9,800</td>
+<td>10,000</td>
+<td>0</td>
+<td>10,000</td>
+</tr>
+<tr>
+<td>2026-04</td>
+<td>10,000</td>
+<td>10,000</td>
+<td>6.58%</td>
+<td>9,900</td>
+<td>10,000</td>
+<td>0</td>
+<td>19,900</td>
+</tr>
+<tr>
+<td><strong>التراكمي</strong></td>
+<td><strong>39,500</strong></td>
+<td><strong>40,000</strong></td>
+<td><strong>6.58%</strong></td>
+<td><strong>39,000</strong></td>
+<td><strong>40,000</strong></td>
+<td><strong>20,000</strong></td>
+<td><strong>19,900</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>شرح</strong>:
+- بعد 4 أشهر: تقدّم 6.58% (39,500 / 600,000)
+- الإيراد المعترف به = 39,500 د.ل (Input method)
+- المفوتر = 40,000 د.ل (4 × 10,000)
+- المحصّل = 20,000 د.ل (شهرين فقط)
+- <strong>الرصيد المستحق = 19,900 د.ل</strong> (عملاء متأخرين!)</p>
+<hr>
+<h3 id="section-جدول-3-ملخص-الأصول-والالتزامات-العقدية">📋 جدول 3: ملخص الأصول والالتزامات العقدية (Contract Assets/Liabilities) <a href="#section-جدول-3-ملخص-الأصول-والالتزامات-العقدية" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>العقد</th>
+<th>الإيراد التراكمي</th>
+<th>التكلفة التراكمية</th>
+<th>الربح المتوقع</th>
+<th>المفوتر</th>
+<th>المحصّل</th>
+<th><strong>Contract Asset</strong></th>
+<th><strong>Contract Liability</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-2026-001</td>
+<td>39,500</td>
+<td>39,500</td>
+<td>0</td>
+<td>40,000</td>
+<td>20,000</td>
+<td><strong>19,500</strong></td>
+<td>-</td>
+</tr>
+<tr>
+<td>C-2026-002</td>
+<td>8,000</td>
+<td>7,800</td>
+<td>200</td>
+<td>10,000</td>
+<td>10,000</td>
+<td>-</td>
+<td>1,800</td>
+</tr>
+<tr>
+<td>C-2026-003</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>C-2026-004</td>
+<td>96,000</td>
+<td>95,000</td>
+<td>1,000</td>
+<td>100,000</td>
+<td>40,000</td>
+<td><strong>56,000</strong></td>
+<td>-</td>
+</tr>
+<tr>
+<td>C-2026-005</td>
+<td>33,333</td>
+<td>32,000</td>
+<td>1,333</td>
+<td>33,333</td>
+<td>33,333</td>
+<td>-</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ملاحظات</strong>:
+- <strong>Contract Asset</strong> = الإيراد المُعترف به ولم يُفوتر بعد (مثل C-2026-004 — 56,000 د.ل متأخر)
+- <strong>Contract Liability</strong> = مفوتر قبل الاعتراف بالإيراد (مثل C-2026-002 — 1,800 د.ل مقدمة)</p>
+<hr>
+<h2 id="section-أنواع-القيود-المحاسبية-للعقود-طويلة-الأجل">📑 أنواع القيود المحاسبية للعقود طويلة الأجل <a href="#section-أنواع-القيود-المحاسبية-للعقود-طويلة-الأجل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-القيد-1-تسجيل-التكلفة-الشهرية">🔵 القيد 1: تسجيل التكلفة الشهرية (Cost Recognition) <a href="#section-القيد-1-تسجيل-التكلفة-الشهرية" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>مدين: تكلفة خدمات النظافة (5210)        9,500 د.ل
+   دائن: ذمم موظفين / موردين (2100)         7,500 د.ل
+   دائن: مخزون مواد (1300)                   2,000 د.ل
+</code></pre>
+<h3 id="section-القيد-2-الاعتراف-بالإيراد-الشهري">🔵 القيد 2: الاعتراف بالإيراد الشهري (Revenue Recognition — POC) <a href="#section-القيد-2-الاعتراف-بالإيراد-الشهري" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>مدين: عقد أصول / ذمم مدينة غير مفوترة (1280)   9,800 د.ل
+   دائن: إيرادات خدمات النظافة (4100)               9,800 د.ل
+</code></pre>
+<h3 id="section-القيد-3-إصدار-الفاتورة-الشهرية">🔵 القيد 3: إصدار الفاتورة الشهرية (Invoice Issuance) <a href="#section-القيد-3-إصدار-الفاتورة-الشهرية" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>مدين: ذمم العملاء (1100)                    10,000 د.ل
+   دائن: عقد أصول / ذمم غير مفوترة (1280)        9,800 د.ل
+   دائن: إيرادات مؤجلة (2400)                      200 د.ل
+</code></pre>
+<h3 id="section-القيد-4-التحصيل-مع-حجز-retainage">🔵 القيد 4: التحصيل مع حجز Retainage <a href="#section-القيد-4-التحصيل-مع-حجز-retainage" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>مدين: بنك (1000)                            9,500 د.ل
+مدين: ضمان محتجز / ذمم ضمان (1500)            500 د.ل
+   دائن: ذمم العملاء (1100)                  10,000 د.ل
+</code></pre>
+<h3 id="section-القيد-5-تحصيل-الضمان-في-نهاية-العقد">🔵 القيد 5: تحصيل الضمان في نهاية العقد <a href="#section-القيد-5-تحصيل-الضمان-في-نهاية-العقد" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>مدين: بنك (1000)                            3,000 د.ل
+   دائن: ضمان محتجز (1500)                     3,000 د.ل
+</code></pre>
+<h3 id="section-القيد-6-تعديل-تقدم-العقد">🔵 القيد 6: تعديل تقدّم العقد (Variance Adjustment) <a href="#section-القيد-6-تعديل-تقدم-العقد" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>سيناريو</strong>: التكلفة الفعلية تجاوزت المخطط (مثلاً +10%)</p>
+<pre><code>مدين: تكلفة خدمات النظافة (5210)           +1,000 د.ل
+   دائن: مخصص خسائر العقد (2600)             +1,000 د.ل
+</code></pre>
+<p>(يُعترف بالخسارة المتوقعة فوراً)</p>
+<hr>
+<h2 id="section-الجداول-التشغيلية-اليومية-للعقود-طويلة-الأجل">📊 الجداول التشغيلية اليومية للعقود طويلة الأجل <a href="#section-الجداول-التشغيلية-اليومية-للعقود-طويلة-الأجل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-جدول-4-تقرير-التأخر-في-التحصيل">📋 جدول 4: تقرير التأخر في التحصيل (Aging of Contract Receivables) <a href="#section-جدول-4-تقرير-التأخر-في-التحصيل" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>العقد</th>
+<th>0-30 يوم</th>
+<th>31-60 يوم</th>
+<th>61-90 يوم</th>
+<th>+90 يوم</th>
+<th><strong>الإجمالي المتأخر</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-2026-001 (نظافة)</td>
+<td>10,000</td>
+<td>10,000</td>
+<td>-</td>
+<td>-</td>
+<td>20,000</td>
+</tr>
+<tr>
+<td>C-2026-002 (إعاشة)</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>0</td>
+</tr>
+<tr>
+<td>C-2026-004 (نظافة مطار)</td>
+<td>20,000</td>
+<td>20,000</td>
+<td>20,000</td>
+<td>20,000</td>
+<td><strong>80,000</strong> ⚠️</td>
+</tr>
+<tr>
+<td><strong>الإجمالي</strong></td>
+<td>30,000</td>
+<td>30,000</td>
+<td>20,000</td>
+<td>20,000</td>
+<td><strong>100,000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>⚠️ <strong>خطر</strong>: عقد المطار 80,000 د.ل متأخرة. العميل جهة حكومية — يحتاج متابعة قانونية.</p>
+</blockquote>
+<h3 id="section-جدول-5-التنبؤ-بالإيراد-المستقبلي">📋 جدول 5: التنبؤ بالإيراد المستقبلي (Revenue Forecast) <a href="#section-جدول-5-التنبؤ-بالإيراد-المستقبلي" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>العقد</th>
+<th>متبقي من العقد</th>
+<th>أشهر متبقة</th>
+<th>إيراد شهري متوقع</th>
+<th>ربح متوقع</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-2026-001</td>
+<td>560,500</td>
+<td>56</td>
+<td>10,000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>C-2026-002</td>
+<td>472,000</td>
+<td>47</td>
+<td>10,000</td>
+<td>1,200</td>
+</tr>
+<tr>
+<td>C-2026-003</td>
+<td>360,000</td>
+<td>36</td>
+<td>10,000</td>
+<td>800</td>
+</tr>
+<tr>
+<td>C-2026-004</td>
+<td>1,104,000</td>
+<td>55</td>
+<td>20,000</td>
+<td>11,500</td>
+</tr>
+<tr>
+<td>C-2026-005</td>
+<td>766,667</td>
+<td>23</td>
+<td>33,333</td>
+<td>25,000</td>
+</tr>
+<tr>
+<td><strong>الإجمالي</strong></td>
+<td><strong>3,263,167</strong></td>
+<td>-</td>
+<td>-</td>
+<td><strong>38,500</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="section-الجزء-الثاني-التحليل-المحاسبي-لشركة-القابضة">📗 الجزء الثاني: التحليل المحاسبي لشركة القابضة (Consolidation) <a href="#section-الجزء-الثاني-التحليل-المحاسبي-لشركة-القابضة" class="anchor" aria-label="anchor"></a></h1>
+<h2 id="section-السؤال-كيف-تبدو-القوائم-المالية-المجمعة-لشركة-فيها-4-5-شركات-تابعة">🎯 السؤال: كيف تبدو القوائم المالية المجمّعة لشركة فيها 4-5 شركات تابعة؟ <a href="#section-السؤال-كيف-تبدو-القوائم-المالية-المجمعة-لشركة-فيها-4-5-شركات-تابعة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الخطوات-الـ-5-لعملية-التجميع">الخطوات الـ 5 لعملية التجميع (Consolidation Process): <a href="#section-الخطوات-الـ-5-لعملية-التجميع" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>1️⃣ إقفال دفاتر كل شركة تابعة
+        ↓
+2️⃣ تجميع ميزان المراجعة لكل شركة
+        ↓
+3️⃣ تحديد وحذف العمليات بين الشركات
+        ↓
+4️⃣ تطبيق تعديلات IFRS (أرباح غير محققة، إلخ)
+        ↓
+5️⃣ إعداد القوائم المالية الموحدة
+</code></pre>
+<hr>
+<h2 id="section-هيكل-الحسابات-الموحد">📚 هيكل الحسابات الموحد (Unified Chart of Accounts) <a href="#section-هيكل-الحسابات-الموحد" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الفئات-الرئيسية">الفئات الرئيسية: <a href="#section-الفئات-الرئيسية" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>1000-1999  الأصول (Assets)
+2000-2999  الالتزامات (Liabilities)
+3000-3999  حقوق الملكية (Equity)
+4000-4999  الإيرادات (Revenue)
+5000-5999  المصروفات (Expenses)
+6000-6999  الحسابات الختامية (Closing)
+</code></pre>
+<h3 id="section-الحسابات-الحرجة-في-الـ-holding">🔍 الحسابات الحرجة في الـ Holding: <a href="#section-الحسابات-الحرجة-في-الـ-holding" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>الكود</th>
+<th>الحساب</th>
+<th>النوع</th>
+<th>مُميِّز للـ Holding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1100</td>
+<td>ذمم العملاء</td>
+<td>Asset</td>
+<td>✅ AR لكل شركة</td>
+</tr>
+<tr>
+<td>1280</td>
+<td><strong>ذمم غير مفوترة (WIP)</strong></td>
+<td>Asset</td>
+<td>✅ عقود طويلة الأجل</td>
+</tr>
+<tr>
+<td>1500</td>
+<td>ضمان محتجز (Retainage Receivable)</td>
+<td>Asset</td>
+<td>✅ عقود المقاولات</td>
+</tr>
+<tr>
+<td>1810</td>
+<td><strong>استثمار في شركات تابعة</strong></td>
+<td>Asset</td>
+<td>✅ Holding-specific</td>
+</tr>
+<tr>
+<td>1820</td>
+<td><strong>قرض لشركات تابعة</strong></td>
+<td>Asset</td>
+<td>✅ Holding-specific</td>
+</tr>
+<tr>
+<td>2100</td>
+<td>ذمم الموردين</td>
+<td>Liability</td>
+<td>✅ AP لكل شركة</td>
+</tr>
+<tr>
+<td>2200</td>
+<td>ذمم موظفين</td>
+<td>Liability</td>
+<td>Payroll (مُؤجل)</td>
+</tr>
+<tr>
+<td>2400</td>
+<td>إيرادات مؤجلة</td>
+<td>Liability</td>
+<td>✅ عقود طويلة الأجل</td>
+</tr>
+<tr>
+<td>2500</td>
+<td>قروض بنكية</td>
+<td>Liability</td>
+<td>✅ Holding consolidation</td>
+</tr>
+<tr>
+<td>2810</td>
+<td><strong>ذمم لشركات تابعة</strong></td>
+<td>Liability</td>
+<td>✅ Holding-specific</td>
+</tr>
+<tr>
+<td>3100</td>
+<td>رأس المال</td>
+<td>Equity</td>
+<td></td>
+</tr>
+<tr>
+<td>3200</td>
+<td>احتياطيات</td>
+<td>Equity</td>
+<td></td>
+</tr>
+<tr>
+<td>3300</td>
+<td><strong>أرباح مبقاة (مجتمعة)</strong></td>
+<td>Equity</td>
+<td>✅ Aggregation point</td>
+</tr>
+<tr>
+<td>4100</td>
+<td>إيرادات خدمات</td>
+<td>Revenue</td>
+<td></td>
+</tr>
+<tr>
+<td>4200</td>
+<td><strong>إيرادات من شركات تابعة</strong></td>
+<td>Revenue</td>
+<td>✅ Inter-company (تُحذف)</td>
+</tr>
+<tr>
+<td>5210</td>
+<td>تكلفة خدمات</td>
+<td>Expense</td>
+<td></td>
+</tr>
+<tr>
+<td>5300</td>
+<td><strong>مصروفات من شركات تابعة</strong></td>
+<td>Expense</td>
+<td>✅ Inter-company (تُحذف)</td>
+</tr>
+<tr>
+<td>5900</td>
+<td>مصاريف إدارية</td>
+<td>Expense</td>
+<td>✅ Holding-level</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-أنواع-القيود-الجوهرية-في-الـ-holding">📑 أنواع القيود الجوهرية في الـ Holding <a href="#section-أنواع-القيود-الجوهرية-في-الـ-holding" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-①-القيود-التشغيلية-كل-شركة">① القيود التشغيلية (Routine) — كل شركة <a href="#section-①-القيود-التشغيلية-كل-شركة" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>عند شراء مواد من مورد خارجي:</strong></p>
+<pre><code>مدين: مخزون (1300)                      100,000 د.ل
+مدين: ضريبة مشتريات (1400)                  5,000 د.ل
+   دائن: ذمم الموردين (2100)              105,000 د.ل
+</code></pre>
+<p><strong>عند صرف مستخلص مورد:</strong></p>
+<pre><code>مدين: ذمم الموردين (2100)               105,000 د.ل
+   دائن: بنك (1000)                      105,000 د.ل
+</code></pre>
+<p><strong>عند إصدار فاتورة عميل:</strong></p>
+<pre><code>مدين: ذمم العملاء (1100)                200,000 د.ل
+   دائن: إيرادات (4100)                  190,476 د.ل
+   دائن: ضريبة مبيعات (2400)                9,524 د.ل
+</code></pre>
+<h3 id="section-②-القيود-بين-الشركات-حرجة">② القيود بين الشركات (Inter-Company) — حرجة <a href="#section-②-القيود-بين-الشركات-حرجة" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>القيد A: بيع من PVC-S إلى شركة المقاولات</strong></p>
+<pre><code>في دفتر PVC-S:
+   مدين: ذمم شركات تابعة (1810)         150,000 د.ل
+   دائن: إيرادات من شركات تابعة (4200)   150,000 د.ل
+
+في دفتر المقاولات:
+   مدين: تكلفة مواد المشروع (5310)      150,000 د.ل
+   دائن: ذمم لشركات تابعة (2810)         150,000 د.ل
+</code></pre>
+<p><strong>القيد B: قيد التجميع (Elimination Entry) — في دفتر القابضة فقط</strong></p>
+<pre><code>مدين: إيرادات من شركات تابعة (4200)    150,000 د.ل
+   دائن: تكلفة مواد المشروع (5310)      150,000 د.ل
+</code></pre>
+<h3 id="section-③-قيود-التحصيلات-والصرف-بين-الشركات">③ قيود التحصيلات والصرف بين الشركات <a href="#section-③-قيود-التحصيلات-والصرف-بين-الشركات" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>عند تحصيل المقاولات لـ PVC-S:</strong></p>
+<pre><code>في دفتر PVC-S:
+   مدين: بنك (1000)                    150,000 د.ل
+   دائن: ذمم شركات تابعة (1810)        150,000 د.ل
+
+(في القوائم المجمّعة: يُحذف لأنّه inter-company)
+</code></pre>
+<h3 id="section-④-القيود-الختامية">④ القيود الختامية (Closing Entries) <a href="#section-④-القيود-الختامية" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>عند إقفال السنة:</strong></p>
+<pre><code>١. إقفال الإيرادات:
+   مدين: إيرادات (4100+4200)           30,000,000 د.ل
+   دائن: ملخص الدخل (3900)             30,000,000 د.ل
+
+٢. إقفال المصروفات:
+   مدين: ملخص الدخل (3900)             27,000,000 د.ل
+   دائن: مصروفات (5000-5999)            27,000,000 د.ل
+
+٣. تحويل إلى الأرباح المبقاة:
+   مدين: ملخص الدخل (3900)              3,000,000 د.ل
+   دائن: أرباح مبقاة (3300)              3,000,000 د.ل
+</code></pre>
+<hr>
+<h2 id="section-القوائم-المالية-المجمعة">📊 القوائم المالية المجمّعة (Consolidated Financial Statements) <a href="#section-القوائم-المالية-المجمعة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-جدول-6-قائمة-الدخل-المجمعة">📈 جدول 6: قائمة الدخل المجمّعة (Consolidated Income Statement) <a href="#section-جدول-6-قائمة-الدخل-المجمعة" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>للسنة المنتهية في 31 ديسمبر 2026 (بالأرقام التقديرية)</strong></p>
+<table>
+<thead>
+<tr>
+<th>البند</th>
+<th>المبلغ (د.ل)</th>
+<th>النسبة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>الإيرادات</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>إيرادات المقاولات</td>
+<td>18,000,000</td>
+<td>60.0%</td>
+</tr>
+<tr>
+<td>إيرادات النظافة (طويلة الأجل)</td>
+<td>2,500,000</td>
+<td>8.3%</td>
+</tr>
+<tr>
+<td>إيرادات الإعاشة والسياحة</td>
+<td>2,000,000</td>
+<td>6.7%</td>
+</tr>
+<tr>
+<td>إيرادات PVC-S (لأطراف ثالثة)</td>
+<td>2,000,000</td>
+<td>6.7%</td>
+</tr>
+<tr>
+<td>إيرادات PVC-E (لأطراف ثالثة)</td>
+<td>2,000,000</td>
+<td>6.7%</td>
+</tr>
+<tr>
+<td>إيرادات الاستيراد</td>
+<td>1,500,000</td>
+<td>5.0%</td>
+</tr>
+<tr>
+<td><strong>إجمالي الإيرادات من أطراف ثالثة</strong></td>
+<td><strong>28,000,000</strong></td>
+<td>93.4%</td>
+</tr>
+<tr>
+<td>⚠️ الإيرادات بين الشركات (تُحذف)</td>
+<td>(2,000,000)</td>
+<td>-6.6%</td>
+</tr>
+<tr>
+<td><strong>الإيرادات المجمّعة</strong></td>
+<td><strong>30,000,000</strong></td>
+<td>100%</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>تكلفة الإيرادات</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>تكلفة المقاولات</td>
+<td>14,400,000</td>
+<td>48.0%</td>
+</tr>
+<tr>
+<td>تكلفة النظافة</td>
+<td>2,200,000</td>
+<td>7.3%</td>
+</tr>
+<tr>
+<td>تكلفة الإعاشة</td>
+<td>1,650,000</td>
+<td>5.5%</td>
+</tr>
+<tr>
+<td>تكلفة PVC-S</td>
+<td>1,700,000</td>
+<td>5.7%</td>
+</tr>
+<tr>
+<td>تكلفة PVC-E</td>
+<td>1,700,000</td>
+<td>5.7%</td>
+</tr>
+<tr>
+<td>تكلفة الاستيراد</td>
+<td>1,350,000</td>
+<td>4.5%</td>
+</tr>
+<tr>
+<td><strong>إجمالي التكلفة</strong></td>
+<td><strong>23,000,000</strong></td>
+<td>76.7%</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>الربح الإجمالي</strong></td>
+<td><strong>7,000,000</strong></td>
+<td><strong>23.3%</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>المصروفات التشغيلية</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>مصاريف إدارية (Holding)</td>
+<td>1,200,000</td>
+<td>4.0%</td>
+</tr>
+<tr>
+<td>مصاريف تسويق</td>
+<td>300,000</td>
+<td>1.0%</td>
+</tr>
+<tr>
+<td>إهلاك</td>
+<td>800,000</td>
+<td>2.7%</td>
+</tr>
+<tr>
+<td>مصاريف أخرى</td>
+<td>700,000</td>
+<td>2.3%</td>
+</tr>
+<tr>
+<td><strong>إجمالي المصروفات التشغيلية</strong></td>
+<td><strong>3,000,000</strong></td>
+<td>10.0%</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>الربح التشغيلي (EBIT)</strong></td>
+<td><strong>4,000,000</strong></td>
+<td><strong>13.3%</strong></td>
+</tr>
+<tr>
+<td>مصروفات تمويل (فوائد)</td>
+<td>(450,000)</td>
+<td>-1.5%</td>
+</tr>
+<tr>
+<td>إيرادات أخرى</td>
+<td>150,000</td>
+<td>0.5%</td>
+</tr>
+<tr>
+<td><strong>الربح قبل الضريبة</strong></td>
+<td><strong>3,700,000</strong></td>
+<td>12.3%</td>
+</tr>
+<tr>
+<td>ضريبة الدخل (مُؤجل حالياً)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>صافي الربح المجمّع</strong></td>
+<td><strong>3,700,000</strong></td>
+<td><strong>12.3%</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="section-جدول-7-الميزانية-العمومية-المجمعة">📊 جدول 7: الميزانية العمومية المجمّعة (Consolidated Balance Sheet) <a href="#section-جدول-7-الميزانية-العمومية-المجمعة" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>كما في 31 ديسمبر 2026</strong></p>
+<table>
+<thead>
+<tr>
+<th><strong>الأصول</strong></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>أصول متداولة</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>نقدية وما يعادلها (بنوك)</td>
+<td>4,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td>ذمم العملاء (AR)</td>
+<td>8,200,000</td>
+<td></td>
+</tr>
+<tr>
+<td>ضمان محتجز (Retainage)</td>
+<td>1,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td>ذمم غير مفوترة (Contract Assets)</td>
+<td>1,200,000</td>
+<td></td>
+</tr>
+<tr>
+<td>مخزون (مواد + WIP)</td>
+<td>6,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td>مصروفات مقدمة</td>
+<td>400,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي الأصول المتداولة</strong></td>
+<td></td>
+<td><strong>22,300,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>أصول ثابتة</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>أراضي ومباني</td>
+<td>12,000,000</td>
+<td></td>
+</tr>
+<tr>
+<td>آلات ومعدات (ورش)</td>
+<td>8,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td>سيارات ومعدات نقل</td>
+<td>3,200,000</td>
+<td></td>
+</tr>
+<tr>
+<td>أثاث ومعدات مكتبية</td>
+<td>800,000</td>
+<td></td>
+</tr>
+<tr>
+<td>(-) مجمع الإهلاك</td>
+<td>(4,500,000)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>صافي الأصول الثابتة</strong></td>
+<td></td>
+<td><strong>20,000,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>أصول غير ملموسة</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>شهرة / استثمارات</td>
+<td>1,000,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي الأصول</strong></td>
+<td></td>
+<td><strong>43,300,000</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><strong>الالتزامات وحقوق الملكية</strong></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>التزامات متداولة</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ذمم الموردين (AP)</td>
+<td>5,800,000</td>
+<td></td>
+</tr>
+<tr>
+<td>قروض قصيرة الأجل</td>
+<td>3,000,000</td>
+<td></td>
+</tr>
+<tr>
+<td>إيرادات مؤجلة (Contract Liab.)</td>
+<td>800,000</td>
+<td></td>
+</tr>
+<tr>
+<td>مصروفات مستحقة</td>
+<td>1,200,000</td>
+<td></td>
+</tr>
+<tr>
+<td>قسط قرض طويل الأجل (الحالي)</td>
+<td>1,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي الالتزامات المتداولة</strong></td>
+<td></td>
+<td><strong>12,300,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>التزامات طويلة الأجل</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>قروض بنكية طويلة الأجل</td>
+<td>8,000,000</td>
+<td></td>
+</tr>
+<tr>
+<td>مخصص نهاية الخدمة</td>
+<td>1,200,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي الالتزامات طويلة الأجل</strong></td>
+<td></td>
+<td><strong>9,200,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>حقوق الملكية</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>رأس المال</td>
+<td>15,000,000</td>
+<td></td>
+</tr>
+<tr>
+<td>احتياطي قانوني</td>
+<td>1,500,000</td>
+<td></td>
+</tr>
+<tr>
+<td>أرباح مبقاة (سنوات سابقة)</td>
+<td>1,600,000</td>
+<td></td>
+</tr>
+<tr>
+<td>أرباح السنة (بعد التجميع)</td>
+<td>3,700,000</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي حقوق الملكية</strong></td>
+<td></td>
+<td><strong>21,800,000</strong></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>إجمالي الالتزامات + حقوق الملكية</strong></td>
+<td></td>
+<td><strong>43,300,000</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="section-جدول-8-كشف-التعديلات-والتسويات">📋 جدول 8: كشف التعديلات والتسويات (Elimination Schedule) <a href="#section-جدول-8-كشف-التعديلات-والتسويات" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>لإعداد القوائم المجمّعة من دفاتر الشركات المنفصلة</strong></p>
+<table>
+<thead>
+<tr>
+<th>البند</th>
+<th>المبلغ قبل التجميع</th>
+<th>(-) حذف Inter-Co</th>
+<th>(+) تعديلات IFRS</th>
+<th>المبلغ المجمّع</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>الإيرادات</td>
+<td>32,000,000</td>
+<td>(2,000,000)</td>
+<td>-</td>
+<td>30,000,000</td>
+</tr>
+<tr>
+<td>تكلفة الإيرادات</td>
+<td>24,800,000</td>
+<td>(1,800,000)</td>
+<td>-</td>
+<td>23,000,000</td>
+</tr>
+<tr>
+<td>مصاريف إدارية</td>
+<td>1,500,000</td>
+<td>(200,000)</td>
+<td>(100,000)*</td>
+<td>1,200,000</td>
+</tr>
+<tr>
+<td>ذمم مدينة</td>
+<td>8,400,000</td>
+<td>(200,000)**</td>
+<td>-</td>
+<td>8,200,000</td>
+</tr>
+<tr>
+<td>ذمم دائنة</td>
+<td>6,000,000</td>
+<td>(200,000)**</td>
+<td>-</td>
+<td>5,800,000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الملاحظات</strong>:
+- * تعديل IFRS 16 (إيجار تشغيلي) — 100,000 د.ل
+- ** حذف الذمم المتبادلة بين الشركات (200,000 د.ل)</p>
+<hr>
+<h2 id="section-جدول-إضافي-الموقف-المالي-لكل-شركة-تابعة">📊 جدول إضافي: الموقف المالي لكل شركة تابعة (Subsidiary Snapshot) <a href="#section-جدول-إضافي-الموقف-المالي-لكل-شركة-تابعة" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>الشركة</th>
+<th>الإيرادات</th>
+<th>صافي الربح</th>
+<th>الأصول</th>
+<th>الالتزامات</th>
+<th>حقوق الملكية</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>المقاولات</strong></td>
+<td>18,000,000</td>
+<td>2,200,000</td>
+<td>25,000,000</td>
+<td>14,000,000</td>
+<td>11,000,000</td>
+</tr>
+<tr>
+<td><strong>PVC-S (خدمات)</strong></td>
+<td>3,000,000</td>
+<td>350,000</td>
+<td>4,500,000</td>
+<td>2,200,000</td>
+<td>2,300,000</td>
+</tr>
+<tr>
+<td><strong>PVC-E (مقاولات)</strong></td>
+<td>3,000,000</td>
+<td>320,000</td>
+<td>5,200,000</td>
+<td>3,000,000</td>
+<td>2,200,000</td>
+</tr>
+<tr>
+<td><strong>النظافة</strong></td>
+<td>2,500,000</td>
+<td>300,000</td>
+<td>2,800,000</td>
+<td>1,400,000</td>
+<td>1,400,000</td>
+</tr>
+<tr>
+<td><strong>الإعاشة + السياحة</strong></td>
+<td>2,000,000</td>
+<td>280,000</td>
+<td>2,500,000</td>
+<td>1,100,000</td>
+<td>1,400,000</td>
+</tr>
+<tr>
+<td><strong>الاستيراد</strong></td>
+<td>1,500,000</td>
+<td>150,000</td>
+<td>3,300,000</td>
+<td>1,800,000</td>
+<td>1,500,000</td>
+</tr>
+<tr>
+<td><strong>الإجمالي قبل التجميع</strong></td>
+<td>30,000,000</td>
+<td>3,600,000</td>
+<td>43,300,000</td>
+<td>23,500,000</td>
+<td>19,800,000</td>
+</tr>
+<tr>
+<td><strong>التعديلات</strong></td>
+<td>(0)</td>
+<td>+100,000</td>
+<td>(0)</td>
+<td>-2,000,000</td>
+<td>+2,000,000</td>
+</tr>
+<tr>
+<td><strong>المجمّع</strong></td>
+<td><strong>30,000,000</strong></td>
+<td><strong>3,700,000</strong></td>
+<td><strong>43,300,000</strong></td>
+<td><strong>21,500,000</strong></td>
+<td><strong>21,800,000</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="section-الجزء-الثالث-ملخص-الخطوات-العملية">🎓 الجزء الثالث: ملخص الخطوات العملية <a href="#section-الجزء-الثالث-ملخص-الخطوات-العملية" class="anchor" aria-label="anchor"></a></h1>
+<h2 id="section-خطوات-تطبيق-النظام-المحاسبي">📋 خطوات تطبيق النظام المحاسبي <a href="#section-خطوات-تطبيق-النظام-المحاسبي" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-المرحلة-1-الإعداد">المرحلة 1: الإعداد (شهر 1-2) <a href="#section-المرحلة-1-الإعداد" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>① تأسيس هيكل الحسابات الموحد (CoA)
+   - 6 فئات رئيسية + 60-80 حساب فرعي
+
+② إعداد دليل مراكز التكلفة
+   - شركة → مشروع → بند BoQ → نوع مصروف
+
+③ ضبط إعدادات الـ Multi-Company
+   - كل شركة لها دفتر مستقل + تجميع موحد
+   - عملة موحدة: الدينار الليبي
+</code></pre>
+<h3 id="section-المرحلة-2-التطبيق">المرحلة 2: التطبيق (شهر 3-6) <a href="#section-المرحلة-2-التطبيق" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>④ تدريب الفِرق (محاسبين، مشرفي مشاريع)
+⑤ إدخال الأرصدة الافتتاحية
+⑥ تفعيل القيود اليومية
+⑦ تشغيل الفوترة الآلية للعقود طويلة الأجل
+⑧ تفعيل الموازنات والرقابة
+</code></pre>
+<h3 id="section-المرحلة-3-التحسين">المرحلة 3: التحسين (شهر 7-12) <a href="#section-المرحلة-3-التحسين" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>⑨ إعداد تقارير تجميعية شهرية
+⑩ مراجعة بنود الأصول الثابتة
+⑪ تحسين عمليات الإغلاق الشهري
+⑫ إعداد القوائم السنوية الأولى المجمّعة
+</code></pre>
+<hr>
+<h2 id="section-المخاطر-الجوهرية-في-السيناريو">⚠️ المخاطر الجوهرية في السيناريو <a href="#section-المخاطر-الجوهرية-في-السيناريو" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>المخاطرة</th>
+<th>الأثر</th>
+<th>الحل المقترح</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>تأخر التحصيلات من الجهات</strong></td>
+<td>سيولة</td>
+<td>Aging + متابعة قانونية</td>
+</tr>
+<tr>
+<td><strong>تذبذب سعر الصرف</strong></td>
+<td>تكلفة</td>
+<td>لا يوجد حل مثالي (مؤجل)</td>
+</tr>
+<tr>
+<td><strong>خطأ في تمييز Inter-Company</strong></td>
+<td>تجميع خاطئ</td>
+<td>Audit checks + تدريب</td>
+</tr>
+<tr>
+<td><strong>تضخم تكاليف العقود طويلة الأجل</strong></td>
+<td>خسارة</td>
+<td>Variance Adjustment (قيد 6)</td>
+</tr>
+<tr>
+<td><strong>سرقة / اختلاس من مشرفي المشاريع</strong></td>
+<td>خسارة مباشرة</td>
+<td>فصل الصلاحيات + سير موافقات</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-القرارات-الموصى-بها-للنواة">🎯 القرارات الموصى بها للنواة (MVP) <a href="#section-القرارات-الموصى-بها-للنواة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-بناء-على-التحليل-العميق">بناءً على التحليل العميق: <a href="#section-بناء-على-التحليل-العميق" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>
+<p><strong>نواة النظام يجب أن تدعم بشكل أصلي (Native)</strong>:
+   - ✅ Multi-Company (5+ شركات في نفس DB)
+   - ✅ Project Costing (مراكز تكلفة هرمية)
+   - ✅ Inter-Company Transactions (بحذف تلقائي)
+   - ✅ POC Revenue Recognition (للعقود طويلة الأجل)
+   - ✅ Retainage Tracking (مع حسابات مستقلة)
+   - ✅ Aging Reports (4-5 خانات)</p>
+</li>
+<li>
+<p><strong>يمكن تأجيلها (Add Later)</strong>:
+   - ⏸️ Multi-Currency
+   - ⏸️ Tax Modules
+   - ⏸️ Payroll
+   - ⏸️ Fixed Asset Module (manual calculation sufficient for now)</p>
+</li>
+<li>
+<p><strong>يجب بناؤها من اليوم الأول بشكل صحيح</strong>:
+   - 🔴 Chart of Accounts هرمي (5 levels)
+   - 🔴 Audit Trail كامل (لا تعديل بعد الإقفال)
+   - 🔴 Approval Workflow قابل للتخصيص</p>
+</li>
+</ol>
+<hr>
+<h2 id="section-خلاصة-نهائية">📌 خلاصة نهائية <a href="#section-خلاصة-نهائية" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>النظام المطلوب لشركة قابضة ليبيرية متعددة الأنشطة هو نظام ERP "خفيف" (Modular Monolith) يدعم:</strong></p>
+<p>① تعدد الشركات (Multi-Company) في قاعدة بيانات واحدة مع <code>company_id</code>
+② إدارة مشاريع معقدة (Project-Centric) حيث المشروع = عقد + مركز تكلفة + flow مالي
+③ عقود طويلة الأجل بطريقة POC (Input method)
+④ حذف تلقائي للعمليات بين الشركات (Inter-Company Elimination)
+⑤ تقارير تجميعية للقابضة (Consolidated Reports)
+⑥ سير موافقات مرن مع thresholds (المبالغ الصغيرة تلقائية، الكبيرة يدوية)
+⑦ Aging قوي لمتابعة التحصيلات المتأخرة (مشكلة ليبيا الكبرى)</p>
+</blockquote>
+<hr>
+<p><em>⚙️ أنتج بواسطة Deep Researcher (Facilitator)</em>
+<em>الجلسة 001 — 2026-07-04 — Deep Dive Analysis</em>
+<em>يستند على السيناريو الواقعي المُقدَّم من المستخدم</em></p>
+    <footer class="page-footer">
+      <span>ANALYSIS-HOLDING-DEEP-DIVE.md</span>
+      <span>← <a href="analysis-holding-deep-dive.html">مختبر العصف الذهني — Session 001: FRD MVP</a></span>
+    </footer>
+  </article>
+</main>
+
+</div>
+</body>
+</html>

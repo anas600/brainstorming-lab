@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>توصيات مشروع تحليل التغطية الإعلامية — MENA vs العالم</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --border: #e9e3d6;
+    --ink: #14171e;
+    --ink-2: #3a4256;
+    --ink-3: #7c7a72;
+    --primary: #2f6f5e;
+    --primary-soft: rgba(47, 111, 94, 0.08);
+    --accent: #c97b3f;
+    --accent-soft: rgba(201, 123, 63, 0.08);
+    --warn: #b06367;
+    --line-soft: #efe9d8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    background-image: 
+      radial-gradient(ellipse at 5% 0%, rgba(47, 111, 94, 0.04), transparent 50%),
+      radial-gradient(ellipse at 95% 100%, rgba(201, 123, 63, 0.04), transparent 50%);
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 24px 96px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 56px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .topbar .tag {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .hero { margin-bottom: 72px; }
+  .hero .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero .label svg { width: 16px; height: 16px; }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--primary); }
+  .hero p.lead {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    max-width: 720px;
+  }
+  section { margin-bottom: 80px; }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 30px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 svg { width: 28px; height: 28px; color: var(--primary); flex-shrink: 0; }
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    margin-top: 28px;
+  }
+  p { color: var(--ink-2); margin-bottom: 14px; font-size: 15px; }
+  strong { color: var(--ink); font-weight: 600; }
+  em.h { color: var(--primary); font-style: normal; font-weight: 600; }
+  .callout {
+    background: var(--primary-soft);
+    border-right: 4px solid var(--primary);
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin: 24px 0;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .callout.warn {
+    background: rgba(176, 99, 103, 0.06);
+    border-right-color: var(--warn);
+  }
+  .callout.accent {
+    background: var(--accent-soft);
+    border-right-color: var(--accent);
+  }
+  .callout .title {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .callout.warn .title { color: var(--warn); }
+  .callout.accent .title { color: var(--accent); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 26px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .hyp {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hyp::before {
+    content: attr(data-id);
+    position: absolute;
+    top: -12px;
+    left: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 56px;
+    font-weight: 500;
+    color: var(--primary-soft);
+    line-height: 1;
+  }
+  .hyp .h-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--primary);
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .hyp .h-desc {
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    position: relative;
+  }
+  .hyp[data-id="H1"] { border-right: 3px solid var(--warn); }
+  .hyp[data-id="H1"] .h-name { color: var(--warn); }
+  .bench-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 60px;
+    gap: 14px;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 14px;
+  }
+  .bench-row .label { color: var(--ink-2); font-weight: 500; }
+  .bench-row .bar-bg {
+    height: 16px;
+    background: var(--line-soft);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bench-row .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #4a8e7c);
+    border-radius: 6px;
+  }
+  .bench-row .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    text-align: left;
+  }
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .pillar {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-align: center;
+  }
+  .pillar-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .pillar-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .pillar-en {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .src-cat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 12px 0;
+  }
+  .src-cat .cat-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .src-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .src-list li {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    font-size: 14px;
+  }
+  table.compare th {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 14px 18px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+  table.compare td {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  table.compare tr:first-child td { border-top: 0; }
+  table.compare td:first-child { font-weight: 600; color: var(--ink); }
+  .decision {
+    background: linear-gradient(135deg, var(--primary) 0%, #245548 100%);
+    color: white;
+    padding: 32px 36px;
+    border-radius: 20px;
+    margin: 32px 0;
+  }
+  .decision h3 {
+    color: white;
+    font-size: 22px;
+    margin-bottom: 14px;
+    margin-top: 0;
+  }
+  .decision p { color: rgba(255,255,255,0.9); margin: 0; font-size: 15px; }
+  .decision .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .footer .from { color: var(--primary); font-weight: 500; }
+  @media (max-width: 640px) {
+    .wrap { padding: 32px 18px 64px; }
+    .hero h1 { font-size: 30px; }
+    .hero p.lead { font-size: 16px; }
+    h2 { font-size: 22px; }
+    .bench-row { grid-template-columns: 100px 1fr 50px; gap: 10px; font-size: 13px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span>يونيو 2026</span>
+    <span class="tag">وثيقة توصيات · v1.0</span>
+  </div>
+
+  <div class="hero">
+    <div class="label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      مشروع بحثي · Mavis × Anas
+    </div>
+    <h1>تحليل التغطية الإعلامية — <em>MENA</em> في مرآة الإعلام الدولي</h1>
+    <p class="lead">
+      توصيات شاملة لمنهجية علمية تكشف الفجوات بين التغطية المحلية في الشرق الأوسط وشمال أفريقيا والتغطية الغربية/الآسيوية — بدون الانزلاق لاتهامات بدون دليل.
+    </p>
+  </div>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      المنهجية المقترحة
+    </h2>
+
+    <div class="callout">
+      <div class="title">المبدأ الأساسي</div>
+      <strong>Comparative Bias Analysis</strong> — توثيق الفروقات الموثّقة بين البيئات الإعلامية، مع تقديم <em class="h">تفسيرات متعددة</em>، دون الجزم بـ"تظليل متعمد" قبل توفر أدلة قاطعة.
+    </div>
+
+    <h3>لماذا هذه المنهجية؟</h3>
+    <p>هناك فجوة توثيقية أكاديمية موثّقة بين تغطية الإعلام في MENA وتغطية الإعلام الدولي (مثل دراسات Pew Research، Reuters Institute Digital News Report، Reporters Without Borders). لكن <strong>"فرق موثّق"</strong> يختلف عن <strong>"تضليل متعمد"</strong> — الأول ظاهرة قابلة للقياس، الثاني يحتاج دليل على النية.</p>
+
+    <div class="callout warn">
+      <div class="title">تحفّظ مهم</div>
+      لا يوجد "truth" محايد في الإعلام. كل مؤسسة عندها <em>editorial line</em>. المقارنة المنصفة تقارن بين <strong>الـ framings</strong>، لا تزعم أن أحدها "الحقيقة".
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      الفرضيات المفسّرة الخمسة
+    </h2>
+    <p>لكل فرق موثّق، نقدّم 5 تفسيرات محتملة (multi-hypothesis). الدليل هو الذي يحدد أيها الأقرب، لا التحليل المسبق.</p>
+
+    <div class="card-grid">
+      <div class="hyp" data-id="H1">
+        <div class="h-name">H1 — مؤامرة</div>
+        <div class="h-desc">تظليل متعمد لخدمة agenda سياسية/اقتصادية محلية. صعب الإثبات بدون تسريبات أو وثائق داخلية.</div>
+      </div>
+      <div class="hyp" data-id="H2">
+        <div class="h-name">H2 — هيكلية</div>
+        <div class="h-desc">تحيّزات تحريرية طبيعية موجودة في كل مؤسسة (editorial line). الأكثر شيوعاً في الإعلام.</div>
+      </div>
+      <div class="hyp" data-id="H3">
+        <div class="h-name">H3 — لغوية / ثقافية</div>
+        <div class="h-desc">فروقات في الإطار بسبب اللغة، الحساسية الثقافية، audience relevance للجمهور المستهدف.</div>
+      </div>
+      <div class="hyp" data-id="H4">
+        <div class="h-name">H4 — لوجستية</div>
+        <div class="h-desc">فرق التوقيت، توفر المصادر، الوصول الميداني، الموارد المالية للمؤسسة.</div>
+      </div>
+      <div class="hyp" data-id="H5">
+        <div class="h-name">H5 — مؤسسية</div>
+        <div class="h-desc">ملكية وسائل الإعلام، تأثير المموّلين، التدخلات الحكومية المباشرة (في الإعلام المملوك للدولة).</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+      أبعاد التوثيق السبعة
+    </h2>
+    <p>لكل تغطية إخبارية نجمعها، نسجّل 7 أبعاد موضوعية:</p>
+
+    <div class="pillar-grid">
+      <div class="pillar">
+        <div class="pillar-num">1</div>
+        <div class="pillar-name">العنوان</div>
+        <div class="pillar-en">Headline</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">2</div>
+        <div class="pillar-name">إطار السرد</div>
+        <div class="pillar-en">Framing</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">3</div>
+        <div class="pillar-name">اللغة والنبرة</div>
+        <div class="pillar-en">Tone</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">4</div>
+        <div class="pillar-name">المصادر</div>
+        <div class="pillar-en">Sources Cited</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">5</div>
+        <div class="pillar-name">ما لم يُذكر</div>
+        <div class="pillar-en">Omissions</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">6</div>
+        <div class="pillar-name">التركيز</div>
+        <div class="pillar-en">Emphasis</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">7</div>
+        <div class="pillar-name">التوقيت</div>
+        <div class="pillar-en">Date/Time</div>
+      </div>
+    </div>
+
+    <h3>مثال تطبيقي</h3>
+    <p>نفس الحدث — مثلاً "مقتل مدنيين في اقتتال داخلي" — يمكن أن يظهر كالتالي:</p>
+
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>البُعد</th>
+          <th>الإعلام المحلي (عربي)</th>
+          <th>الإعلام الغربي</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>العنوان</td>
+          <td>"استشهاد مدنيين في هجوم على القرية"</td>
+          <td>"Civilians killed in suspected militant attack"</td>
+        </tr>
+        <tr>
+          <td>الإطار</td>
+          <td>ضحايا / شهداء</td>
+          <td>إرهاب / انتهاك</td>
+        </tr>
+        <tr>
+          <td>المصادر</td>
+          <td>شهود عيان + مصادر محلية</td>
+          <td>منظمات دولية + تأكيد رسمي</td>
+        </tr>
+        <tr>
+          <td>ما لم يُذكر</td>
+          <td>خلفية الفاعلين</td>
+          <td>السياق التاريخي</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+      المصادر عبر 5 بيئات إعلامية
+    </h2>
+    <p>لكل حدث نجمع التغطية من 5 بيئات متوازنة:</p>
+
+    <div class="src-cat">
+      <div class="cat-name">🌍 MENA Local — بالعربية</div>
+      <ul class="src-list">
+        <li>Al Jazeera</li><li>Al Arabiya</li><li>Asharq Al-Awsat</li><li>Al Mayadeen</li><li>France 24 AR</li><li>DW Arabic</li><li>Sky News Arabia</li>
+      </ul>
+    </div>
+
+    <div class="src-cat">
+      <div class="cat-name">🌐 MENA Local — بالإنجليزية</div>
+      <ul class="src-list">
+        <li>Mada Masr</li><li>Arab News</li><li>The New Arab</li><li>Middle East Eye</li><li>Daily News Egypt</li><li>Egypt Independent</li>
+      </ul>
+    </div>
+
+    <div class="src-cat">
+      <div class="cat-name">🗽 Global Western</div>
+      <ul class="src-list">
+        <li>Reuters</li><li>BBC</li><li>NYT</li><li>The Guardian</li><li>FT</li><li>Bloomberg</li><li>The Economist</li>
+      </ul>
+    </div>
+
+    <div class="src-cat">
+      <div class="cat-name">🌏 Global Asian</div>
+      <ul class="src-list">
+        <li>SCMP</li><li>Times of India</li><li>NHK World</li><li>Straits Times</li><li>Nikkei Asia</li>
+      </ul>
+    </div>
+
+    <div class="src-cat">
+      <div class="cat-name">🎓 Think Tanks / Academic</div>
+      <ul class="src-list">
+        <li>Brookings</li><li>Chatham House</li><li>ICG</li><li>Carnegie MEC</li><li>ACLED</li><li>Pew Research</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      الحدث التجريبي (Pilot Event)
+    </h2>
+
+    <h3>لماذا الحرب في السودان؟</h3>
+    <p>اخترت <strong>الحرب الأهلية السودانية (SAF × RSF)</strong> كحدث تجريبي للأسباب التالية:</p>
+
+    <div class="bench-row">
+      <span class="label">تغطية دولية</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:85%"></div></div>
+      <span class="val">عالية</span>
+    </div>
+    <div class="bench-row">
+      <span class="label">تغطية MENA محلية</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:60%"></div></div>
+      <span class="val">متوسطة</span>
+    </div>
+    <div class="bench-row">
+      <span class="label">وضوح الفروقات</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:78%"></div></div>
+      <span class="val">واضحة</span>
+    </div>
+    <div class="bench-row">
+      <span class="label">أهمية إنسانية</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:95%"></div></div>
+      <span class="val">طارئ</span>
+    </div>
+
+    <div class="callout accent">
+      <div class="title">بدائل ممكنة للـ Pilot</div>
+      <strong>أ) البحر الأحمر / هجمات الحوثيين</strong> — بُعد اقتصادي واضح (التجارة العالمية)<br>
+      <strong>ب) قرارات OPEC+ النفطية</strong> — اقتصادية بحتة، سهلة القياس<br>
+      <strong>ج) الانتخابات في بلد MENA</strong> — سياسية بحتة، أنماط معروفة
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      هيكل المشروع
+    </h2>
+
+    <div class="card">
+      <h3>📁 media-analysis/</h3>
+      <div class="src-list" style="margin-top: 10px;">
+        <li>README.md</li>
+        <li>METHODOLOGY.md</li>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📁 events/pilot-sudan-2026/</h3>
+      <div class="src-list" style="margin-top: 10px;">
+        <li>local-ar.md</li>
+        <li>local-en.md</li>
+        <li>global-western.md</li>
+        <li>global-asian.md</li>
+        <li>COMPARISON.md</li>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📁 findings/</h3>
+      <div class="src-list" style="margin-top: 10px;">
+        <li>divergences.md</li>
+        <li>convergences.md</li>
+        <li>interpretations.md</li>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📁 sources/</h3>
+      <div class="src-list" style="margin-top: 10px;">
+        <li>SOURCES.md</li>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      معايير الجودة
+    </h2>
+
+    <div class="pillar-grid">
+      <div class="pillar">
+        <div class="pillar-num" style="color: var(--primary);">✓</div>
+        <div class="pillar-name">كل ادعاء له citation</div>
+        <div class="pillar-en">URL + تاريخ الوصول</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num" style="color: var(--primary);">✓</div>
+        <div class="pillar-name">عرض متعدد الفرضيات</div>
+        <div class="pillar-en">Multi-hypothesis</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num" style="color: var(--primary);">✓</div>
+        <div class="pillar-name">لا انحياز مسبق</div>
+        <div class="pillar-en">No Confirmation Bias</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num" style="color: var(--primary);">✓</div>
+        <div class="pillar-name">احترام السياق</div>
+        <div class="pillar-en">Cultural Respect</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="decision">
+    <div class="badge">📌 الخلاصة</div>
+    <h3>Comparative Bias Analysis</h3>
+    <p>نوثّق الفروقات بـ<strong style="color:white;"> أدلة قابلة للتحقق</strong>، نقدّم <strong style="color:white;">تفسيرات متعددة</strong>، ونخلّي <strong style="color:white;">القارئ يستنتج</strong> — دون الانزلاق لاتهامات بدون دليل.</p>
+  </div>
+
+  <div class="footer">
+    <span><span class="from">Mavis</span> · معاونك التقني</span>
+    <span>يونيو 2026 · `/workspace/media-analysis/`</span>
+  </div>
+
+</div>
+</body>
+</html>

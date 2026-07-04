@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script>
+(function() {
+  var KEY = "brainstorming_lab_session_001";
+  if (localStorage.getItem(KEY) !== "1") {
+    window.location.replace("index.html");
+  }
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع · مختبر العصف الذهني — Session 001: FRD MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+}
+.sidebar-link.current { font-weight: 600; }
+.sidebar-link .icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 28px 56px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 16px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-link:hover {
+  background: var(--primary-light); color: var(--primary);
+  border-color: var(--primary);
+}
+.page-header-meta { flex: 1; min-width: 0; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.content {
+  padding: 48px 56px 96px;
+  max-width: 920px; margin: 0 auto;
+}
+.content h1, .content h2, .content h3, .content h4 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400; color: var(--ink);
+  letter-spacing: -0.005em;
+  scroll-margin-top: 110px;
+}
+.content h1 {
+  font-size: 38px; margin: 8px 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.2;
+}
+.content h2 {
+  font-size: 26px; margin: 56px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.content h3 { font-size: 20px; margin: 36px 0 12px; color: var(--ink-soft); }
+.content h4 { font-size: 16px; margin: 24px 0 10px; color: var(--ink-soft); font-weight: 600; font-family: 'Outfit', sans-serif; }
+.content p { margin-bottom: 14px; color: var(--ink-soft); }
+.content strong { color: var(--ink); font-weight: 600; }
+.content em { color: var(--ink-soft); }
+.content ul, .content ol { margin: 12px 0 16px 24px; color: var(--ink-soft); }
+.content li { margin-bottom: 6px; padding-right: 4px; }
+.content ul li::marker { color: var(--accent); }
+.content blockquote {
+  border-right: 3px solid var(--primary);
+  background: var(--primary-light);
+  padding: 14px 22px; margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--ink); font-style: normal;
+}
+.content blockquote p { margin: 0; color: var(--ink); }
+.content blockquote strong { color: var(--primary); }
+.content table {
+  width: 100%; border-collapse: collapse;
+  margin: 18px 0; font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.content thead { background: var(--bg); }
+.content th {
+  text-align: right; padding: 12px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+.content td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: var(--bg-soft); }
+.content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+  border: 1px solid var(--line-soft);
+}
+.content pre {
+  background: #14171e; color: #e9e3d6;
+  padding: 18px 22px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  direction: ltr; text-align: left;
+}
+.content pre code {
+  background: transparent; border: none;
+  color: inherit; padding: 0; font-size: 13px;
+}
+.xref {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; margin: 0 2px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.xref:hover {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+}
+.xref::before { content: "→"; font-size: 10px; opacity: 0.7; }
+.content h2 .anchor, .content h3 .anchor, .content h4 .anchor {
+  margin-right: 12px; opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+}
+.content h2:hover .anchor,
+.content h3:hover .anchor,
+.content h4:hover .anchor { opacity: 1; }
+.content h2 .anchor::before { content: "#"; }
+.content hr {
+  border: none; border-top: 1px dashed var(--line);
+  margin: 40px 0;
+}
+.page-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-footer a { color: var(--accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static; height: auto;
+    border-left: none; border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .sidebar-group-title, .sidebar-link { padding-right: 16px; padding-left: 16px; }
+  .content { padding: 32px 24px 64px; }
+  .page-header { padding: 16px 24px; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">مختبر العصف الذهني — Session 001: FRD MVP</div>
+    <div class="sidebar-brand-tag">4 documents</div>
+  </div>
+  <div class="sidebar-group">
+<div class="sidebar-group-title">Main</div>
+<a href="analysis-holding-deep-dive.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🎯 التحليل العميق — نظام محاسبي لشركة قابضة ليبيرية</a>
+<a href="cycle-1-ideation.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 الدورة 1: توليد الأفكار (Ideation)</a>
+<a href="cycle-2-critique.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔍 الدورة 2: النقد والتمحيص (Critique)</a>
+<a href="session.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع</a>
+</div>
+  <div class="sidebar-footer">
+    Multi-page analysis portal<br>
+    cross-references active
+  </div>
+</aside>
+
+<main>
+  <div class="page-header">
+    <a href="analysis-holding-deep-dive.html" class="back-link">← مختبر العصف الذهني — Session 001: FRD MVP</a>
+    <div class="page-header-meta">
+      <div class="page-breadcrumb">Main · 📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع</div>
+      <div class="page-title">📂 Session 001 — FRD لـ MVP: نواة محاسبية + إدارة مشاريع</div>
+    </div>
+  </div>
+  <article class="content">
+    <blockquote>
+<p><strong>التاريخ</strong>: 2026-07-02
+<strong>Facilitator</strong>: Deep Researcher (ديب الباحث)
+<strong>الحالة</strong>: 🟡 المرحلة 0 (توضيحات) → بانتظار تأكيد لبدء المرحلة 1</p>
+</blockquote>
+<hr>
+<h2 id="section-سياق-الموضوع">🎯 سياق الموضوع (Topic Context) <a href="#section-سياق-الموضوع" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-وصف-المشروع">وصف المشروع <a href="#section-وصف-المشروع" class="anchor" aria-label="anchor"></a></h3>
+<p>شركة متعددة المجالات (Holding) في ليبيا تعمل في:
+- 🏗️ <strong>مقاولات</strong> (Construction)
+- 📋 <strong>إدارة مشاريع</strong> (Project Management)
+- 🔧 <strong>ورش وتصنيع</strong> (Workshops &amp; Manufacturing)
+- 📦 <strong>توريد</strong> (Supply / Procurement)
+- 📊 <strong>إدارة مخازن</strong> (Inventory Management)</p>
+<h3 id="section-الطلب-المقدم-من-المستخدم">الطلب المُقدَّم من المستخدم <a href="#section-الطلب-المقدم-من-المستخدم" class="anchor" aria-label="anchor"></a></h3>
+<blockquote>
+<p>"أفكر في تحليل وثيقة متطلبات (FRD) لنظام محاسبة وعمليات مالية ... الخوص في تحليل النظام أكثر، والتأكد من فهم العمليات الأساسية قبل إطلاق المختبر الكامل"</p>
+</blockquote>
+<h3 id="section-الهدف-النهائي">الهدف النهائي (Goal) <a href="#section-الهدف-النهائي" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>المرحلة الأولى (MVP)</strong>: نواة محاسبية + <strong>موديول إدارة المشاريع</strong></li>
+<li><strong>المنهجية</strong>: Agile SDLC — دورات قصيرة، دخول السوق بسرعة</li>
+<li><strong>التوسع المستقبلي</strong>: ربط/توسع لإدارة التصنيع، التوريد، المخازن، إلخ</li>
+</ul>
+<hr>
+<h2 id="section-qampa-المسجل">🗣️ Q&amp;A المسجّل <a href="#section-qampa-المسجل" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-أسئلة-facilitator-والإجابات">أسئلة Facilitator والإجابات <a href="#section-أسئلة-facilitator-والإجابات" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>سؤال Facilitator</th>
+<th>إجابة المستخدم</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong></td>
+<td>ما الهدف من الوثيقة؟ FRD عام؟ RFP لمورّد؟ تقييم ERP؟</td>
+<td><strong>FRD عام</strong> (للاستخدام الداخلي الآن) — لتكوين نواة النظام</td>
+</tr>
+<tr>
+<td><strong>Q2</strong></td>
+<td>ما النطاق؟ Finance فقط أو يشمل Operations كاملة؟</td>
+<td><strong>نواة محاسبة فقط</strong> + <strong>موديول إدارة مشاريع</strong> = MVP</td>
+</tr>
+<tr>
+<td><strong>Q3</strong></td>
+<td>الجمهور (مطورين/إدارة/مستثمر)؟</td>
+<td>(لم تُذكر صراحة — سياق ضمني: المستخدم + فريق لاحق)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>📝 <strong>ملاحظة توثيقية</strong>: المستخدم لم يفهم "RFP لمورّد" — ده مصطلح تقني خاص بشراء أنظمة من موردين خارجيين. لا حاجة له في هذه الجلسة.</p>
+</blockquote>
+<h3 id="section-النظام-المرجعي">النظام المرجعي <a href="#section-النظام-المرجعي" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>المستخدم <strong>لديه ERP داخلي قائم</strong> (المشروع التاريخي مع Mavis) — لكنه قرّر <strong>تجاهله الآن</strong> في هذه الجلسة</li>
+<li>التركيز على <strong>بناء FRD جديد</strong> للنواة المرجوة</li>
+</ul>
+<hr>
+<h2 id="section-الـ-14-عملية-أساسية-ناقصة">🔍 الـ 14 عملية أساسية ناقصة (المُرَشَّحة للنقاش) <a href="#section-الـ-14-عملية-أساسية-ناقصة" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p>المستخدم اختار <strong>14 عملية</strong> (من أصل ~30 عملية محاسبية كاملة) كـ nucleus نقاش في الـ Brainstorming Lab</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>العملية</th>
+<th>الربط بالمشروع</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>الذمم (AR / AP)</strong> + Aging + تحصيل</td>
+<td>كل القطاعات</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>البنوك</strong> + تسوية + عملات متعددة</td>
+<td>Holding متعدد الجنسيات</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>الأصول الثابتة</strong> + إهلاك + سجل أصول</td>
+<td>كل القطاعات</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>الرواتب</strong> + تأمينات + خصومات</td>
+<td>كل القطاعات</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>مراكز التكلفة / المشاريع</strong> + Job costing</td>
+<td><strong>مقاولات + مشاريع</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>المصنع / الورش</strong> + BOM + WIP</td>
+<td><strong>ورش + تصنيع</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>التحويلات بين المستودعات</strong></td>
+<td><strong>مخازن</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>التسويات الجردية</strong> + Stocktake</td>
+<td><strong>مخازن</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>الموازنات التقديرية</strong> + Budget vs Actual</td>
+<td>إدارة</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>القوائم المالية</strong> + إغلاقات شهرية/سنوية</td>
+<td>إدارة + محاسبة</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>الضرائب</strong> + VAT/WHT حسب ليبيا</td>
+<td>كل القطاعات</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>المعاملات بين الشركات</strong> Inter-company</td>
+<td><strong>Holding</strong></td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>سير الموافقات</strong> Approval workflow</td>
+<td>إدارة</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>الدفعات المقدمة / المصروفات المقدمة</strong></td>
+<td><strong>مقاولات</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-خصوصيات-ليبيرية">خصوصيات ليبيرية (Libyan-specific) <a href="#section-خصوصيات-ليبيرية" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>⚠️ <strong>Retainage &amp; Retention</strong> (جوهري للعقود الإنشائية)</li>
+<li>⚠️ <strong>Joint Ventures / Consortia</strong> (شائع في المقاولات الليبية)</li>
+<li>⚠️ <strong>العملات المتعددة</strong> (الدينار + صرف أجنبي)</li>
+<li>⚠️ <strong>Work-in-Progress (WIP)</strong> (للورش)</li>
+</ul>
+<hr>
+<h2 id="section-المرحلة-التالية-المقترح">🧭 المرحلة التالية — المقترح <a href="#section-المرحلة-التالية-المقترح" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-المرحلة-1-تشكيل-الفريق-الديناميكي">المرحلة 1: تشكيل الفريق الديناميكي <a href="#section-المرحلة-1-تشكيل-الفريق-الديناميكي" class="anchor" aria-label="anchor"></a></h3>
+<p><strong>اقتراح Facilitator لفريق هذه الجلسة:</strong></p>
+<table>
+<thead>
+<tr>
+<th>الخبير</th>
+<th>التخصص</th>
+<th>السبب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>[الخبير المحاسبي / CFO]</strong></td>
+<td>محاسبة مالية، GAAP، IFRS، قوائم مالية</td>
+<td>يمثّل ضوابط النواة المحاسبية</td>
+</tr>
+<tr>
+<td><strong>[خبير المقاولات / Project Manager]</strong></td>
+<td>Job costing، Retainage، WIP، JVs</td>
+<td>يمثّل الموديول الثاني (إدارة المشاريع)</td>
+</tr>
+<tr>
+<td><strong>[المهندس المعماري / Tech Lead]</strong></td>
+<td>Modular monolith، event-driven، schema design</td>
+<td>يمثّل الجانب التقني/التوسّع</td>
+</tr>
+<tr>
+<td><strong>[محلل الأعمال / Product Owner]</strong></td>
+<td>User stories، edge cases، إغفال المخاطر</td>
+<td>يمثّل المنتج وقابلية الاستخدام</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>4 خبراء — مؤثرين على الـ MVP + قابلية التوسع.</strong></p>
+</blockquote>
+<h3 id="section-قبل-بدء-الدورة-1-أحتاج-توضيح">قبل بدء الدورة 1 (Ideation) أحتاج توضيح: <a href="#section-قبل-بدء-الدورة-1-أحتاج-توضيح" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>س1</strong>: هل الفريق المقترح مناسب؟ أو تريد تبديل/إضافة خبير معيّن؟</li>
+<li><strong>س2</strong>: هل نبدأ Cycle 1 على الـ <strong>14 عملية</strong> كاملة، أم نركّز أولاً على subset (مثلاً: 5 عمليات جوهرية)؟</li>
+<li><strong>س3</strong>: بأي <strong>منظور</strong> نبدأ — Finance-only أولاً، أم Project-Centric (نبدأ من احتياجات مشروع حقيقي ثم نرجع للنواة)؟</li>
+</ul>
+<hr>
+<h2 id="section-أهم-اقتباس-من-المستخدم">💬 أهم اقتباس من المستخدم (لتوثيق الرسالة) <a href="#section-أهم-اقتباس-من-المستخدم" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p>"أبغى نواة للموديول المحاسبي، وقابلية للتوسع لاحقاً لموديولات أخرى"
+"أهم بموديول إدارة المشاريع، وأشتغل عليه مع نواة المحاسبة للوصول لـ MVP"
+"ممكن أتجاهل الـ ERP الحالي، وأركّز على الـ FRD"
+"أبغى أتفاعل معك حول العمليات الأساسية، ونحلّلها مع بعض ضمن الفريق"</p>
+</blockquote>
+<hr>
+<h2 id="section-القرارات-المؤكدة">✅ القرارات المؤكّدة (Confirmed Decisions) <a href="#section-القرارات-المؤكدة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-q1-الفريق">Q1: الفريق <a href="#section-q1-الفريق" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>التأكيد</strong>: مناسب</li>
+<li><strong>الأعضاء الـ 4</strong>:</li>
+<li><code>[CFO أحمد]</code> — كبير ماليين</li>
+<li><code>[م. عمر]</code> — خبير مقاولات + PM</li>
+<li><code>[CTO ليلى]</code> — مهندس معماري / Tech Lead</li>
+<li><code>[PO سارة]</code> — محلل أعمال / Product Owner</li>
+</ul>
+<h3 id="section-q2-النطاق">Q2: النطاق (Scope) <a href="#section-q2-النطاق" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>التأكيد</strong>: الـ <strong>14 عملية أساسية كاملة</strong> (لا اختصار)</li>
+<li><strong>الشرط</strong>: كل عملية تُشرح في <strong>سيناريو عملي واقعي</strong></li>
+</ul>
+<h3 id="section-q3-منظور-البداية">Q3: منظور البداية (Approach) <a href="#section-q3-منظور-البداية" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>التأكيد</strong>: <strong>Project-Centric</strong> — ابدأ من متطلبات مشروع حقيقي، ارجع للنواة</li>
+<li><strong>القيدَين الثابتين</strong> (المستخدم أكّد عليهم مرتين):</li>
+<li>⚠️ <strong>المرونة</strong> (Schema قابل للتوسع)</li>
+<li>⚠️ <strong>قابلية الربط</strong> (Modules تتكلم مع بعضها)</li>
+</ul>
+<h3 id="section-q4-منهجية-المستخدم-الملزمة">Q4: منهجية المستخدم المُلزمة (Implicit) <a href="#section-q4-منهجية-المستخدم-الملزمة" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li><strong>Agile SDLC</strong> — دورات قصيرة، دخول السوق بسرعة</li>
+<li><strong>MVP أولاً</strong> — نواة محاسبية + Project Mgmt</li>
+<li><strong>تجاهل ERP الداخلي القائم</strong> (مؤجل لجلسات أخرى)</li>
+</ul>
+<hr>
+<h2 id="section-الحالة">📅 الحالة (Status) <a href="#section-الحالة" class="anchor" aria-label="anchor"></a></h2>
+<ul>
+<li>✅ الدستور مُوثّق (SYSTEM.md)</li>
+<li>✅ Session 001 مُفتَح (هذا الملف)</li>
+<li>✅ Q&amp;A مسجّل</li>
+<li>✅ قائمة العمليات الـ 14 مرشّحة للنقاش</li>
+<li>✅ القرارات المؤكّدة (4 محاور)</li>
+<li>✅ الدورة 1 (Ideation) مكتملة — 56 فكرة</li>
+<li>✅ اللوحة المنشورة على الرابط العام: https://lb5dzdx75mmk.space.minimax.io (password: blab-001-frd-mvp-2026)</li>
+<li>✅ <strong>تحليل عميق سيناريو واقعي</strong>: <code>ANALYSIS-HOLDING-DEEP-DIVE.md</code> (Holding + 4 شركات + عقود طويلة الأجل)</li>
+<li>⏳ الدورة 2 (Critique) — مُعلّقة لحين تقييم المستخدم</li>
+<li>⏳ الدورة 3 (Synthesis) — مُعلّقة</li>
+<li>⏳ التقرير النهائي — مُعلّق</li>
+</ul>
+<hr>
+<h2 id="section-تعديلات-النطاق-2026-07-04">🔄 تعديلات النطاق (Scope Adjustments) — 2026-07-04 <a href="#section-تعديلات-النطاق-2026-07-04" class="anchor" aria-label="anchor"></a></h2>
+<p>بعد التحليل العميق، المستخدم قرّر <strong>استبعاد 4 عمليات</strong> من الـ 14:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>العملية</th>
+<th>السبب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>الضرائب + VAT/WHT</strong></td>
+<td>ليست أولوية حالياً</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>التحويلات بين المستودعات</strong></td>
+<td>تبسيط (إضافة لاحقة ممكنة)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>الرواتب + تأمينات</strong></td>
+<td>خارجية عن النواة (HR module لاحقاً)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>البنوك + تسوية + عملات</strong></td>
+<td>تبسيط (مؤجل)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>النطاق المُعدَّل</strong>: <strong>10 عمليات</strong> مُركَّزة (التفاصيل في <code>ANALYSIS-HOLDING-DEEP-DIVE.md</code>)</p>
+<h3 id="section-السيناريو-الواقعي-المحدث">السيناريو الواقعي المُحدَّث <a href="#section-السيناريو-الواقعي-المحدث" class="anchor" aria-label="anchor"></a></h3>
+<p>شركة <strong>قابضة (Holding)</strong> فيها 4 شركات تابعة رئيسية:
+1. <strong>شركة مقاولات</strong> (5 مشاريع نشطة، 18M د.ل إيراد)
+2. <strong>شركة PVC-S (مقدّمة خدمات)</strong> + <strong>PVC-E (منفّذة مشاريع)</strong> منفصلتين (6M د.ل)
+3. <strong>شركة خدمات نظافة</strong> (5 عقود طويلة الأجل، 2.5M د.ل)
+4. <strong>شركة إعاشة + إدارة مناطق سياحية</strong> (4 عقود طويلة الأجل، 2M د.ل)
+5. <strong>شركة استيراد</strong> (دعم، 1.5M د.ل)</p>
+<p><strong>الإجمالي</strong>: ~30M د.ل إيرادات سنوية، 43.3M د.ل أصول، 3.7M د.ل صافي ربح</p>
+<hr>
+<p><em>⚙️ أنشأ بواسطة Deep Researcher — Facilitator</em>
+<em>يتبع بروتوكول "مختبر العصف الذهني" المُوثّق في SYSTEM.md</em></p>
+    <footer class="page-footer">
+      <span>SESSION.md</span>
+      <span>← <a href="analysis-holding-deep-dive.html">مختبر العصف الذهني — Session 001: FRD MVP</a></span>
+    </footer>
+  </article>
+</main>
+
+</div>
+</body>
+</html>
