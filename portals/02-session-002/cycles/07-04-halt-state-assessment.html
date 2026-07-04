@@ -262,7 +262,7 @@ main { min-width: 0; }
 <aside class="sidebar">
   <div class="sidebar-brand">
     <div class="sidebar-brand-name">Session 002 — ERP MVP Monitoring</div>
-    <div class="sidebar-brand-tag">9 documents</div>
+    <div class="sidebar-brand-tag">11 documents</div>
   </div>
   <div class="sidebar-group">
 <div class="sidebar-group-title">Main</div>
@@ -278,9 +278,11 @@ main { min-width: 0; }
 <a href="dec-2026-07-04-001-rescue-plan.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📋 DECISION #001 — Rescue Plan for ERP MVP HALT</a>
 <a href="07-04-2330-ping-response.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Ping Response</a>
 <a href="07-04-2340-phase1-complete.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Phase 1 Complete</a>
+<a href="07-04-2357-verification-failed.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Phase 1.5 Verification FAILED</a>
 <a href="protocol.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 Feedback Loop Protocol</a>
 <a href="07-04-2330-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #001 (Rescue Plan)</a>
 <a href="07-04-2340-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</a>
+<a href="07-04-2357-rollback-decision.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Decision #003: Rollback Plan</a>
 </div>
   <div class="sidebar-footer">
     Multi-page analysis portal<br>
@@ -301,7 +303,7 @@ main { min-width: 0; }
 <blockquote>
 <p><strong>Cycle Name</strong>: HALT-State Assessment → Rescue Plan
 <strong>Date</strong>: 2026-07-04
-<strong>Status</strong>: ✅ <strong>DECISION MADE</strong> — Phase 1 in progress</p>
+<strong>Status</strong>: ✅ <strong><a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> MADE</strong> — Phase 1 in progress</p>
 </blockquote>
 <hr>
 <h2 id="section-initial-context">📋 Initial Context (Before Ping) <a href="#section-initial-context" class="anchor" aria-label="anchor"></a></h2>
@@ -390,7 +392,7 @@ src/backend/Host/appsettings.json     (SeedAlBurjScenario flag)
 <li>✅ <strong>Best Practice المعمول بها الآن</strong>: hybrid (manual commit + agents جديدة)</li>
 </ul>
 <hr>
-<h2 id="section-decision">🎯 Decision (DEC-2026-07-04-001) <a href="#section-decision" class="anchor" aria-label="anchor"></a></h2>
+<h2 id="section-a-href07-04-2357-rollback-decisionhtml-classxref-to-erp-decision-003-rollback-plana">🎯 <a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> (DEC-2026-07-04-001) <a href="#section-a-href07-04-2357-rollback-decisionhtml-classxref-to-erp-decision-003-rollback-plana" class="anchor" aria-label="anchor"></a></h2>
 <h3 id="section-strategy-strongoption-b-c-strong">Strategy: <strong>Option B + C (Hybrid)</strong> <a href="#section-strategy-strongoption-b-c-strong" class="anchor" aria-label="anchor"></a></h3>
 <p><strong>Phase 1 (30 min)</strong>: Manual commit by Mavis
 <strong>Phase 2 (1-2h)</strong>: Relaunch agents with shorter prompts
@@ -400,7 +402,7 @@ src/backend/Host/appsettings.json     (SeedAlBurjScenario flag)
 <li>Deep Researcher: ✅ Option B+C</li>
 <li>Mavis: ⏳ Awaiting confirmation</li>
 </ul>
-<p>See: <code>feedback-loop/decisions/DEC-2026-07-04-001-rescue-plan.md</code></p>
+<p>See: <code>feedback-loop/&lt;a href="07-04-2357-rollback-decision.html" class="xref"&gt;📨 TO ERP — Decision #003: Rollback Plan&lt;/a&gt;s/DEC-2026-07-04-001-rescue-plan.md</code></p>
 <hr>
 <h2 id="section-updated-verdict">📊 Updated Verdict <a href="#section-updated-verdict" class="anchor" aria-label="anchor"></a></h2>
 <p><strong>التصنيف المُحدَّث</strong>: 🟡 <strong>WATCH → 🟢 RECOVERY</strong></p>
@@ -451,7 +453,7 @@ src/backend/Host/appsettings.json     (SeedAlBurjScenario flag)
 </ul>
 <hr>
 <p><em>⚙️ Cycle 01 — UPDATED 2026-07-04 23:32 Berlin</em>
-<em>Status: Decision made, awaiting execution</em></p>
+<em>Status: <a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> made, awaiting execution</em></p>
     <footer class="page-footer">
       <span>cycles/2026-07-04-halt-state-assessment.md</span>
       <span>← <a href="role-clarification-for-mavis.html">Session 002 — ERP MVP Monitoring</a></span>

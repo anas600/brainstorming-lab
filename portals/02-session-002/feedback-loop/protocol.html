@@ -262,7 +262,7 @@ main { min-width: 0; }
 <aside class="sidebar">
   <div class="sidebar-brand">
     <div class="sidebar-brand-name">Session 002 — ERP MVP Monitoring</div>
-    <div class="sidebar-brand-tag">9 documents</div>
+    <div class="sidebar-brand-tag">11 documents</div>
   </div>
   <div class="sidebar-group">
 <div class="sidebar-group-title">Main</div>
@@ -278,9 +278,11 @@ main { min-width: 0; }
 <a href="dec-2026-07-04-001-rescue-plan.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📋 DECISION #001 — Rescue Plan for ERP MVP HALT</a>
 <a href="07-04-2330-ping-response.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Ping Response</a>
 <a href="07-04-2340-phase1-complete.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Phase 1 Complete</a>
+<a href="07-04-2357-verification-failed.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 FROM ERP — Phase 1.5 Verification FAILED</a>
 <a href="protocol.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔄 Feedback Loop Protocol</a>
 <a href="07-04-2330-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #001 (Rescue Plan)</a>
 <a href="07-04-2340-direction.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Direction #002 (Phase 1 → Phase 2)</a>
+<a href="07-04-2357-rollback-decision.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>📨 TO ERP — Decision #003: Rollback Plan</a>
 </div>
   <div class="sidebar-footer">
     Multi-page analysis portal<br>
@@ -311,7 +313,7 @@ main { min-width: 0; }
 - <strong>التحليل</strong> (Brainstorming Lab) — 5 خبراء يراجعون
 - <strong>التنفيذ</strong> (ERP MVP) — Mavis + 3 agents يبنون</p>
 <p><strong>بحيث</strong>:
-- الـ decisions تتطوّر بناءً على real-world data
+- الـ <a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a>s تتطوّر بناءً على real-world data
 - الـ blockers تُكتشف مبكراً
 - الـ spec adjustments تحصل بسرعة</p>
 <hr>
@@ -355,7 +357,7 @@ main { min-width: 0; }
 <td>من ERP Session → إلينا</td>
 </tr>
 <tr>
-<td><strong>Decision Request</strong></td>
+<td><strong><a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> Request</strong></td>
 <td>عند الحاجة</td>
 <td>منا → ERP Session</td>
 </tr>
@@ -375,7 +377,7 @@ main { min-width: 0; }
 <h2 id="section-data-types">📊 Data Types (أنواع البيانات) <a href="#section-data-types" class="anchor" aria-label="anchor"></a></h2>
 <h3 id="section-default">✅ Default (افتراضي): <a href="#section-default" class="anchor" aria-label="anchor"></a></h3>
 <ul>
-<li><strong>Text reports</strong> (status, blockers, decisions, summaries)</li>
+<li><strong>Text reports</strong> (status, blockers, <a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a>s, summaries)</li>
 <li><strong>MD files</strong> (markdown documentation) — كل التقارير على GitHub</li>
 <li><strong>Agents' docs</strong> — التوثيق الذاتي الذي يكتبه كل agent في مجلده</li>
 </ul>
@@ -392,7 +394,7 @@ main { min-width: 0; }
 </ul>
 <hr>
 <h2 id="section-escalation-rules">🚨 Escalation Rules (قواعد التصعيد) <a href="#section-escalation-rules" class="anchor" aria-label="anchor"></a></h2>
-<h3 id="section-decision-conflicts">Decision Conflicts (تعارض في القرارات): <a href="#section-decision-conflicts" class="anchor" aria-label="anchor"></a></h3>
+<h3 id="section-a-href07-04-2357-rollback-decisionhtml-classxref-to-erp-decision-003-rollback-plana-conflicts"><a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> Conflicts (تعارض في القرارات): <a href="#section-a-href07-04-2357-rollback-decisionhtml-classxref-to-erp-decision-003-rollback-plana-conflicts" class="anchor" aria-label="anchor"></a></h3>
 <ul>
 <li><strong>القاعدة</strong>: تصويت بين الفريقين (Brainstorming + ERP)</li>
 <li><strong>إذا تعادل</strong>: المستخدم (أنس) يحسم</li>
@@ -438,14 +440,14 @@ main { min-width: 0; }
 │   └── YYYY-MM-DD-HHMM-type.md
 ├── to-erp/                        # الرسائل الصادرة إلى ERP
 │   └── YYYY-MM-DD-HHMM-type.md
-└── decisions/                     # القرارات المتخذة
+└── &lt;a href=&quot;07-04-2357-rollback-decision.html&quot; class=&quot;xref&quot;&gt;📨 TO ERP — Decision #003: Rollback Plan&lt;/a&gt;s/                     # القرارات المتخذة
     └── DEC-YYYY-MM-DD-NNN-topic.md
 </code></pre>
 <h3 id="section-file-naming-convention">File Naming Convention (معايير التسمية): <a href="#section-file-naming-convention" class="anchor" aria-label="anchor"></a></h3>
 <ul>
 <li><strong>Timestamps</strong>: <code>YYYY-MM-DD-HHMM</code> (24-hour format)</li>
-<li><strong>Types</strong>: <code>status</code>, <code>decision</code>, <code>blocker</code>, <code>cycle-summary</code>, <code>rescue-plan</code></li>
-<li><strong>Decisions</strong>: <code>DEC-NNN</code> (sequential numbering)</li>
+<li><strong>Types</strong>: <code>status</code>, <code>&lt;a href="07-04-2357-rollback-decision.html" class="xref"&gt;📨 TO ERP — Decision #003: Rollback Plan&lt;/a&gt;</code>, <code>blocker</code>, <code>cycle-summary</code>, <code>rescue-plan</code></li>
+<li><strong><a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a>s</strong>: <code>DEC-NNN</code> (sequential numbering)</li>
 </ul>
 <hr>
 <h2 id="section-success-criteria">🎯 Success Criteria (معايير النجاح) <a href="#section-success-criteria" class="anchor" aria-label="anchor"></a></h2>
@@ -462,7 +464,7 @@ main { min-width: 0; }
 <td>&lt; 1 ساعة من الطلب</td>
 </tr>
 <tr>
-<td><strong>Decision Cycle Time</strong></td>
+<td><strong><a href="07-04-2357-rollback-decision.html" class="xref">📨 TO ERP — Decision #003: Rollback Plan</a> Cycle Time</strong></td>
 <td>&lt; 24 ساعة من الطلب</td>
 </tr>
 <tr>
