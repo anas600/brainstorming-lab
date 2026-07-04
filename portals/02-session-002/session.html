@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script>
+(function() {
+  var KEY = "brainstorming_lab_session_002";
+  if (localStorage.getItem(KEY) !== "1") {
+    window.location.replace("index.html");
+  }
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔍 Session 002 — مراقبة وتحليل خطة-النظام (ERP MVP) · مختبر العصف الذهني — Session 002: ERP MVP Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg-card: #ffffff;
+  --bg-soft: #faf8f3;
+  --line: #e9e3d6;
+  --line-soft: #f0ebde;
+  --ink: #14171e;
+  --ink-soft: #3a4256;
+  --ink-muted: #7c7a72;
+  --primary: #2f6f5e;
+  --primary-light: rgba(47, 111, 94, 0.10);
+  --accent: #c97b3f;
+  --accent-light: rgba(201, 123, 63, 0.10);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand { padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.sidebar-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-brand-tag {
+  font-size: 11px; color: var(--ink-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+}
+.sidebar-group { margin-bottom: 16px; }
+.sidebar-group-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--ink-muted);
+  padding: 0 22px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 22px;
+  text-decoration: none; color: var(--ink-soft);
+  font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+  border-right: 2px solid transparent; margin-right: -1px;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--ink); }
+.sidebar-link.active {
+  background: var(--primary-light); color: var(--primary);
+  border-right-color: var(--primary);
+}
+.sidebar-link.current { font-weight: 600; }
+.sidebar-link .icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+}
+.sidebar-footer {
+  margin-top: auto; padding: 16px 22px 0;
+  border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--ink-muted); line-height: 1.6;
+}
+main { min-width: 0; }
+.page-header {
+  background: var(--bg-card); border-bottom: 1px solid var(--line);
+  padding: 28px 56px;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 16px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--bg); color: var(--ink-soft);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--line);
+  transition: all 0.2s;
+}
+.back-link:hover {
+  background: var(--primary-light); color: var(--primary);
+  border-color: var(--primary);
+}
+.page-header-meta { flex: 1; min-width: 0; }
+.page-breadcrumb {
+  font-size: 11px; color: var(--ink-muted);
+  margin-bottom: 4px; letter-spacing: 0.05em;
+  text-transform: uppercase; font-weight: 600;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--ink); line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.content {
+  padding: 48px 56px 96px;
+  max-width: 920px; margin: 0 auto;
+}
+.content h1, .content h2, .content h3, .content h4 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400; color: var(--ink);
+  letter-spacing: -0.005em;
+  scroll-margin-top: 110px;
+}
+.content h1 {
+  font-size: 38px; margin: 8px 0 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.2;
+}
+.content h2 {
+  font-size: 26px; margin: 56px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.content h3 { font-size: 20px; margin: 36px 0 12px; color: var(--ink-soft); }
+.content h4 { font-size: 16px; margin: 24px 0 10px; color: var(--ink-soft); font-weight: 600; font-family: 'Outfit', sans-serif; }
+.content p { margin-bottom: 14px; color: var(--ink-soft); }
+.content strong { color: var(--ink); font-weight: 600; }
+.content em { color: var(--ink-soft); }
+.content ul, .content ol { margin: 12px 0 16px 24px; color: var(--ink-soft); }
+.content li { margin-bottom: 6px; padding-right: 4px; }
+.content ul li::marker { color: var(--accent); }
+.content blockquote {
+  border-right: 3px solid var(--primary);
+  background: var(--primary-light);
+  padding: 14px 22px; margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--ink); font-style: normal;
+}
+.content blockquote p { margin: 0; color: var(--ink); }
+.content blockquote strong { color: var(--primary); }
+.content table {
+  width: 100%; border-collapse: collapse;
+  margin: 18px 0; font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.content thead { background: var(--bg); }
+.content th {
+  text-align: right; padding: 12px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+.content td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: var(--bg-soft); }
+.content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--primary);
+  border: 1px solid var(--line-soft);
+}
+.content pre {
+  background: #14171e; color: #e9e3d6;
+  padding: 18px 22px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  direction: ltr; text-align: left;
+}
+.content pre code {
+  background: transparent; border: none;
+  color: inherit; padding: 0; font-size: 13px;
+}
+.xref {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 8px; margin: 0 2px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.xref:hover {
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+}
+.xref::before { content: "→"; font-size: 10px; opacity: 0.7; }
+.content h2 .anchor, .content h3 .anchor, .content h4 .anchor {
+  margin-right: 12px; opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+}
+.content h2:hover .anchor,
+.content h3:hover .anchor,
+.content h4:hover .anchor { opacity: 1; }
+.content h2 .anchor::before { content: "#"; }
+.content hr {
+  border: none; border-top: 1px dashed var(--line);
+  margin: 40px 0;
+}
+.page-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--ink-muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-footer a { color: var(--accent); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static; height: auto;
+    border-left: none; border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .sidebar-group-title, .sidebar-link { padding-right: 16px; padding-left: 16px; }
+  .content { padding: 32px 24px 64px; }
+  .page-header { padding: 16px 24px; }
+  .page-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">مختبر العصف الذهني — Session 002: ERP MVP Monitoring</div>
+    <div class="sidebar-brand-tag">2 documents</div>
+  </div>
+  <div class="sidebar-group">
+<div class="sidebar-group-title">Main</div>
+<a href="critical-state-report.html" class="sidebar-link"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🚨 CRITICAL-STATE-REPORT #001</a>
+<a href="session.html" class="sidebar-link current"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>🔍 Session 002 — مراقبة وتحليل خطة-النظام (ERP MVP)</a>
+</div>
+  <div class="sidebar-footer">
+    Multi-page analysis portal<br>
+    cross-references active
+  </div>
+</aside>
+
+<main>
+  <div class="page-header">
+    <a href="critical-state-report.html" class="back-link">← مختبر العصف الذهني — Session 002: ERP MVP Monitoring</a>
+    <div class="page-header-meta">
+      <div class="page-breadcrumb">Main · 🔍 Session 002 — مراقبة وتحليل خطة-النظام (ERP MVP)</div>
+      <div class="page-title">🔍 Session 002 — مراقبة وتحليل خطة-النظام (ERP MVP)</div>
+    </div>
+  </div>
+  <article class="content">
+    <h2 id="section-brainstorming-lab-observation-only-mode">Brainstorming Lab · Observation-Only Mode <a href="#section-brainstorming-lab-observation-only-mode" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-04
+<strong>Facilitator</strong>: Deep Researcher (ديب الباحث)
+<strong>النوع</strong>: Observation &amp; Analysis (مراقبة فقط)
+<strong>Stage Limit</strong>: 2/5 (لا Synthesis، لا Final Report)
+<strong>الحالة</strong>: 🟡 نشطة — في Observation Phase</p>
+</blockquote>
+<hr>
+<h2 id="section-الهدف-من-هذه-الجلسة">🎯 الهدف من هذه الجلسة <a href="#section-الهدف-من-هذه-الجلسة" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>"جلسة Brainstorming Lab جديدة هدفها مراقبة وتحليل ما يحدث من تطوير في جلسة خطة-النظام (ERP MVP)، بشرط لا نتدخل إلا في حالات معينة في شغلهم."</strong>
+— المستخدم (أنس)</p>
+</blockquote>
+<h3 id="section-المعنى-العملي">المعنى العملي: <a href="#section-المعنى-العملي" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>✅ <strong>نراقب</strong>: ماذا يبني الـ agents؟ بأي جودة؟ بأي إيقاع؟</li>
+<li>✅ <strong>نحلل</strong>: هل النتائج متسقة مع الخطة؟ هل هناك ثغرات/مخاطر؟</li>
+<li>✅ <strong>نوثّق</strong>: نسجل ملاحظاتنا في Observation Logs</li>
+<li>⚠️ <strong>نتدخل فقط</strong> في الحالات الحرجة (انظر معايير التدخل أدناه)</li>
+<li>❌ <strong>لا نبني</strong>: لسنا منتجين، نحن مراقبون</li>
+<li>❌ <strong>لا نأمر</strong>: لسنا مديرين، نحن محللين</li>
+</ul>
+<hr>
+<h2 id="section-الفريق">👥 الفريق (نفس فريق Session 001، 5 خبراء) <a href="#section-الفريق" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>الخبير</th>
+<th>الدور في هذه الجلسة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>[CFO أحمد]</strong></td>
+<td>يراقب الجوانب المالية + IFRS compliance</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>[م. عمر]</strong></td>
+<td>يراقب تطبيق الواقع الهندسي للمقاولات</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>[CTO ليلى]</strong></td>
+<td>يراقب جودة الـ code + architecture</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>[PO سارة]</strong></td>
+<td>يراقب UX + adoption + edge cases</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>[أ. سامي]</strong></td>
+<td>يراقب منهجية التنفيذ + migration + go-live</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>القيد</strong>: لا أحد منهم يأمر — يراقبون ويوثقون فقط.</p>
+</blockquote>
+<hr>
+<h2 id="section-بروتوكول-المراقبة">📋 بروتوكول المراقبة (Observation Protocol) <a href="#section-بروتوكول-المراقبة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-الدورة">🔄 الدورة (Loop): <a href="#section-الدورة" class="anchor" aria-label="anchor"></a></h3>
+<pre><code>كل ساعة (cron trigger):
+   ↓
+① جمع البيانات
+   - Git log (commits الجديدة)
+   - HF Space status
+   - تقارير الـ work session
+   - logs الـ agents (إن وُجدت)
+   ↓
+② التحليل من كل خبير (5 perspectives)
+   ↓
+③ تحديد الحالة:
+   🟢 On Track | 🟡 Watch | 🔴 Critical | ⚫ Halt
+   ↓
+④ التقرير يُرسَل للمستخدم على Telegram
+   ↓
+إذا 🔴 Critical أو ⚫ Halt → تطبيق معايير التدخل
+</code></pre>
+<h3 id="section-مؤشرات-الأداء">📊 مؤشرات الأداء (KPIs): <a href="#section-مؤشرات-الأداء" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>المؤشر</th>
+<th>الهدف</th>
+<th>اللون</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Commits/Hour</strong></td>
+<td>≥ 3 (3 agents × 1 commit each)</td>
+<td>🟢 ≥ 3 / 🟡 1-2 / 🔴 0</td>
+</tr>
+<tr>
+<td><strong>Tests Pass</strong></td>
+<td>100% (حماية الـ 92 tests)</td>
+<td>🟢 100% / 🟡 95-99% / 🔴 &lt; 95%</td>
+</tr>
+<tr>
+<td><strong>Files/Commit</strong></td>
+<td>1-3 (قاعدة الـ context)</td>
+<td>🟢 1-3 / 🟡 4-5 / 🔴 &gt; 5</td>
+</tr>
+<tr>
+<td><strong>Build Status</strong></td>
+<td>✅ Clean</td>
+<td>🟢 Clean / 🟡 Warnings / 🔴 Errors</td>
+</tr>
+<tr>
+<td><strong>HF Space</strong></td>
+<td>RUNNING</td>
+<td>🟢 RUNNING / 🔴 CRASHED</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="section-معايير-التدخل">🚨 معايير التدخل (Intervention Criteria) <a href="#section-معايير-التدخل" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>القاعدة الذهبية</strong>: "لا نتدخل إلا في الحالات الحرجة التالية فقط"</p>
+</blockquote>
+<h3 id="section-حالات-strongالتدخل-الإلزاميstrong">🔴 حالات <strong>التدخل الإلزامي</strong> (Critical — must act): <a href="#section-حالات-strongالتدخل-الإلزاميstrong" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>
+<p><strong>فقدان البيانات (Data Loss)</strong>
+   - حذف commits بالخطأ
+   - فقدان ملفات المشروع
+   - ضياع credentials/secrets</p>
+</li>
+<li>
+<p><strong>فشل البنية التحتية (Infrastructure Failure)</strong>
+   - HF Space crashed ولا يمكن إصلاحه
+   - GitHub repo inaccessible
+   - Token Plan exhausted (الـ work session died)</p>
+</li>
+<li>
+<p><strong>انتهاك Quality Gates الحرجة</strong>
+   - عدد كبير من الاختبارات المعطلة (&gt; 5%)
+   - Breaking changes في API بدون تنسيق
+   - Security vulnerabilities مكتشفة</p>
+</li>
+<li>
+<p><strong>التعارض مع قرارات موثقة (Documented Decisions Conflict)</strong>
+   - الـ agent يبني شيئاً يتعارض مع MVP Plan v2.0
+   - انتهاك الـ Sprint Plan المعتمد
+   - تعارض مع Brainstorming Lab findings</p>
+</li>
+<li>
+<p><strong>Deadlock (تعطّل كامل &gt; 2 ساعة)</strong>
+   - لا commits جديدة + لا progress في الـ logs
+   - الـ agents في حالة stuck</p>
+</li>
+</ol>
+<h3 id="section-حالات-strongالتنبيه-فقطstrong">🟡 حالات <strong>التنبيه فقط</strong> (Watch — alert user, don't intervene): <a href="#section-حالات-strongالتنبيه-فقطstrong" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>تأخر في commits (&lt; 1/hour) لكن مع progress</li>
+<li>تحذيرات في الـ build (warnings)</li>
+<li>اختلاف في الـ approach عن الخطة (لكن ضمن المقبول)</li>
+<li>أسئلة مفتوحة من الـ agents</li>
+</ol>
+<h3 id="section-حالات-strongالمراقبة-فقطstrong">🟢 حالات <strong>المراقبة فقط</strong> (OK — just log): <a href="#section-حالات-strongالمراقبة-فقطstrong" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>عمل طبيعي ضمن الخطة</li>
+<li>commits جديدة ضمن Quality Gates</li>
+<li>agents تتعاون بشكل سليم</li>
+<li>HF Space stable</li>
+</ol>
+<hr>
+<h2 id="section-مخرجات-هذه-الجلسة">📂 مخرجات هذه الجلسة (Deliverables) <a href="#section-مخرجات-هذه-الجلسة" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-إلزامية">إلزامية: <a href="#section-إلزامية" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li><strong>SESSION.md</strong> ← هذا الملف (تم ✅)</li>
+<li><strong>OBSERVATION-LOG.md</strong> ← سجل دوري بالملاحظات</li>
+<li><strong>CRITICAL-STATE-REPORT.md</strong> ← تقرير الحالة الحرجة (الحالي)</li>
+<li><strong>INTERVENTION-POLICY.md</strong> ← بروتوكول التدخل (سيُنشأ لاحقاً)</li>
+</ol>
+<h3 id="section-اختيارية">اختيارية (إذا دعت الحاجة): <a href="#section-اختيارية" class="anchor" aria-label="anchor"></a></h3>
+<ol start="5">
+<li><strong>PATTERNS-AND-INSIGHTS.md</strong> ← أنماط مُلاحظة عبر الزمن</li>
+<li><strong>COMPARISON-WITH-SESSION-001.md</strong> ← ربط معرفي مع Brainstorming Lab #001</li>
+<li><strong>ESCALATION-LOG.md</strong> ← كل مرة احتجنا نتدخل ولماذا</li>
+</ol>
+<hr>
+<h2 id="section-الحالة-الحرجة-الحالية">🚨 الحالة الحرجة الحالية (Critical State Report) <a href="#section-الحالة-الحرجة-الحالية" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>تم الإبلاغ عنها الآن (20:01 UTC)</strong> من قبل work session <code>408773242015948</code>:</p>
+</blockquote>
+<h3 id="section-المشاكل">المشاكل: <a href="#section-المشاكل" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>❌ <strong>Frontend agent (416239160795400)</strong>: FAILED (no output)</li>
+<li>❌ <strong>Backend agent (416239160795401)</strong>: FAILED (no output)</li>
+<li>❌ <strong>Data Seeder agent (416247987740742)</strong>: FAILED (no output)</li>
+<li>❌ مجلد <code>/workspace/erp-system</code> غير موجود في الـ sandbox الحالي</li>
+<li>❌ لا يمكن قراءة git log (لا repo موجود محلياً)</li>
+<li>⏰ لا commits جديدة منذ ~5 ساعات</li>
+</ul>
+<h3 id="section-ما-يعمل">ما يعمل: <a href="#section-ما-يعمل" class="anchor" aria-label="anchor"></a></h3>
+<ul>
+<li>✅ HF Space: RUNNING</li>
+<li>✅ SHA: <code>afdc681</code></li>
+<li>✅ Domain: <code>anas-assaket-erp-system.hf.space</code> (READY)</li>
+<li>💻 Runtime: cpu-basic, devMode off</li>
+</ul>
+<h3 id="section-تصنيف-الحالة">تصنيف الحالة (حسب معاييرنا): <a href="#section-تصنيف-الحالة" class="anchor" aria-label="anchor"></a></h3>
+<h1 id="section-stronghaltstrong-deadlock-infrastructure-issue">⚫ <strong>HALT</strong> — Deadlock + Infrastructure Issue <a href="#section-stronghaltstrong-deadlock-infrastructure-issue" class="anchor" aria-label="anchor"></a></h1>
+<p><strong>التبرير</strong>:
+- 3 من 3 agents في حالة FAILED
+- لا progress في 5 ساعات
+- المجلد الرئيسي مفقود (قد يكون خطأ في الـ sandbox، ليس فقط في الـ agents)</p>
+<h3 id="section-هل-نتدخل">هل نتدخل؟ <a href="#section-هل-نتدخل" class="anchor" aria-label="anchor"></a></h3>
+<blockquote>
+<p>⚠️ <strong>نعم</strong> — هذه حالة <strong>Critical + Infrastructure Failure</strong> حسب معايير التدخل.</p>
+<p>لكن... <strong>السؤال المُهم</strong>: هل الخطأ في الـ sandbox المحلي أم في الـ work session نفسها؟</p>
+</blockquote>
+<hr>
+<h2 id="section-توصية-facilitator">❓ توصية Facilitator (للمستخدم) <a href="#section-توصية-facilitator" class="anchor" aria-label="anchor"></a></h2>
+<h3 id="section-السيناريوهات-المحتملة">السيناريوهات المحتملة: <a href="#section-السيناريوهات-المحتملة" class="anchor" aria-label="anchor"></a></h3>
+<table>
+<thead>
+<tr>
+<th>السيناريو</th>
+<th>الإجراء</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A) الـ work session فقدت الـ worktrees</strong></td>
+<td>إعادة إطلاق الـ work session مع context كامل</td>
+</tr>
+<tr>
+<td><strong>B) الـ sandbox الحالي مختلف عن sandbox الـ work session</strong></td>
+<td>الـ work session قد تكون في sandbox آخر (HuggingFace / remote)</td>
+</tr>
+<tr>
+<td><strong>C) الـ agents فعلاً ماتت</strong></td>
+<td>فتح sessions جديدة مع prompts كاملة</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-الخيارات-المقترحة">الخيارات المُقترحة: <a href="#section-الخيارات-المقترحة" class="anchor" aria-label="anchor"></a></h3>
+<ol>
+<li>
+<p><strong>🔍 وضع التشخيص فقط (Observation-Only Mode strict)</strong>
+   - نراقب بدون تدخل
+   - نرسل التقرير للمستخدم فقط
+   - المستخدم يقرر بنفسه</p>
+</li>
+<li>
+<p><strong>🚨 تدخل تنسيقي (Coordinated Intervention)</strong>
+   - نرسل سؤال للـ work session: "أين الـ worktrees؟ هل أنتن في sandbox آخر؟"
+   - نبني تنسيق لإعادة الإطلاق</p>
+</li>
+<li>
+<p><strong>💡 اقتراح حل (Solution Proposal)</strong>
+   - نقترح على المستخدم خطة إنقاذ:</p>
+<ul>
+<li>Option 1: فتح work session جديدة مع context كامل</li>
+<li>Option 2: إعادة بناء من آخر commit (afdc681)</li>
+<li>Option 3: تغيير الاستراتيجية (مثلاً: sequential بدلاً من parallel)</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="section-الخطوة-التالية">🧭 الخطوة التالية <a href="#section-الخطوة-التالية" class="anchor" aria-label="anchor"></a></h2>
+<blockquote>
+<p><strong>بانتظار توجيه المستخدم</strong>:
+- هل نبدأ وضع التشخيص الكامل؟
+- هل نتدخل ونرسل رسالة تنسيق للـ work session؟
+- هل نكتفي بالمراقبة والإبلاغ؟</p>
+</blockquote>
+<hr>
+<h2 id="section-المرحلة-الحالية-strongobservation-phasestrong">📊 المرحلة الحالية: <strong>Observation Phase</strong> (Stage 1/2 المكافئ) <a href="#section-المرحلة-الحالية-strongobservation-phasestrong" class="anchor" aria-label="anchor"></a></h2>
+<table>
+<thead>
+<tr>
+<th>البُعد</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 0 (Q&amp;A)</td>
+<td>✅ مكتمل (هذا الملف)</td>
+</tr>
+<tr>
+<td>Stage 1 (Ideation — بروتوكول المراقبة)</td>
+<td>✅ مكتمل (في هذا الملف)</td>
+</tr>
+<tr>
+<td>Stage 2 (Critique — تحليل أولي)</td>
+<td>🟡 جارٍ (CRITICAL-STATE-REPORT)</td>
+</tr>
+<tr>
+<td>Stage 3+</td>
+<td>⛔ <strong>موقوفة</strong> حسب قرار المستخدم</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>⚙️ أنتج بواسطة Deep Researcher (Facilitator)</em>
+<em>Session 002 — Observation Mode — 2026-07-04</em>
+<em>لا يتدخل إلا في الحالات الحرجة الموضحة أعلاه</em></p>
+    <footer class="page-footer">
+      <span>SESSION.md</span>
+      <span>← <a href="critical-state-report.html">مختبر العصف الذهني — Session 002: ERP MVP Monitoring</a></span>
+    </footer>
+  </article>
+</main>
+
+</div>
+</body>
+</html>

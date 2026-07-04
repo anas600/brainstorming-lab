@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مختبر العصف الذهني — Session 002: ERP MVP Monitoring · مدخل محمي</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: #f7f5f0; color: #14171e;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .gate {
+    background: #ffffff; border: 1px solid #e9e3d6;
+    border-radius: 16px; padding: 48px 40px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 4px 32px rgba(20, 23, 30, 0.06);
+    text-align: center;
+  }
+  .gate-mark {
+    width: 56px; height: 56px; margin: 0 auto 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2f6f5e 0%, #1f4f43 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-family: 'DM Serif Display', serif; font-size: 28px;
+  }
+  .gate h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; font-weight: 400;
+    margin-bottom: 6px; color: #14171e;
+  }
+  .gate-sub { font-size: 13px; color: #7c7a72; margin-bottom: 28px; }
+  .gate-label {
+    display: block; text-align: right;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #7c7a72; margin-bottom: 8px;
+  }
+  .gate-input {
+    width: 100%; padding: 14px 16px;
+    border: 1px solid #e9e3d6; border-radius: 10px;
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    background: #faf8f3; color: #14171e;
+    outline: none; transition: all 0.15s;
+    direction: ltr; text-align: left;
+  }
+  .gate-input:focus {
+    border-color: #2f6f5e; background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(47, 111, 94, 0.10);
+  }
+  .gate-btn {
+    margin-top: 14px; width: 100%; padding: 14px;
+    background: #2f6f5e; color: white;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Outfit', sans-serif;
+  }
+  .gate-btn:hover { background: #1f4f43; }
+  .gate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .gate-error {
+    margin-top: 12px; font-size: 13px; color: #b06367;
+    min-height: 18px;
+  }
+  .gate-foot {
+    margin-top: 28px; padding-top: 20px;
+    border-top: 1px solid #f0ebde;
+    font-size: 11px; color: #7c7a72; line-height: 1.6;
+  }
+  .gate-foot strong { color: #14171e; }
+</style>
+</head>
+<body>
+<div class="gate">
+  <div class="gate-mark">A</div>
+  <h1>مختبر العصف الذهني — Session 002: ERP MVP Monitoring</h1>
+  <div class="gate-sub">Analysis Portal · Password required</div>
+
+  <label class="gate-label" for="pw">Password</label>
+  <input id="pw" class="gate-input" type="password" autocomplete="off"
+         placeholder="••••••••••••••" autofocus />
+  <button id="go" class="gate-btn">Enter</button>
+  <div id="err" class="gate-error"></div>
+
+  <div class="gate-foot">
+    Private workspace · access by password only<br>
+    <strong>Do not share this link</strong>
+  </div>
+</div>
+
+<script>
+(async function() {
+  var KEY = "brainstorming_lab_session_002";
+  var EXPECTED = "67b909e3094ed7b545727edde6146d165c8ed70e3e787b4c352a84b4c54715b9";
+  if (localStorage.getItem(KEY) === "1") {
+    var first = document.querySelector("a.sidebar-link");
+    if (first) window.location.replace(first.getAttribute("href"));
+    return;
+  }
+  async function sha256(text) {
+    var buf = new TextEncoder().encode(text);
+    var hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash))
+      .map(function(b) { return b.toString(16).padStart(2, "0"); })
+      .join("");
+  }
+  var input = document.getElementById("pw");
+  var btn = document.getElementById("go");
+  var err = document.getElementById("err");
+  async function tryEnter() {
+    var pw = input.value.trim();
+    if (!pw) { err.textContent = "Enter password first"; return; }
+    btn.disabled = true; btn.textContent = "Verifying...";
+    var h = await sha256(pw);
+    if (h === EXPECTED) {
+      localStorage.setItem(KEY, "1");
+      var first = document.querySelector("a.sidebar-link");
+      if (first) window.location.replace(first.getAttribute("href"));
+    } else {
+      err.textContent = "✗ Wrong password";
+      input.value = ""; input.focus();
+      btn.disabled = false; btn.textContent = "Enter";
+    }
+  }
+  btn.addEventListener("click", tryEnter);
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") tryEnter();
+  });
+})();
+</script>
+</body>
+</html>
