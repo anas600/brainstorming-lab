@@ -22,6 +22,62 @@
 ---
 
 
+---
+
+## 📜 Output Rules — Markdown First, HTML On-Demand (2026-07-05)
+
+> **قاعدة دائمة لتسليم الملفات في هذه الجلسة وفي كل الجلسات القادمة**
+
+### القاعدة الأساسية:
+- ✅ **كل الملفات الجديدة** (تقارير، قرارات، سجلات، ملاحظات، feedback-loop) = **Markdown (`.md`)** فقط
+- ✅ نفس الـ structure والتنظيم الحالي:
+  ```
+  portals/02-session-002/
+  ├── SESSION.md (هذا الملف)
+  ├── ROLE-CLARIFICATION-FOR-MAVIS.md
+  ├── cycles/
+  │   └── YYYY-MM-DD-name.md
+  ├── feedback-loop/
+  │   ├── protocol.md
+  │   ├── decisions/
+  │   │   └── DEC-YYYY-MM-DD-NNN-name.md
+  │   ├── from-erp/
+  │   │   └── YYYY-MM-DD-HHMM-name.md
+  │   └── to-erp/
+  │       └── YYYY-MM-DD-HHMM-name.md
+  ```
+
+### استثناء HTML / Portal:
+- ❌ **لا أبني صفحات HTML تلقائياً** عند إضافة ملفات جديدة
+- ❌ **لا rebuild للـ GitHub Pages** إلا إذا طلب المستخدم صراحةً
+- ✅ البناء يتم فقط عند أي من:
+  - "ابني صفحة من X.md"
+  - "اعمل portal"
+  - "حوّل لـ visual"
+  - أو ما يشابه ذلك
+
+### السبب:
+- بناء HTML + dashboard يستهلك tokens (من المستخدم للقراءة، ومني للتوليد)
+- الـ user غالباً يتابع من Telegram — HTML صعب قراءته هناك
+- Markdown كافي للمراجعة + القراءة + الـ diff
+
+### الاستثناء الوحيد:
+- لو طلب الـ user dashboard أو visual summary → أبني صفحة واحدة عند الطلب
+- portal موجود مسبقاً ومرتبط بسياق نشط → يمكن الإشارة إليه بدون rebuild
+
+### بعد كل كتابة:
+- ✅ أنشئ `.md` في المسار الصحيح
+- ✅ ادفعها للـ repo مباشرة (`git add` + `git commit` + `git push`)
+- ✅ ابلغ الـ user بالـ paths الجديدة
+- ⏸️ لا تبني HTML تلقائياً
+
+### المرجع:
+- **Decision**: DEC-022 (وثّقت في الـ feedback-loop)
+- **User Request**: "في ملاحضه نبيك ترفع كل ملفات مارك داون ... بنفس الهيكليه"
+- **Memory**: محفوظ كقاعدة عامة cross-project في user memory
+
+---
+
 ## 🎯 الهدف من هذه الجلسة
 
 > **"جلسة Brainstorming Lab جديدة هدفها مراقبة وتحليل ما يحدث من تطوير في جلسة خطة-النظام (ERP MVP)، بشرط لا نتدخل إلا في حالات معينة في شغلهم."**
