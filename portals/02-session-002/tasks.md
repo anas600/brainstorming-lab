@@ -18,6 +18,7 @@
 
 | ID | Task | Owner | Completed | DEC | Commit |
 |---|---|---|---|---|---|
+| T-2026-07-06-008 | Cross-Team Awareness (AGENTS.md) | Mavis | 2026-07-06 | New | `49d37ed` |
 | T-2026-07-06-007 | DEC-054 followups (issues #20-22) | Mavis | 2026-07-06 | DEC-054 FU | `995ab30` |
 | T-2026-07-06-006 | DEC-054 Test Workflow | Mavis | 2026-07-06 | DEC-054 | `2e43c42` |
 | T-2026-07-06-005 | DEC-052 Git Workflow | Mavis | 2026-07-06 | DEC-052 | `4b4520a` |
@@ -57,7 +58,7 @@
 | ID | Task | ETA | Dependencies |
 |---|---|---|---|
 | T-NEXT-001 | Sprint-5 Kickoff (Marten enable) | 2-3 weeks | User approval |
-| T-NEXT-002 | AGENTS.md update (cross-team awareness) | 5 min | None — ready |
+| ~~T-NEXT-002~~ | ~~AGENTS.md update (cross-team awareness)~~ | ✅ DONE | — |
 
 ### Medium Priority:
 
