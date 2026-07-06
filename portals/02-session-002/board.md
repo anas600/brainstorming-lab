@@ -111,15 +111,30 @@
 
 ---
 
-## ⏭️ Next Steps (Recommended)
+## ⏭️ Next Steps (Sprint-4.5 — Stability & Shipping)
 
-| # | Option | Time | Status |
+| # | Task | Time | Status |
 |---|---|---|---|
-| 1 | Sprint-5 (Marten event sourcing) | 2-3 weeks | ⏳ Ready |
-| 2 | Improvement 5: Security Scanning | 1 hour | ⏳ Optional |
-| 3 | Session 001 Stage 3 (Synthesis) | 1-2 days | ⏳ Waiting |
+| 1 | audit_log table (Finance + Projects) | 2h | ⏳ NEW |
+| 2 | In-app event publishers | 4h | ⏳ NEW |
+| 3 | End-to-end tests | 2 days | ⏳ NEW |
+| 4 | Improvement 5: Security Scanning | 1 day | ⏳ |
+| 5 | Deployment guide + User training | 2 days | ⏳ |
+| 6 | Production deployment | 1 day | ⏳ |
 
-**Current recommendation**: Sprint-5 (unblocked by DEC-054)
+**Sprint-5 (Marten) = DEFERRED** (96% consensus, ROI not justified yet)
+
+---
+
+## 🎯 Sprint-4.5 Theme: "Stability & Shipping"
+
+| Week | Focus | Outcome |
+|---|---|---|
+| Week 1 | audit_log + integration events + tests | Production-ready core |
+| Week 2 | Security + deployment + training | Production-ready ops |
+| Week 3 | Performance + load testing | Validated |
+| Month 2 | Real use + feedback | Iterate based on data |
+| Quarter 2 | Sprint-5 decision (if justified) | Based on real data |
 
 ---
 
