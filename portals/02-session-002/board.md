@@ -1,7 +1,7 @@
 # ERP-SYSTEM Live Board
 
 > **Live system progress across both teams**
-> **Last updated**: 2026-07-06 (Improvement 5 SECURITY MERGED)
+> **Last updated**: 2026-07-06 (DEC-063 Distributed Awareness MERGED)
 
 ---
 
@@ -13,12 +13,12 @@
 | Brainstorming Lab | Active |
 | Bridge Cron v2 | Running |
 | HF Space | RUNNING |
-| Latest Commit | `835751f` (DEC-062 Security) |
-| **Production Readiness** | **~85%** |
+| Latest Commit | `e8d5021` (DEC-063 Distributed Awareness) |
+| Production Readiness | ~85% |
 
 ---
 
-## Sprint-4.5: COMPLETE (4/4) + Post-Sprint Improvements
+## Sprint-4.5 + Post-Sprint: COMPLETE
 
 | DEC | Title | Status | Commit |
 |---|---|---|---|
@@ -26,19 +26,35 @@
 | DEC-057 | In-app events | MERGED | `2d3255c` |
 | DEC-059 | Soft deletes | MERGED | `ed2e24a` |
 | DEC-060 | E2E infrastructure | MERGED | `e56bfb1` |
-| **DEC-061** | **STATUS.md (Bridge v3)** | **MERGED** | `eb342fd` |
-| **DEC-062** | **Security (CodeQL + TruffleHog)** | **MERGED** | `835751f` |
+| DEC-061 | STATUS.md (Bridge v3) | MERGED | `eb342fd` |
+| DEC-062 | Security (CodeQL + TruffleHog) | MERGED | `835751f` |
+| **DEC-063** | **Distributed Awareness (22 AGENTS.md)** | **MERGED** | `e8d5021` |
 
 ---
 
-## Defense Layers (15 total)
+## Defense Layers (16 total)
 
 | # | Layer | Status |
 |---|---|---|
-| 1-12 | Previous (Sprint-4 + follow-ups + Sprint-4.5) | ✅ |
-| 13 | STATUS.md (Bridge v3) | ✅ NEW |
-| 14 | CodeQL | ✅ NEW |
-| 15 | TruffleHog OSS | ✅ NEW |
+| 1-15 | Previous | ✅ |
+| **16** | **Distributed Awareness (23/23 AGENTS.md)** | ✅ NEW |
+
+---
+
+## Distributed Awareness Coverage
+
+| File count | Cross-Team Note |
+|---|---|
+| 1/23 (before DEC-063) | ✅ |
+| **23/23 (after DEC-063)** | ✅ **100%** |
+
+| Folder depth | Files |
+|---|---|
+| Root | 1 |
+| 1 level | 6 |
+| 2 levels | 5 |
+| 3 levels | 4 |
+| 4 levels | 6 |
 
 ---
 
@@ -47,11 +63,11 @@
 | Indicator | Status |
 |---|---|
 | Documentation in single hub | YES (brainstorming-lab) |
-| Cross-team awareness | YES (AGENTS.md) |
+| Cross-team awareness in root AGENTS.md | YES (PR #26) |
+| **Distributed awareness in sub-folder AGENTS.md** | **YES (PR #33)** |
 | Token efficiency | ~90% savings |
-| Loop closed | YES (Bridge Cron) |
+| Loop closed | YES |
 | Bridge v3 source | YES (STATUS.md live) |
-| Pattern reusable | YES |
 
 ---
 
@@ -59,10 +75,10 @@
 
 | # | Task | Time | Status |
 |---|---|---|---|
-| 1 | Update bridge cron to v3 (read STATUS.md) | 5 min | READY |
+| 1 | Bridge v3 (read STATUS.md) | 5 min | READY |
 | 2 | Deployment guide | 1 day | NEXT |
 | 3 | User training materials | 1 day | With deployment |
-| 4 | Production deployment | 1 day | After training |
+| 4 | Production deployment | 1 day | Final |
 | **→ Production** | | **~3 days total** | |
 
 ---
@@ -73,9 +89,9 @@
 |---|---|
 | DEC-001 → DEC-022 | 22 |
 | DEC-023 → DEC-035 | 13 |
-| DEC-036 → DEC-062 | 27 |
-| **Total** | **62** |
+| DEC-036 → DEC-063 | 28 |
+| **Total** | **63** |
 
 ---
 
-*Last update: 2026-07-06 (Security MERGED)*
+*Last update: 2026-07-06 (DEC-063 Distributed Awareness MERGED)*
