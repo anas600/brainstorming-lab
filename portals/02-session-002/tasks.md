@@ -18,6 +18,7 @@
 
 | ID | Task | Owner | Completed | DEC | Commit |
 |---|---|---|---|---|---|
+| T-2026-07-06-009 | audit_log table + IAuditLogger (Sprint-4.5 T-009) | Mavis | 2026-07-06 | DEC-056 | `6d27b69` |
 | T-2026-07-06-008 | Cross-Team Awareness (AGENTS.md) | Mavis | 2026-07-06 | New | `49d37ed` |
 | T-2026-07-06-007 | DEC-054 followups (issues #20-22) | Mavis | 2026-07-06 | DEC-054 FU | `995ab30` |
 | T-2026-07-06-006 | DEC-054 Test Workflow | Mavis | 2026-07-06 | DEC-054 | `2e43c42` |
@@ -57,11 +58,11 @@
 
 | ID | Task | ETA | Dependencies | Status |
 |---|---|---|---|---|
-| T-2026-07-06-009 | audit_log table (Finance + Projects) | 2h | None | ⏳ New |
-| T-2026-07-06-010 | In-app event publishers | 4h | None | ⏳ New |
-| T-2026-07-06-011 | End-to-end tests | 2 days | T-009, T-010 | ⏳ New |
-| T-2026-07-06-012 | Improvement 5: Security Scanning | 1 day | None | ⏳ |
-| T-2026-07-06-013 | Deployment guide + User training | 2 days | None | ⏳ |
+| ~~T-2026-07-06-009~~ | ~~audit_log table (Finance + Projects)~~ | ✅ DONE | None | ✅ Merged |
+| T-2026-07-06-010 | In-app event publishers (cross-module) | 4h | None | ⏳ Next |
+| T-2026-07-06-011 | Soft deletes (deleted_at on invoices + projects) | 1h | None | ⏳ |
+| T-2026-07-06-012 | End-to-end tests (Finance flow) | 2 days | T-009, T-010 | ⏳ |
+| T-2026-07-06-013 | Improvement 5: Security Scanning | 1 day | None | ⏳ |
 
 ### ~~T-NEXT-001 Sprint-5 (Marten) — DEFERRED~~
 
