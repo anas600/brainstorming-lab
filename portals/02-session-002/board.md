@@ -159,6 +159,8 @@
 - ✅ System.md Section 7 added (Cross-Team Coordination)
 - ✅ CROSS-TEAM-COORDINATION.md created
 - ✅ board.md + tasks.md live
+- ✅ **Sprint-5 DEFERRED** (96% consensus, Sprint-4.5 starts)
+- ✅ **DEC-056 audit_log MERGED** (PR #27, Sprint-4.5 Task 1 done)
 
 ---
 
