@@ -1,4 +1,4 @@
-# 📋 ERP-SYSTEM Task Tracker
+# ERP-SYSTEM Task Tracker
 
 > **Live task tracking across both teams**
 > **Format**: Markdown (Excel export available on request)
@@ -6,7 +6,7 @@
 
 ---
 
-## 🟢 In Progress
+## In Progress
 
 | ID | Task | Owner | Started | Status | Notes |
 |---|---|---|---|---|---|
@@ -14,25 +14,18 @@
 
 ---
 
-## ✅ Completed (Recent)
+## Completed (Recent)
 
 | ID | Task | Owner | Completed | DEC | Commit |
 |---|---|---|---|---|---|
+| T-2026-07-06-010 | In-app domain events + handlers (Sprint-4.5 T-010) | Mavis | 2026-07-06 | DEC-057 | `2d3255c` |
 | T-2026-07-06-009 | audit_log table + IAuditLogger (Sprint-4.5 T-009) | Mavis | 2026-07-06 | DEC-056 | `6d27b69` |
 | T-2026-07-06-008 | Cross-Team Awareness (AGENTS.md) | Mavis | 2026-07-06 | New | `49d37ed` |
 | T-2026-07-06-007 | DEC-054 followups (issues #20-22) | Mavis | 2026-07-06 | DEC-054 FU | `995ab30` |
-| T-2026-07-06-006 | DEC-054 Test Workflow | Mavis | 2026-07-06 | DEC-054 | `2e43c42` |
-| T-2026-07-06-005 | DEC-052 Git Workflow | Mavis | 2026-07-06 | DEC-052 | `4b4520a` |
-| T-2026-07-06-004 | DEC-051 Auto-Rollback | Mavis | 2026-07-06 | DEC-051 | `19a1780` |
-| T-2026-07-06-003 | DEC-050 Workflows Consolidation | Mavis | 2026-07-06 | DEC-050 | `339d26a` |
-| T-2026-07-06-002 | Sprint-4 Day 4 (README + tests) | Mavis | 2026-07-06 | DEC-046 | `884951a` |
-| T-2026-07-06-001 | Sprint-4 Day 3 (Logging + Middleware) | Mavis | 2026-07-06 | DEC-045 | `d373c9b`, `108b16c`, `db7d1ea` |
-| T-2026-07-05-005 | Sprint-4 Day 2 (Admin + Batch + Retry) | Mavis | 2026-07-05 | DEC-042 | `83e8a45`, `c496395`, `f489ec6` |
-| T-2026-07-05-004 | Sprint-4 Day 1 (Health + Seeder flags) | Mavis | 2026-07-05 | DEC-032/034 | `14723bd` |
 
 ---
 
-## 🔴 Blocked
+## Blocked
 
 | ID | Task | Owner | Blocked Since | Blocker |
 |---|---|---|---|---|
@@ -40,29 +33,30 @@
 
 ---
 
-## ⏳ Pending / Waiting
+## Pending / Waiting
 
 | ID | Task | Owner | Waiting For | Priority |
 |---|---|---|---|---|
-| T-2026-07-05-001 | Session 001 Stage 3 (Synthesis) | Analytical | User (Anas) signal | 🟡 Medium |
-| T-2026-07-05-002 | Improvement 5: Security Scanning | Mavis | User approval | 🟢 Low |
-| T-2026-07-05-003 | DB Rename (`erp-events` → `erp_events`) | Mavis | Sprint-5 kickoff | 🟡 Medium |
-| T-2026-07-05-004 | JWT Secret rotation | Mavis | User action | 🟢 Low |
-| T-2026-07-05-005 | JWT Issuer/Audience update | Mavis | User action | 🟢 Low |
+| T-2026-07-05-001 | Session 001 Stage 3 (Synthesis) | Analytical | User (Anas) signal | Medium |
+| T-2026-07-05-002 | Improvement 5: Security Scanning | Mavis | Sprint-4.5 finish | Low |
+| T-2026-07-05-003 | DB Rename (erp-events → erp_events) | Mavis | Sprint-5 kickoff (currently DEFERRED) | Medium |
+| T-2026-07-05-004 | JWT Secret rotation | Mavis | User action | Low |
+| T-2026-07-05-005 | JWT Issuer/Audience update | Mavis | User action | Low |
 
 ---
 
-## 🎯 Recommended Next Tasks (Sprint-4.5)
+## Recommended Next Tasks (Sprint-4.5)
 
 ### High Priority (Sprint-4.5 — Stability & Shipping):
 
 | ID | Task | ETA | Dependencies | Status |
 |---|---|---|---|---|
-| ~~T-2026-07-06-009~~ | ~~audit_log table (Finance + Projects)~~ | ✅ DONE | None | ✅ Merged |
-| T-2026-07-06-010 | In-app event publishers (cross-module) | 4h | None | ⏳ Next |
-| T-2026-07-06-011 | Soft deletes (deleted_at on invoices + projects) | 1h | None | ⏳ |
-| T-2026-07-06-012 | End-to-end tests (Finance flow) | 2 days | T-009, T-010 | ⏳ |
-| T-2026-07-06-013 | Improvement 5: Security Scanning | 1 day | None | ⏳ |
+| DONE T-009 | audit_log table (Finance + Projects) | 2h | None | Merged |
+| DONE T-010 | In-app event publishers (cross-module) | 4h | None | Merged |
+| T-2026-07-06-011 | Soft deletes (deleted_at on invoices + projects) | 1h | None | NEXT |
+| T-2026-07-06-012 | End-to-end tests (Finance flow) | 2 days | T-009, T-010 | Pending |
+| T-2026-07-06-013 | Improvement 5: Security Scanning | 1 day | None | Parallel |
+| T-2026-07-06-014 | Deployment guide + User training | 2 days | After tests | Pending |
 
 ### ~~T-NEXT-001 Sprint-5 (Marten) — DEFERRED~~
 
@@ -71,42 +65,28 @@
 **Alternative**: audit_log + simpler patterns (8h vs 160h)
 **Re-evaluation**: Quarterly (after 30 days of production use)
 
-### Medium Priority:
-
-| ID | Task | ETA | Dependencies |
-|---|---|---|---|
-| T-NEXT-003 | Session 001 Stage 3 (Synthesis) | 1-2 days | User signal |
-
-### Low Priority (Optional):
-
-| ID | Task | ETA | Dependencies |
-|---|---|---|---|
-| T-NEXT-004 | Improvement 5 (Security Scanning) | 1 hour | User approval |
-| T-NEXT-005 | Issue #23 (Pre-commit hook) | 30 min | None |
-| T-NEXT-006 | Issue #24 (Coverage threshold) | 30 min | None |
-
 ---
 
-## 📊 Task Statistics
+## Task Statistics
 
 | Metric | Value |
 |---|---|
-| Total tasks completed | 9+ (Sprint-4 + follow-ups) |
+| Total tasks completed | 10+ |
 | Tasks in progress | 0 |
 | Blocked tasks | 0 |
 | Pending tasks | 5 |
-| Recommended next | 2-3 |
+| Recommended next | 3 (Sprint-4.5) |
 
 ---
 
-## 🔄 Update Protocol
+## Update Protocol
 
 ### When to update:
 
-- ✅ Task completed → mark ✅ Done, move to Completed section
-- ✅ Task started → move from Pending to In Progress
-- ✅ Task blocked → mark 🔴 with blocker reason
-- ✅ Task reactivated → move back to In Progress
+- Task completed → mark Done, move to Completed section
+- Task started → move from Pending to In Progress
+- Task blocked → mark with blocker reason
+- Task reactivated → move back to In Progress
 
 ### Who updates:
 
@@ -121,5 +101,5 @@
 
 ---
 
-*Last update: 2026-07-06 09:30 UTC*
-*Next update: After next PR merge or DEC approval*
+*Last update: 2026-07-06 (after DEC-057 merge)*
+*Next update: After T-011 (soft deletes) or next PR merge*
