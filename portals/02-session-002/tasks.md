@@ -51,14 +51,24 @@
 
 ---
 
-## 🎯 Recommended Next Tasks
+## 🎯 Recommended Next Tasks (Sprint-4.5)
 
-### High Priority:
+### High Priority (Sprint-4.5 — Stability & Shipping):
 
-| ID | Task | ETA | Dependencies |
-|---|---|---|---|
-| T-NEXT-001 | Sprint-5 Kickoff (Marten enable) | 2-3 weeks | User approval |
-| ~~T-NEXT-002~~ | ~~AGENTS.md update (cross-team awareness)~~ | ✅ DONE | — |
+| ID | Task | ETA | Dependencies | Status |
+|---|---|---|---|---|
+| T-2026-07-06-009 | audit_log table (Finance + Projects) | 2h | None | ⏳ New |
+| T-2026-07-06-010 | In-app event publishers | 4h | None | ⏳ New |
+| T-2026-07-06-011 | End-to-end tests | 2 days | T-009, T-010 | ⏳ New |
+| T-2026-07-06-012 | Improvement 5: Security Scanning | 1 day | None | ⏳ |
+| T-2026-07-06-013 | Deployment guide + User training | 2 days | None | ⏳ |
+
+### ~~T-NEXT-001 Sprint-5 (Marten) — DEFERRED~~
+
+**Status**: DEFERRED (96% consensus)
+**Reason**: ROI not justified at MVP stage
+**Alternative**: audit_log + simpler patterns (8h vs 160h)
+**Re-evaluation**: Quarterly (after 30 days of production use)
 
 ### Medium Priority:
 
