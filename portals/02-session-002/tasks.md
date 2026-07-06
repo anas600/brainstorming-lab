@@ -7,50 +7,45 @@
 
 ## In Progress
 
-| ID | Task | Owner | Started | Status |
-|---|---|---|---|---|
-| — | — | — | — | No active tasks |
+None.
 
 ---
 
-## Completed Sprint-4.5 (ALL MERGED)
+## Completed (All Sprint-4.5 + Post-Sprint)
 
-| ID | Task | Owner | Completed | DEC | Commit |
-|---|---|---|---|---|---|
-| T-2026-07-06-012 | E2E infrastructure + 15 tests | Mavis | 2026-07-06 | DEC-060 | `e56bfb1` |
-| T-2026-07-06-011 | Soft deletes (deleted_at + SoftDeleteHelper) | Mavis | 2026-07-06 | DEC-059 | `ed2e24a` |
-| T-2026-07-06-010 | In-app domain events + handlers | Mavis | 2026-07-06 | DEC-057 | `2d3255c` |
-| T-2026-07-06-009 | audit_log table + IAuditLogger | Mavis | 2026-07-06 | DEC-056 | `6d27b69` |
-| T-2026-07-06-008 | Cross-Team Awareness (AGENTS.md) | Mavis | 2026-07-06 | New | `49d37ed` |
-
-**Sprint-4.5: COMPLETE 4/4 in ~14 hours**
+| ID | Task | DEC | Commit |
+|---|---|---|---|
+| T-013 | Security scanning (CodeQL + TruffleHog) | DEC-062 | `835751f` |
+| T-014 | STATUS.md (Bridge v3) | DEC-061 | `eb342fd` |
+| T-012 | E2E infrastructure | DEC-060 | `e56bfb1` |
+| T-011 | Soft deletes | DEC-059 | `ed2e24a` |
+| T-010 | In-app events | DEC-057 | `2d3255c` |
+| T-009 | audit_log | DEC-056 | `6d27b69` |
+| T-008 | Cross-Team Awareness | New | `49d37ed` |
 
 ---
 
-## Recommended Next (Post-Sprint-4.5)
+## Recommended Next (Production Path)
 
 | ID | Task | ETA | Status |
 |---|---|---|---|
-| T-2026-07-06-013 | Improvement 5: Security Scanning (CodeQL + TruffleHog) | 1 day | NEXT |
-| T-2026-07-06-014 | STATUS.md for Bridge v3 (5 min) | 5 min | Quick win |
-| T-2026-07-06-015 | Deployment guide | 1 day | After security |
-| T-2026-07-06-016 | User training materials | 1 day | With deployment |
-| T-2026-07-06-017 | Production deployment | 1 day | After training |
+| T-015 | Bridge v3 (read STATUS.md) | 5 min | NEXT |
+| T-016 | Deployment guide | 1 day | After T-015 |
+| T-017 | User training materials | 1 day | With deployment |
+| T-018 | Production deployment | 1 day | Final |
 
 ### ~~Sprint-5 (Marten) — DEFERRED~~
 
-**Status**: DEFERRED (96% consensus)
-**Re-evaluation**: Quarterly (after 30 days of production use)
+Status: DEFERRED (96% consensus)
+Re-evaluation: Quarterly
 
 ---
 
 ## Pending (Lower Priority)
 
-| ID | Task | Waiting For |
-|---|---|---|
-| T-2026-07-05-001 | Session 001 Stage 3 (Synthesis) | User (Anas) signal |
-| T-2026-07-05-004 | JWT Secret rotation | User action |
-| T-2026-07-05-005 | JWT Issuer/Audience update | User action |
+- Session 001 Stage 3 (Synthesis)
+- JWT Secret rotation
+- JWT Issuer/Audience update
 
 ---
 
@@ -58,13 +53,11 @@
 
 | Metric | Value |
 |---|---|
-| Sprint-4.5 tasks completed | 4/4 (100%) |
-| Total time | ~14 hours |
+| Total tasks completed (Sprint-4.5 + post) | 7 |
 | Tasks in progress | 0 |
 | Blocked tasks | 0 |
-| Recommended next | 1 (Security) |
+| Next | Bridge v3 update |
 
 ---
 
-*Last update: 2026-07-06 (Sprint-4.5 COMPLETE!)*
-*Next update: After next PR merge*
+*Last update: 2026-07-06 (Security + STATUS.md merged)*
