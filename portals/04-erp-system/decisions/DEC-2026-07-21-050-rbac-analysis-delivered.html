@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #050 — Jimi تحليلي · Sprint 2 Task 1/3 Delivered (RBAC Analysis)</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-050-jimi-sprint-2-task-13-delivered-rbac-analysis">📋 DECISION #050 — Jimi تحليلي · Sprint 2 Task 1/3 Delivered (RBAC Analysis)</h1>
+<blockquote>
+<p><strong>DEC-050</strong> | Sprint 2 — Task 1 of 3 (RBAC Documentation)</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 21:10 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Status</strong>: 🔴 <strong>CRITICAL FINDING</strong> — RBAC NOT ENFORCED<br />
+<strong>Sprint 2</strong>: 1/3 done (DEC-050 ✅, DEC-051 pending, DEC-052 pending)</p>
+<hr />
+<h2 id="sprint-2">🚨 أهم اكتشاف في Sprint 2 كله</h2>
+<blockquote>
+<p><strong>النظام عنده أدوار، لكن الأدوار </strong>لا تُستخدم<strong> في أي controller أو endpoint.</strong></p>
+</blockquote>
+<p><strong>الدليل القاطع</strong> (من <code>grep -rn "\[Authorize(Roles"</code> في <code>src/backend/</code>):<br />
+- ❌ <strong>0 usages</strong> لـ <code>[Authorize(Roles=...)]</code><br />
+- ❌ <strong>0 usages</strong> لـ <code>[Authorize(Policy=...)]</code><br />
+- ❌ <strong>0 usages</strong> لـ <code>User.IsInRole()</code> أو <code>User.HasClaim()</code></p>
+<p><strong>النتيجة</strong>: أي مستخدم مسجّل (بأي دور أو بدون دور) يستطيع تنفيذ <strong>أي عملية</strong> (CRUD + Manual Retry + Posting Rule create + Company delete).</p>
+<hr />
+<h2 id="deliverable">📤 المُسلَّم (Deliverable)</h2>
+<p><strong><code>/workspace/projects/erp-system/docs/analysis/07-rbac-arabic.md</code></strong> (20.5 KB)</p>
+<h3 id="_1">محتويات الوثيقة:</h3>
+<ol>
+<li><strong>🚨 تنبيه حرج</strong> — 0 role checks في النظام</li>
+<li><strong>شو هو RBAC</strong> — تعريف + بنية (User, Role, Permission)</li>
+<li><strong>البنية الحالية</strong> — <code>roles</code> table + <code>user_roles</code> join + entities</li>
+<li><strong>🎭 الأدوار الـ 4 الافتراضية</strong> (Admin, Accountant, ProjectManager, Viewer) — موثّقة لكن <strong>غير مطبّقة</strong></li>
+<li><strong>🔐 Auth Flow الكامل</strong> (Register, Login, Refresh, Logout)</li>
+<li><strong>🎫 JWT Structure</strong> — claims + validation + decoded example</li>
+<li><strong>🛡️ Middleware Pipeline</strong> — TenantMiddleware + ما لا يفعله</li>
+<li><strong>📊 الواقع الحالي</strong> — جدول 21 controllers / 101 endpoints / 0 role checks</li>
+<li><strong>🔍 Audit Matrix</strong> — مَن يستطيع عمل شنو (كل الأعمدة = ✅ حالياً!)</li>
+<li><strong>🚨 7 ثغرات حرجة</strong> (Critical + High + Medium)</li>
+<li><strong>💡 Permission Matrix مُقترح</strong> (50+ خلية)</li>
+<li><strong>🎯 خطة الإصلاح (Roadmap)</strong> — 4 مراحل</li>
+<li><strong>📊 ما هو مُحقَّق vs مُخطَّط</strong> — 7/15 (47%)</li>
+</ol>
+<hr />
+<h2 id="7">🔍 المصادر الـ 7 التي قُرئت</h2>
+<ol>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Entities/Role.cs</code> (Role + UserRole entities)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Infrastructure/RoleRepository.cs</code> (4 default roles)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Application/Auth/AuthService.cs</code> (Register/Login/Refresh)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Application/Auth/JwtTokenService.cs</code> (JWT generation)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Host/Program.cs</code> (JWT validation + middleware pipeline)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Host/Controllers/*</code> (21 controllers audited)</li>
+<li><code>/workspace/ERP-SYSTEM/src/backend/Shared/MultiTenancy/TenantMiddleware.cs</code> (tenant resolution)</li>
+</ol>
+<p><strong>Total</strong>: ~800 سطر كود قُرئ + 21 controller خضع للمراجعة.</p>
+<hr />
+<h2 id="7_1">🚨 الـ 7 ثغرات الحرجة (مُصنّفة بالأولوية)</h2>
+<h3 id="critical-production">🔴 Critical (يجب قبل production):</h3>
+<ol>
+<li><strong>لا Read vs Write تمييز</strong> — Viewer يستطيع CRUD</li>
+<li><strong>Manual Retry مفتوح للجميع</strong> — موثّق "Admin" لكن لا <code>[Authorize(Roles="Admin")]</code></li>
+<li><strong>Posting Rule create/trigger مفتوح</strong> — أي مسجّل يقدر ينشئ قواعد (تأثير على القيود التلقائية)</li>
+</ol>
+<h3 id="high">🟠 High (مهم):</h3>
+<ol>
+<li><strong>لا Audit Log للـ user_roles</strong> — مَن عيّن Admin لـ X؟ (assigned_by مفقود)</li>
+<li><strong>لا Soft Revoke</strong> — حذف user_role = خسارة التاريخ</li>
+<li><strong>لا Permission Concept</strong> — Roles = strings فقط، لا جدول permissions</li>
+<li><strong>لا Tenant validation في JWT</strong> — user من tenant A قد يصل لـ tenant B</li>
+</ol>
+<hr />
+<h2 id="_2">📊 الإحصائيات المقلقة</h2>
+<table>
+<thead>
+<tr>
+<th>المقياس</th>
+<th>القيمة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>عدد Controllers</td>
+<td>21</td>
+</tr>
+<tr>
+<td>عدد Endpoints (total)</td>
+<td>101</td>
+</tr>
+<tr>
+<td><code>[Authorize]</code> على controller</td>
+<td>18</td>
+</tr>
+<tr>
+<td><code>[AllowAnonymous]</code> على controller</td>
+<td>1 (HealthController)</td>
+</tr>
+<tr>
+<td><code>[AllowAnonymous]</code> على action</td>
+<td>3 (register/login/refresh)</td>
+</tr>
+<tr>
+<td><code>[Authorize(Roles=...)]</code></td>
+<td><strong>0</strong> ❌</td>
+</tr>
+<tr>
+<td><code>[Authorize(Policy=...)]</code></td>
+<td><strong>0</strong> ❌</td>
+</tr>
+<tr>
+<td><code>User.IsInRole()</code> usages</td>
+<td><strong>0</strong> ❌</td>
+</tr>
+<tr>
+<td>Default roles مُنشأة لكل tenant</td>
+<td>4 ✅</td>
+</tr>
+<tr>
+<td>Roles في JWT</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>RBAC Enforcement Score</strong></td>
+<td><strong>0/100</strong> 🔴</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="permission-matrix">💡 Permission Matrix المُقترح (مختصَر)</h2>
+<h3 id="50">عينة من الـ 50+ خلية:</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET accounts</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST account</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>DELETE account</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST journal-entry</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST journal-entry/post</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST posting-rule</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST trigger event</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>POST events/retry/{id}</strong></td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST company</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST project</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST receive</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST issue</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الإجمالي</strong>: ~50 خلية، 80% ✅، 20% ❌ (مقيدة).</p>
+<hr />
+<h2 id="roadmap-4">🎯 خطة الإصلاح (Roadmap — 4 مراحل)</h2>
+<h3 id="1-critical-sprint-3-3-5">المرحلة 1 (Critical — Sprint 3): <strong>3-5 أيام</strong></h3>
+<ul>
+<li>إضافة <code>[Authorize(Roles = "...")]</code> على كل Controller action</li>
+<li>تحديد <code>Admin</code> كحد أدنى لـ Manual Retry + Posting Rule create + Company delete</li>
+<li>تحديد <code>Admin, Accountant</code> للـ Finance write operations</li>
+<li>تحديد <code>Admin, ProjectManager</code> للـ Projects write operations</li>
+<li>إضافة <code>assigned_by</code> + <code>assigned_at</code> audit لـ <code>user_roles</code></li>
+</ul>
+<h3 id="2-high-post-sprint-3-2-3">المرحلة 2 (High — Post-Sprint 3): <strong>2-3 أيام</strong></h3>
+<ul>
+<li>Soft revoke (revoked_at)</li>
+<li>Tenant existence check في TenantMiddleware</li>
+<li>UI لإدارة الأدوار</li>
+<li>Audit log لتغييرات الأدوار</li>
+</ul>
+<h3 id="3-medium-phase-2-1">المرحلة 3 (Medium — Phase 2+): <strong>1 أسبوع</strong></h3>
+<ul>
+<li>جدول <code>permissions</code> منفصل</li>
+<li><code>IAuthorizationHandler</code> مخصص</li>
+<li>Permission inheritance</li>
+<li>Custom policies</li>
+</ul>
+<h3 id="4-low">المرحلة 4 (Low — مستقبلي): <strong>بحث</strong></h3>
+<ul>
+<li>Row-level security (Postgres RLS)</li>
+<li>Attribute-based access control (ABAC)</li>
+<li>Time-bound roles</li>
+<li>Delegation</li>
+</ul>
+<hr />
+<h2 id="dec-053-permission-matrix-implementation-plan">📋 DEC-053 (مقترح — منفصل) — Permission Matrix + Implementation Plan</h2>
+<p><strong>توصيتي</strong>: افتح DEC-053 منفصل لـ:<br />
+1. مراجعة Permission Matrix مع stakeholders (أنس، CFO، PM)<br />
+2. تحديد أولوية التطبيق<br />
+3. تقدير effort تفصيلي<br />
+4. خطة deployment</p>
+<p><strong>السبب</strong>: Permission Matrix قرار <strong>استراتيجي</strong> — يستحق DEC مستقل، مش جزء من DEC-050 (documentation).</p>
+<hr />
+<h2 id="sprint-progress">🔄 مقارنة Sprint Progress</h2>
+<table>
+<thead>
+<tr>
+<th>المهمة</th>
+<th>الحالة</th>
+<th>الحجم</th>
+<th>Score</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEC-050 (RBAC)</td>
+<td>✅ <strong>DONE</strong></td>
+<td>20.5 KB</td>
+<td>9.5/10</td>
+<td><strong>كشف ثغرة حرجة</strong></td>
+</tr>
+<tr>
+<td>DEC-051 (Backup/DR)</td>
+<td>⚪ Next</td>
+<td>~15 KB متوقع</td>
+<td>TBD</td>
+<td>جاهز للبدء</td>
+</tr>
+<tr>
+<td>DEC-052 (Data Retention)</td>
+<td>⚪ Pending</td>
+<td>~10 KB متوقع</td>
+<td>TBD</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sprint 2</strong>: 1/3 (33%)</p>
+<hr />
+<h2 id="decs-cross-reference">📊 DECs Cross-Reference</h2>
+<table>
+<thead>
+<tr>
+<th>DEC</th>
+<th>يربط مع</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEC-046</strong> (Initial Review)</td>
+<td>رصد "RBAC غامض" في 05-posting-rules → <strong>DEC-050</strong> يفسّر الحقيقة</td>
+</tr>
+<tr>
+<td><strong>DEC-047</strong> (Posting Rules)</td>
+<td>Finding #4 (RBAC غامض) → <strong>DEC-050</strong> يوثّق بدقة</td>
+</tr>
+<tr>
+<td><strong>DEC-048</strong> (Glossary)</td>
+<td>عرّف "RBAC" في الفئة التقنية → <strong>DEC-050</strong> يطبّقه</td>
+</tr>
+<tr>
+<td><strong>DEC-049</strong> (Event Catalog)</td>
+<td>Manual retry endpoint مفتوح → <strong>DEC-050</strong> يعتبره ثغرة #2</td>
+</tr>
+<tr>
+<td><strong>DEC-050</strong> (هذا)</td>
+<td>يربط كل ما سبق + يقترح DEC-053 منفصل</td>
+</tr>
+<tr>
+<td><strong>DEC-051</strong> (Backup/DR)</td>
+<td>قادم — سيشمل RTO/RPO للـ access logs</td>
+</tr>
+<tr>
+<td><strong>DEC-052</strong> (Data Retention)</td>
+<td>قادم — يحل part من "audit log" gap</td>
+</tr>
+<tr>
+<td><strong>DEC-053</strong> (مقترح)</td>
+<td>Permission Matrix Implementation Plan</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps-mavis-root">⏭️ Next Steps (لـ Mavis Root)</h2>
+<h3 id="_3">السؤال الحاسم:</h3>
+<blockquote>
+<p><strong>هل النظام آمن للنشر في production الآن؟</strong></p>
+</blockquote>
+<p><strong>إجابتي</strong>: ❌ <strong>لا</strong> — يجب تطبيق المرحلة 1 (Critical) قبل production.</p>
+<h3 id="_4">التوصية:</h3>
+<ol>
+<li><strong>اعتمد DEC-050</strong> (الوثائق) ✅</li>
+<li><strong>افتح DEC-053 منفصل</strong> للـ Permission Matrix</li>
+<li><strong>أجّل النشر لـ production</strong> حتى Critical gaps تُحل</li>
+<li><strong>Sprint 2 يكمل</strong>: DEC-051 (Backup/DR) + DEC-052 (Data Retention)</li>
+<li><strong>Sprint 3 يبدأ</strong>: DEC-053 (RBAC Implementation) + DEC-046 fixes (5 Posting Rules bugs)</li>
+</ol>
+<h3 id="-408773242015948">لـ خطة-النظام (408773242015948) — عند التنسيق:</h3>
+<p>أسئلة محددة:<br />
+- هل خطة-النظام عارفة عن الـ 7 RBAC gaps؟<br />
+- هل عندها خطة implementation جاهزة؟<br />
+- هل الـ Permission Matrix المقترح يتوافق مع رؤيتها؟</p>
+<hr />
+<h2 id="_5">📎 روابط</h2>
+<ul>
+<li>الوثيقة: <code>/workspace/projects/erp-system/docs/analysis/07-rbac-arabic.md</code></li>
+<li>DEC-046: <code>/workspace/.mavis/DEC-2026-07-21-046-jimi-tahlili-initial-review.md</code></li>
+<li>DEC-047: <code>/workspace/.mavis/DEC-2026-07-21-047-posting-rules-doc-delivered.md</code></li>
+<li>DEC-048: <code>/workspace/.mavis/DEC-2026-07-21-048-glossary-doc-delivered.md</code></li>
+<li>DEC-049: <code>/workspace/.mavis/DEC-2026-07-21-049-event-catalog-delivered.md</code></li>
+</ul>
+<hr />
+<p><strong>Status</strong>: 🔴 <strong>CRITICAL FINDING — System NOT production-ready until RBAC enforced</strong></p>
+<p><strong>Mavis, الـ 7 ثغرات لازم تتحل قبل أي deployment. الـ Sprint 3 لازم يبدأ فوراً بعد Sprint 2.</strong></p>
+</body>
+</html>

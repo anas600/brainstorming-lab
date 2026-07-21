@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #052 — Data Retention Policy</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-052-data-retention-policy">📋 DECISION #052 — Data Retention Policy</h1>
+<blockquote>
+<p><strong>DEC-052</strong> | 🟡 <strong>MEDIUM PRIORITY</strong> — Compliance + Storage<br />
+<strong>Status</strong>: 🟢 Sprint 2 Task 3/3 — In Progress (LAST one in Sprint 2)</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 21:35 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Severity</strong>: 🟡 Medium (compliance + storage, not critical)<br />
+<strong>Related</strong>: DEC-050 (RBAC), DEC-051 (Backup/DR), DEC-053 (Permission Matrix)<br />
+<strong>Estimated Effort</strong>: 2-3 days (analysis + setup) + ongoing</p>
+<hr />
+<h2 id="executive-summary-1-minute-read">🎯 Executive Summary (1 minute read)</h2>
+<h3 id="_1">الوضع الحالي:</h3>
+<blockquote>
+<p><strong>27 جدول في الـ DB، أغلبها بدون retention policy</strong>.</p>
+<ul>
+<li>❌ <strong>0 cleanup jobs</strong> في الـ CI/CD</li>
+<li>❌ <strong>0 retention columns</strong> في الـ schema (ما عدا refresh_tokens)</li>
+<li>❌ <strong>0 archive strategy</strong> (cold storage)</li>
+<li>❌ <strong><code>audit_log</code> غير مُنفَّذ</strong> (موعود في docs لكن مش موجود في DB)</li>
+<li>❌ <strong><code>processed_events</code> ينمو forever</strong> (~1M rows/شهر لكل tenant)</li>
+<li>❌ <strong><code>notifications</code> بدون expiry</strong> (تتراكم بدون حد)</li>
+<li>✅ <strong><code>refresh_tokens</code> عنده <code>expires_at</code></strong> (لكن لا cleanup job)</li>
+</ul>
+</blockquote>
+<h3 id="_2">ما يحتاج يصير:</h3>
+<ol>
+<li><strong>Per-table retention matrix</strong> (27 جدول × retention period)</li>
+<li><strong>Cleanup jobs</strong> (pg_cron أو CI) — 4 أولويات</li>
+<li><strong>Archive strategy</strong> (cold storage في R2)</li>
+<li><strong>Compliance mapping</strong> (IFRS / SOX / GDPR / Libyan law)</li>
+<li><strong><code>audit_log</code> table</strong> (إضافة + IFRS retention)</li>
+</ol>
+<h3 id="_3">الأثر:</h3>
+<ul>
+<li><strong>Storage cost</strong> ينخفض (لا data تراكمية لا فائدة منها)</li>
+<li><strong>Compliance</strong> (Libyan law = 5 سنوات، IFRS = 7-10 سنوات)</li>
+<li><strong>Performance</strong> (جداول صغيرة = queries أسرع)</li>
+<li><strong>GDPR</strong> (right to be forgotten — للـ personal data)</li>
+</ul>
+<hr />
+<h2 id="part-1-inventory-27-db">📊 PART 1: Inventory (27 جداول في DB)</h2>
+<p>من 7 migrations:<br />
+- <code>20260614_120000_CreateIdentityTables.cs</code><br />
+- <code>20260614_180000_CreateFinanceTables.cs</code><br />
+- <code>20260615_020000_AddMultiCompanySupport.cs</code><br />
+- <code>20260615_050000_CreateProjectsTables.cs</code><br />
+- <code>20260615_070000_AddInventoryCore.cs</code><br />
+- <code>20260615_090000_AddInventoryMovements.cs</code><br />
+- <code>20260615_110000_AddOutboxAndProcessedEvents.cs</code></p>
+<h3 id="11-identity-tenants-5">1.1 Identity &amp; Tenants (5 جداول)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Tenant-Aware</th>
+<th>Has Timestamp</th>
+<th>Retention Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenants</code></td>
+<td>(root)</td>
+<td><code>created_at</code></td>
+<td>∞ (root)</td>
+</tr>
+<tr>
+<td><code>users</code></td>
+<td>✅</td>
+<td><code>created_at</code>, <code>last_login_at</code></td>
+<td>GDPR (right to be forgotten) + 7y audit</td>
+</tr>
+<tr>
+<td><code>roles</code></td>
+<td>✅</td>
+<td><code>created_at</code></td>
+<td>∞ (definition)</td>
+</tr>
+<tr>
+<td><code>user_roles</code></td>
+<td>✅</td>
+<td><code>assigned_at</code></td>
+<td>7y (audit)</td>
+</tr>
+<tr>
+<td><code>refresh_tokens</code></td>
+<td>❌</td>
+<td><code>expires_at</code>, <code>revoked_at</code></td>
+<td>30d بعد expiry/revoke</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-finance-5">1.2 Finance (5 جداول)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Tenant-Aware</th>
+<th>Has Timestamp</th>
+<th>Retention Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accounts</code></td>
+<td>✅</td>
+<td>(no created_at — needs adding)</td>
+<td>∞ (CoA)</td>
+</tr>
+<tr>
+<td><code>journal_entries</code></td>
+<td>✅</td>
+<td><code>entry_date</code></td>
+<td><strong>7-10 سنوات (IFRS/SOX)</strong></td>
+</tr>
+<tr>
+<td><code>journal_lines</code></td>
+<td>✅</td>
+<td>(via journal_entry)</td>
+<td><strong>7-10 سنوات (IFRS/SOX)</strong></td>
+</tr>
+<tr>
+<td><code>posting_rules</code></td>
+<td>✅</td>
+<td><code>created_at</code>, <code>updated_at</code></td>
+<td>∞ (rules)</td>
+</tr>
+<tr>
+<td><code>companies</code></td>
+<td>✅</td>
+<td><code>created_at</code>, <code>updated_at</code></td>
+<td>∞ (definition)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-costcenters-projects-6">1.3 CostCenters &amp; Projects (6 جداول)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Tenant-Aware</th>
+<th>Has Timestamp</th>
+<th>Retention Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cost_centers</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (definition)</td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td>✅</td>
+<td>(no created_at — needs adding)</td>
+<td><strong>7y (project records)</strong></td>
+</tr>
+<tr>
+<td><code>project_tasks</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td><strong>7y</strong></td>
+</tr>
+<tr>
+<td><code>project_budgets</code></td>
+<td>✅</td>
+<td><code>last_recalculated_at</code></td>
+<td><strong>7y</strong></td>
+</tr>
+<tr>
+<td><code>resources</code></td>
+<td>✅</td>
+<td><code>created_at</code></td>
+<td>∞ (definition)</td>
+</tr>
+<tr>
+<td><code>resource_assignments</code></td>
+<td>✅</td>
+<td><code>from</code>, <code>to</code></td>
+<td><strong>7y</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-inventory-10">1.4 Inventory (10 جداول)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Tenant-Aware</th>
+<th>Has Timestamp</th>
+<th>Retention Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>items</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (catalog)</td>
+</tr>
+<tr>
+<td><code>item_categories</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (catalog)</td>
+</tr>
+<tr>
+<td><code>units_of_measure</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (catalog)</td>
+</tr>
+<tr>
+<td><code>warehouses</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (definition)</td>
+</tr>
+<tr>
+<td><code>stock_movements</code></td>
+<td>✅</td>
+<td>(no created_at — needs adding)</td>
+<td><strong>7y (inventory audit)</strong></td>
+</tr>
+<tr>
+<td><code>stock_levels</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>∞ (current state)</td>
+</tr>
+<tr>
+<td><code>stock_reservations</code></td>
+<td>✅</td>
+<td>(no created_at)</td>
+<td>90d (operational)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="15-events-notifications-3">1.5 Events &amp; Notifications (3 جداول)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Tenant-Aware</th>
+<th>Has Timestamp</th>
+<th>Retention Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>outbox_events</code></td>
+<td>✅</td>
+<td><code>occurred_at</code>, <code>processed_at</code></td>
+<td>30d بعد process</td>
+</tr>
+<tr>
+<td><code>processed_events</code></td>
+<td>✅</td>
+<td><code>processed_at</code></td>
+<td><strong>30d (idempotency window)</strong></td>
+</tr>
+<tr>
+<td><code>notifications</code></td>
+<td>✅</td>
+<td><code>created_at</code>, <code>read_at</code></td>
+<td><strong>90d بعد read</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="16">1.6 المُلاحظ</h3>
+<ul>
+<li>❌ <strong>0 tables عندها explicit retention policy</strong></li>
+<li>❌ <strong>0 tables عندها <code>created_at</code></strong> (Identity, Finance, Projects, Inventory)</li>
+<li>❌ <strong><code>audit_log</code> غير موجود</strong> (موعود في docs لكن مش في DB)</li>
+<li>❌ <strong>0 cleanup jobs</strong> في <code>MigrationRunnerHostedService</code> أو في CI/CD</li>
+</ul>
+<hr />
+<h2 id="part-2-compliance-research">📋 PART 2: Compliance Research</h2>
+<h3 id="21-ifrs-sox-international-financial-reporting-sarbanes-oxley">2.1 IFRS / SOX (International Financial Reporting / Sarbanes-Oxley)</h3>
+<p>من PCAOB AS 1215 (Audit Documentation):</p>
+<blockquote>
+<p>"The auditor must retain audit documentation for <strong>seven years</strong> from the date the auditor grants permission to use the auditor's report."</p>
+</blockquote>
+<p>من Sarbanes-Oxley Section 802:</p>
+<blockquote>
+<p>"The final rule requires that auditors retain the required documents for <strong>seven years</strong>."</p>
+</blockquote>
+<p><strong>ينطبق على</strong>: <code>journal_entries</code>, <code>journal_lines</code>, <code>accounts</code>, <code>audit_log</code> (when added).</p>
+<h3 id="22-gdpr-tenants">2.2 GDPR (لو tenants أوروبية)</h3>
+<table>
+<thead>
+<tr>
+<th>Right</th>
+<th>Data</th>
+<th>Retention Implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Right to be forgotten</td>
+<td>Personal data (users, customers)</td>
+<td>يجب حذف عند الطلب</td>
+</tr>
+<tr>
+<td>Right to access</td>
+<td>All personal data</td>
+<td>exportable</td>
+</tr>
+<tr>
+<td>Data minimization</td>
+<td>Anything not needed</td>
+<td>cleanup</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ينطبق على</strong>: <code>users</code> (email, full_name)، <code>customers</code>، <code>vendors</code>، <code>employees</code> (لا يوجد HR module بعد).</p>
+<p><strong>الـ real risk</strong>: حالياً لا يوجد tenants أوروبية (Tenants = AlFajr/Al-Burj/AlFajr Holding/الفجر، كلها ليبية). لكن <strong>multi-tenant SaaS</strong> مستقبلي قد يحتاج GDPR.</p>
+<h3 id="23-libyan-commercial-law-1953">2.3 Libyan Commercial Law (قانون التجارة الليبي 1953)</h3>
+<p>من المادة (دفاتر إلزامية):</p>
+<blockquote>
+<p>"يجب على التاجر أن يحتفظ بهذه الدفاتر والملفات لمدة <strong>خمس سنوات</strong>."</p>
+</blockquote>
+<p><strong>ينطبق على</strong>: <code>journal_entries</code>, <code>journal_lines</code>, <code>accounts</code>, الـ commercial documents.</p>
+<p>من القانون 23 لسنة 2010 (Regarding Commercial Activities):</p>
+<blockquote>
+<p>"These papers and documents shall be kept for <strong>five years</strong> with effect from the date of striking the company off the Commercial Register."</p>
+</blockquote>
+<p><strong>النتيجة</strong>: Libyan law = <strong>5 سنوات</strong> كحد أدنى للمحاسبة.</p>
+<h3 id="24-compliance">2.4 ملخص Compliance</h3>
+<table>
+<thead>
+<tr>
+<th>Standard</th>
+<th>Retention</th>
+<th>Applies to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Libyan Commercial Law</td>
+<td><strong>5 سنوات</strong></td>
+<td>journal_entries, accounts</td>
+</tr>
+<tr>
+<td>IFRS / SOX</td>
+<td><strong>7 سنوات</strong></td>
+<td>نفس + audit_log</td>
+</tr>
+<tr>
+<td>Some Libyan regulations</td>
+<td>10 سنوات</td>
+<td>(uncertain — لازم مراجعة محاسب ليبي)</td>
+</tr>
+<tr>
+<td>GDPR</td>
+<td>depends</td>
+<td>users (right to be forgotten)</td>
+</tr>
+<tr>
+<td>Operational</td>
+<td>30-90 يوم</td>
+<td>notifications, processed_events, stock_reservations</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommended</strong>: <strong>7 سنوات كحد أدنى</strong> (لأنه يغطي Libyan + IFRS + SOX).</p>
+<hr />
+<h2 id="part-3-per-table-retention-matrix-27">🎯 PART 3: Per-Table Retention Matrix (27 جدول)</h2>
+<h3 id="tier-0-infinite-retention-definition-data">Tier 0: Infinite Retention (Definition Data)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Retention</th>
+<th>Reason</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenants</code></td>
+<td>∞</td>
+<td>Root entity</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>accounts</code> (CoA)</td>
+<td>∞</td>
+<td>Chart of Accounts</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>roles</code></td>
+<td>∞</td>
+<td>Role definitions</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>companies</code></td>
+<td>∞</td>
+<td>Subsidiary definitions</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>cost_centers</code></td>
+<td>∞</td>
+<td>Definition</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>items</code>, <code>item_categories</code>, <code>units_of_measure</code>, <code>warehouses</code></td>
+<td>∞</td>
+<td>Catalogs</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>resources</code></td>
+<td>∞</td>
+<td>Definition</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>posting_rules</code></td>
+<td>∞</td>
+<td>Rules</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total: 13 جدول</strong> (~50%)</p>
+<h3 id="tier-1-7-year-retention-compliance">Tier 1: 7-Year Retention (Compliance)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Retention</th>
+<th>Reason</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users</code></td>
+<td>7y بعد <code>last_login_at</code> (أو فوراً لو GDPR)</td>
+<td>Audit</td>
+<td>Archive + cleanup</td>
+</tr>
+<tr>
+<td><code>user_roles</code></td>
+<td>7y</td>
+<td>Audit</td>
+<td>Archive + cleanup</td>
+</tr>
+<tr>
+<td><code>journal_entries</code></td>
+<td><strong>7y</strong></td>
+<td>IFRS/SOX/Libyan</td>
+<td>Archive + cleanup (cold storage)</td>
+</tr>
+<tr>
+<td><code>journal_lines</code></td>
+<td><strong>7y</strong></td>
+<td>IFRS/SOX/Libyan</td>
+<td>Archive + cleanup</td>
+</tr>
+<tr>
+<td><code>projects</code>, <code>project_tasks</code>, <code>project_budgets</code>, <code>resource_assignments</code></td>
+<td>7y</td>
+<td>Audit</td>
+<td>Archive + cleanup</td>
+</tr>
+<tr>
+<td><code>stock_movements</code></td>
+<td>7y</td>
+<td>Inventory audit</td>
+<td>Archive + cleanup</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total: 10 جدول</strong></p>
+<h3 id="tier-2-operational-retention-30-90">Tier 2: Operational Retention (30-90 يوم)</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Retention</th>
+<th>Reason</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>outbox_events</code></td>
+<td>30d بعد <code>processed_at</code></td>
+<td>Operational</td>
+<td>pg_cron cleanup</td>
+</tr>
+<tr>
+<td><code>processed_events</code></td>
+<td>30d</td>
+<td>Idempotency window</td>
+<td>pg_cron cleanup</td>
+</tr>
+<tr>
+<td><code>notifications</code></td>
+<td>90d بعد <code>read_at</code> (أو 30d لو unread)</td>
+<td>UX</td>
+<td>pg_cron cleanup</td>
+</tr>
+<tr>
+<td><code>refresh_tokens</code></td>
+<td>30d بعد <code>expires_at</code> أو <code>revoked_at</code></td>
+<td>Security</td>
+<td>pg_cron cleanup</td>
+</tr>
+<tr>
+<td><code>stock_reservations</code></td>
+<td>90d</td>
+<td>Operational</td>
+<td>pg_cron cleanup</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total: 5 جدول</strong></p>
+<h3 id="tier-3-special-gdpr">Tier 3: Special — GDPR</h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Retention</th>
+<th>Reason</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(users)</td>
+<td>On request</td>
+<td>Right to be forgotten</td>
+<td>Manual (API endpoint)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="31">3.1 ملخص سريع</h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Tables</th>
+<th>Retention</th>
+<th>Cost Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 (∞)</td>
+<td>13</td>
+<td>Forever</td>
+<td>Low (small data)</td>
+</tr>
+<tr>
+<td>1 (7y)</td>
+<td>10</td>
+<td>7 years</td>
+<td>Medium (large data, archived)</td>
+</tr>
+<tr>
+<td>2 (30-90d)</td>
+<td>5</td>
+<td>1-3 months</td>
+<td>Low (small data, frequent cleanup)</td>
+</tr>
+<tr>
+<td>3 (GDPR)</td>
+<td>0 (part of users)</td>
+<td>Variable</td>
+<td>Manual only</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>27</strong></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-4-implementation-options">🛠️ PART 4: Implementation Options</h2>
+<h3 id="41-a-postgresql-pg_cron">4.1 الخيار A: PostgreSQL pg_cron (مُوصى به)</h3>
+<p><strong>Neon يدعم pg_cron</strong> (من docs):<br />
+- مُفعَّل عبر Neon API: <code>cron.database_name</code> parameter<br />
+- يعمل داخل الـ DB<br />
+- Standard cron syntax</p>
+<p><strong>مثال</strong>:</p>
+<pre><code class="language-sql">-- Enable extension
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Schedule daily cleanup of processed_events older than 30 days
+SELECT cron.schedule(
+  'cleanup-processed-events',
+  '0 3 * * *',  -- 3 AM UTC daily
+  $$DELETE FROM processed_events WHERE processed_at &lt; NOW() - INTERVAL '30 days'$$
+);
+
+-- Schedule notifications cleanup
+SELECT cron.schedule(
+  'cleanup-notifications',
+  '0 4 * * *',  -- 4 AM UTC daily
+  $$DELETE FROM notifications 
+    WHERE (is_read = true AND read_at &lt; NOW() - INTERVAL '90 days')
+       OR (is_read = false AND created_at &lt; NOW() - INTERVAL '30 days')$$
+);
+</code></pre>
+<p><strong>Pros</strong>:<br />
+- Built-in في Neon<br />
+- No external CI/CD<br />
+- Reliable (في نفس الـ DB)<br />
+- Logs في <code>cron.job_run_details</code></p>
+<p><strong>Cons</strong>:<br />
+- لا visual UI (SQL only)<br />
+- لا alert mechanism<br />
+- Schema changes صعبة</p>
+<h3 id="42-b-github-actions-cron-alternative">4.2 الخيار B: GitHub Actions Cron (Alternative)</h3>
+<p><strong>Workflow</strong>:</p>
+<pre><code class="language-yaml"># .github/workflows/cleanup.yml
+name: Daily Cleanup
+on:
+  schedule: { cron: '0 3 * * *' }  # 3 AM UTC daily
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup processed_events
+        run: |
+          psql &quot;$DATABASE_URL&quot; -c &quot;
+            DELETE FROM processed_events 
+            WHERE processed_at &lt; NOW() - INTERVAL '30 days';
+          &quot;
+      - name: Cleanup notifications
+        run: |
+          psql &quot;$DATABASE_URL&quot; -c &quot;
+            DELETE FROM notifications 
+            WHERE (is_read = true AND read_at &lt; NOW() - INTERVAL '90 days')
+               OR (is_read = false AND created_at &lt; NOW() - INTERVAL '30 days');
+          &quot;
+      - name: Cleanup refresh_tokens
+        run: |
+          psql &quot;$DATABASE_URL&quot; -c &quot;
+            DELETE FROM refresh_tokens 
+            WHERE (expires_at &lt; NOW() - INTERVAL '30 days')
+               OR (revoked_at IS NOT NULL AND revoked_at &lt; NOW() - INTERVAL '30 days');
+          &quot;
+</code></pre>
+<p><strong>Pros</strong>:<br />
+- نفس pattern للـ backup (DEC-051)<br />
+- Logs في GitHub Actions<br />
+- إشعارات build failures<br />
+- Easy to modify</p>
+<p><strong>Cons</strong>:<br />
+- يحتاج secrets management<br />
+- GitHub Actions has limits (2000 min/month for free)<br />
+- External dependency</p>
+<h3 id="43-c-net-backgroundservice-hybrid">4.3 الخيار C: .NET BackgroundService (Hybrid)</h3>
+<p><strong>مثال</strong>:</p>
+<pre><code class="language-csharp">// Hosted/RetentionCleanupService.cs
+public sealed class RetentionCleanupService : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            await DoCleanup(ct);
+            await Task.Delay(TimeSpan.FromHours(24), ct);
+        }
+    }
+
+    private async Task DoCleanup(CancellationToken ct)
+    {
+        // Delete processed_events &gt; 30 days
+        // Delete notifications &gt; 90 days
+        // Archive journal_entries &gt; 7 years to R2
+        // ...
+    }
+}
+</code></pre>
+<p><strong>Pros</strong>:<br />
+- Type-safe<br />
+- Testable<br />
+- Reuses existing code patterns<br />
+- No external dependency</p>
+<p><strong>Cons</strong>:<br />
+- في نفس الـ API process (coupling)<br />
+- لا independent restart<br />
+- Hard to monitor separately</p>
+<h3 id="44-d-pg_partman-partitioning">4.4 الخيار D: pg_partman (للـ partitioning)</h3>
+<p><strong>للـ tables كبيرة جداً</strong> (millions of rows):<br />
+- <code>journal_lines</code> (الأكبر — كل قيد له عدة سطور)<br />
+- <code>outbox_events</code> (1M rows/شهر)<br />
+- <code>audit_log</code> (when added)</p>
+<p><strong>Pros</strong>:<br />
+- Auto-create partitions (by month/year)<br />
+- Auto-drop old partitions (instant)<br />
+- Query performance boost (partition pruning)</p>
+<p><strong>Cons</strong>:<br />
+- Schema change (migrate existing data)<br />
+- More complex to query<br />
+- Overkill لـ tables صغيرة</p>
+<h3 id="45">4.5 التوصية النهائية</h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Option</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tier 2 (operational, small)</td>
+<td><strong>pg_cron</strong></td>
+<td>Simple, in-DB, no external</td>
+</tr>
+<tr>
+<td>Tier 1 (7y, large)</td>
+<td><strong>GitHub Actions + R2 archive</strong></td>
+<td>Aligns with DEC-051 strategy</td>
+</tr>
+<tr>
+<td>Tier 3 (GDPR)</td>
+<td><strong>.NET BackgroundService</strong></td>
+<td>Manual + auditable</td>
+</tr>
+<tr>
+<td>Future (very large)</td>
+<td><strong>pg_partman</strong></td>
+<td>When needed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-5-implementation-plan-3-phases">🚀 PART 5: Implementation Plan (3 Phases)</h2>
+<h3 id="phase-1-quick-wins-1-2-operational-cleanup">Phase 1: QUICK WINS (1-2 أيام) — Operational Cleanup</h3>
+<h4 id="task-11-add-created_at-to-missing-tables-05">Task 1.1: Add <code>created_at</code> to missing tables (0.5 يوم)</h4>
+<p><strong>Migration</strong>:</p>
+<pre><code class="language-sql">-- 20260721_100000_AddCreatedAtToLegacyTables.cs
+ALTER TABLE accounts ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE companies ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE cost_centers ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE items ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE item_categories ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE units_of_measure ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE warehouses ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE projects ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE project_tasks ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE stock_movements ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE stock_reservations ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE resources ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+ALTER TABLE resource_assignments ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
+</code></pre>
+<p><strong>⚠️ Risk</strong>: <code>DEFAULT NOW()</code> على existing rows = كلهم نفس الـ timestamp. <strong>OK</strong> للـ old data (نعرف أنها قبل الـ migration).</p>
+<h4 id="task-12-add-audit_log-table-1">Task 1.2: Add <code>audit_log</code> table (1 يوم)</h4>
+<p><strong>Schema</strong> (من <code>03-events-arabic.md</code>):</p>
+<pre><code class="language-sql">CREATE TABLE audit_log (
+  id BIGSERIAL PRIMARY KEY,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  entity_type VARCHAR(50) NOT NULL,  -- 'journal_entry', 'account', 'project', ...
+  entity_id UUID NOT NULL,
+  action VARCHAR(20) NOT NULL,  -- 'created', 'updated', 'deleted', 'viewed', 'exported'
+  user_id UUID REFERENCES users(id),
+  changes JSONB,  -- {before: {...}, after: {...}}
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX ix_audit_tenant_entity ON audit_log (tenant_id, entity_type, entity_id);
+CREATE INDEX ix_audit_tenant_user ON audit_log (tenant_id, user_id);
+CREATE INDEX ix_audit_tenant_created ON audit_log (tenant_id, created_at);
+</code></pre>
+<p><strong>Retention</strong>: 7 سنوات (IFRS).</p>
+<p><strong>Implementation</strong>:<br />
+- Middleware في ASP.NET Core يستمع لكل CRUD operations<br />
+- أو event-based (outbox + handler)<br />
+- أو manual في كل service (verbose, error-prone)</p>
+<p><strong>التوصية</strong>: Event-based (مع extension لـ Event Catalog).</p>
+<h4 id="task-13-setup-pg_cron-3-cleanup-jobs-05">Task 1.3: Setup pg_cron + 3 cleanup jobs (0.5 يوم)</h4>
+<pre><code class="language-sql">-- Enable extension (via Neon API or SQL Editor)
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Cleanup 1: processed_events (30 days)
+SELECT cron.schedule(
+  'cleanup-processed-events',
+  '0 3 * * *',
+  $$DELETE FROM processed_events WHERE processed_at &lt; NOW() - INTERVAL '30 days'$$
+);
+
+-- Cleanup 2: outbox_events processed &gt; 30 days
+SELECT cron.schedule(
+  'cleanup-outbox-events',
+  '0 3 * * *',
+  $$DELETE FROM outbox_events 
+    WHERE processed_at IS NOT NULL 
+      AND processed_at &lt; NOW() - INTERVAL '30 days'$$
+);
+
+-- Cleanup 3: notifications (90 days read, 30 days unread)
+SELECT cron.schedule(
+  'cleanup-notifications',
+  '0 4 * * *',
+  $$DELETE FROM notifications 
+    WHERE (is_read = true AND read_at &lt; NOW() - INTERVAL '90 days')
+       OR (is_read = false AND created_at &lt; NOW() - INTERVAL '30 days')$$
+);
+
+-- Cleanup 4: refresh_tokens (30 days after expiry/revoke)
+SELECT cron.schedule(
+  'cleanup-refresh-tokens',
+  '0 4 * * *',
+  $$DELETE FROM refresh_tokens 
+    WHERE (expires_at &lt; NOW() - INTERVAL '30 days')
+       OR (revoked_at IS NOT NULL AND revoked_at &lt; NOW() - INTERVAL '30 days')$$
+);
+</code></pre>
+<p><strong>Verification</strong>:</p>
+<pre><code class="language-sql">-- Check job status
+SELECT * FROM cron.job;
+SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 10;
+</code></pre>
+<h3 id="phase-2-near-term-3-5-compliance-archive">Phase 2: NEAR-TERM (3-5 أيام) — Compliance + Archive</h3>
+<h4 id="task-21-archive-strategy-2-3">Task 2.1: Archive strategy (2-3 أيام)</h4>
+<p><strong>Workflow</strong> (GitHub Actions):</p>
+<pre><code class="language-yaml"># .github/workflows/monthly-archive.yml
+name: Monthly Archive
+on:
+  schedule: { cron: '0 5 1 * *' }  # 1st of month, 5 AM UTC
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Archive journal_entries &gt; 7 years
+        run: |
+          # Export to CSV
+          psql &quot;$DATABASE_URL&quot; -c &quot;
+            COPY (
+              SELECT * FROM journal_entries 
+              WHERE entry_date &lt; NOW() - INTERVAL '7 years'
+            ) TO '/tmp/journal_entries_archive_$(date +%Y%m).csv' CSV HEADER;
+          &quot;
+          # Compress
+          gzip /tmp/journal_entries_archive_*.csv
+          # Upload to R2
+          aws s3 cp /tmp/journal_entries_archive_*.csv.gz \
+            s3://erp-archive/yearly/$(date +%Y)/journal_entries_$(date +%Y%m).csv.gz
+          # Delete from DB
+          psql &quot;$DATABASE_URL&quot; -c &quot;
+            DELETE FROM journal_entries 
+            WHERE entry_date &lt; NOW() - INTERVAL '7 years';
+          &quot;
+</code></pre>
+<p><strong>Archive contents</strong> (per table, after 7y):<br />
+- <code>journal_entries</code> + <code>journal_lines</code> (joined)<br />
+- <code>projects</code> + <code>project_tasks</code> + <code>project_budgets</code><br />
+- <code>users</code> (anonymized after 7y inactive)<br />
+- <code>stock_movements</code></p>
+<p><strong>Storage</strong>:<br />
+- R2 bucket: <code>erp-archive</code> ($0.015/GB-month)<br />
+- Format: gzipped CSV (cheap, queryable, auditable)<br />
+- Estimated: 7 years × 100K journal entries = ~100 MB</p>
+<h4 id="task-22-add-gdpr-right-to-be-forgotten-endpoint-1-2">Task 2.2: Add GDPR right-to-be-forgotten endpoint (1-2 يوم)</h4>
+<p><strong>API endpoint</strong>:</p>
+<pre><code class="language-csharp">[HttpDelete(&quot;me&quot;)]
+[Authorize]
+public async Task&lt;IActionResult&gt; DeleteMyAccount(...)
+{
+    // 1. Anonymize user data
+    // 2. Revoke all tokens
+    // 3. Soft delete user
+    // 4. Log to audit_log
+    // 5. Schedule hard delete after 30 days (grace period)
+}
+</code></pre>
+<p><strong>Note</strong>: حالياً tenants ليبية، لكن multi-tenant SaaS قد يحتاج GDPR.</p>
+<h3 id="phase-3-long-term-1-optimization">Phase 3: LONG-TERM (1 أسبوع) — Optimization</h3>
+<h4 id="task-31-pg_partman-for-huge-tables-5">Task 3.1: pg_partman for huge tables (5+ أيام)</h4>
+<p><strong>Apply to</strong>:<br />
+- <code>outbox_events</code> (1M rows/month)<br />
+- <code>journal_lines</code> (10M rows/سنة)<br />
+- <code>audit_log</code> (when added — 100K+ rows/يوم)</p>
+<p><strong>Benefits</strong>:<br />
+- Auto-drop old partitions<br />
+- Query performance (partition pruning)<br />
+- No DELETE overhead (DROP PARTITION instant)</p>
+<h4 id="task-32-monitoring-alerts-2-3">Task 3.2: Monitoring + Alerts (2-3 أيام)</h4>
+<p><strong>Metrics</strong>:<br />
+- <code>cron.job_run_details</code> (failure rate)<br />
+- Table sizes (alert if growing too fast)<br />
+- Archive job status (alert if failed)</p>
+<p><strong>Alerts</strong>:<br />
+- Email + Telegram to Anas<br />
+- "Cleanup failed" / "Archive failed" / "Table X &gt; 100K rows"</p>
+<hr />
+<h2 id="part-6-cost-analysis">💰 PART 6: Cost Analysis</h2>
+<h3 id="61-phase-1-cleanup-jobs-only">6.1 Phase 1 (Cleanup jobs only)</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pg_cron</td>
+<td>$0</td>
+<td>Built-in to Neon</td>
+</tr>
+<tr>
+<td>Storage savings (after 30d cleanup)</td>
+<td>-$0.005/month</td>
+<td>Negligible (small data)</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>$0</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-phase-2-archive-gdpr">6.2 Phase 2 (Archive + GDPR)</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R2 storage (archive)</td>
+<td>~$0.05/month</td>
+<td>7y × 100MB = 100MB</td>
+</tr>
+<tr>
+<td>GitHub Actions minutes</td>
+<td>~$0 (free tier)</td>
+<td>12 runs/year</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$0.05/month</strong></td>
+<td><strong>~$0.6/year</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-phase-3-pg_partman-monitoring">6.3 Phase 3 (pg_partman + monitoring)</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neon Launch (if not already)</td>
+<td>$11/month</td>
+<td>(covered by DEC-051)</td>
+</tr>
+<tr>
+<td>Grafana Cloud (free tier)</td>
+<td>$0</td>
+<td>OK for now</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$0 extra</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="64-trade-off">6.4 Trade-off</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Storage Impact</th>
+<th>Compliance</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status Quo (no cleanup)</td>
+<td>Growing forever ❌</td>
+<td>❌ (no audit_log)</td>
+<td>$0 today, $$$ later</td>
+</tr>
+<tr>
+<td>Phase 1 only</td>
+<td>30% reduction</td>
+<td>🟠 Partial</td>
+<td>$0</td>
+</tr>
+<tr>
+<td>Phase 1+2</td>
+<td>50% reduction</td>
+<td>✅ Full IFRS</td>
+<td>$0.6/year</td>
+</tr>
+<tr>
+<td>Phase 1+2+3</td>
+<td>70% reduction</td>
+<td>✅✅ Full + monitored</td>
+<td>$0.6/year + monitoring</td>
+</tr>
+</tbody>
+</table>
+<p><strong>التوصية</strong>: <strong>Phase 1+2</strong> (~$0.6/year) — تغطية كاملة + cost minimal.</p>
+<hr />
+<h2 id="part-7-testing-strategy">🧪 PART 7: Testing Strategy</h2>
+<h3 id="71-cleanup-job-tests-phase-1">7.1 Cleanup Job Tests (Phase 1)</h3>
+<p><strong>Test 1: processed_events cleanup</strong>:</p>
+<pre><code class="language-sql">-- Insert old record
+INSERT INTO processed_events (event_id, tenant_id, processed_at) 
+VALUES (gen_random_uuid(), '&lt;tenant_id&gt;', NOW() - INTERVAL '40 days');
+
+-- Run cleanup (manually for test)
+DELETE FROM processed_events WHERE processed_at &lt; NOW() - INTERVAL '30 days';
+
+-- Verify deleted
+SELECT COUNT(*) FROM processed_events WHERE processed_at &lt; NOW() - INTERVAL '30 days';
+-- Expected: 0
+</code></pre>
+<p><strong>Test 2: notifications cleanup</strong>:</p>
+<pre><code class="language-sql">-- Old read notification
+INSERT INTO notifications (id, tenant_id, user_id, type, title, message, is_read, created_at, read_at)
+VALUES (gen_random_uuid(), '&lt;tenant_id&gt;', '&lt;user_id&gt;', 'test', 't', 'm', true, NOW() - INTERVAL '100 days', NOW() - INTERVAL '100 days');
+
+-- Old unread notification
+INSERT INTO notifications (..., created_at) 
+VALUES (..., NOW() - INTERVAL '40 days');
+
+-- Recent (should NOT be deleted)
+INSERT INTO notifications (..., created_at) 
+VALUES (..., NOW() - INTERVAL '5 days');
+
+-- Run cleanup
+DELETE FROM notifications WHERE ...;
+
+-- Verify
+SELECT * FROM notifications;
+-- Expected: only the recent one
+</code></pre>
+<p><strong>Test 3: refresh_tokens cleanup</strong>:</p>
+<pre><code class="language-sql">-- Old expired
+INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at)
+VALUES (gen_random_uuid(), '&lt;user_id&gt;', 'hash1', NOW() - INTERVAL '40 days', NOW() - INTERVAL '50 days');
+
+-- Old revoked
+INSERT INTO refresh_tokens (..., expires_at, created_at, revoked_at)
+VALUES (..., NOW() + INTERVAL '10 days', NOW() - INTERVAL '5 days', NOW() - INTERVAL '2 days');
+
+-- Recent (active)
+INSERT INTO refresh_tokens (..., expires_at, created_at)
+VALUES (..., NOW() + INTERVAL '10 days', NOW() - INTERVAL '1 day');
+
+-- Run cleanup
+DELETE FROM refresh_tokens WHERE ...;
+
+-- Verify
+SELECT * FROM refresh_tokens;
+-- Expected: only the recent active one
+</code></pre>
+<h3 id="72-archive-job-tests-phase-2">7.2 Archive Job Tests (Phase 2)</h3>
+<p><strong>Test 4: Archive old journal_entries</strong>:</p>
+<pre><code class="language-sql">-- Old entry
+INSERT INTO journal_entries (id, tenant_id, entry_number, entry_date, status, ...)
+VALUES (gen_random_uuid(), '&lt;tenant&gt;', 'JE-2017-001', '2017-01-01', 2, ...);
+
+-- Recent (should NOT be archived)
+INSERT INTO journal_entries (..., entry_date) 
+VALUES (..., NOW() - INTERVAL '1 year');
+
+-- Run archive (copy to file + delete)
+\COPY (SELECT * FROM journal_entries WHERE entry_date &lt; NOW() - INTERVAL '7 years') TO '/tmp/test_archive.csv' CSV HEADER;
+DELETE FROM journal_entries WHERE entry_date &lt; NOW() - INTERVAL '7 years';
+
+-- Verify
+SELECT * FROM journal_entries;
+-- Expected: only the recent one
+</code></pre>
+<h3 id="73-integration-tests">7.3 Integration Tests</h3>
+<ul>
+<li>Run cleanup job multiple times (idempotent)</li>
+<li>Run during peak load (no impact)</li>
+<li>Verify audit_log not affected</li>
+<li>Verify related records (FK cascades work)</li>
+</ul>
+<h3 id="74-monitoring-tests">7.4 Monitoring Tests</h3>
+<ul>
+<li>Verify <code>cron.job_run_details</code> shows successful runs</li>
+<li>Alert fires on failure</li>
+<li>Storage metrics decrease after cleanup</li>
+</ul>
+<hr />
+<h2 id="part-8-risk-assessment">🚨 PART 8: Risk Assessment</h2>
+<h3 id="81-status-quo-risks">8.1 Status Quo Risks</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>processed_events</code> reaches 10M rows (slow queries)</td>
+<td>High</td>
+<td>Medium</td>
+<td>🟠 Medium</td>
+</tr>
+<tr>
+<td><code>notifications</code> accumulates 100K+ per user</td>
+<td>High</td>
+<td>Low</td>
+<td>🟡 Medium</td>
+</tr>
+<tr>
+<td><code>outbox_events</code> grows (slow processor)</td>
+<td>High</td>
+<td>High</td>
+<td>🟠 Medium-High</td>
+</tr>
+<tr>
+<td>Storage exceeds 0.5 GB Neon limit</td>
+<td>Medium</td>
+<td>High</td>
+<td>🟠 Medium</td>
+</tr>
+<tr>
+<td><strong>Compliance failure</strong> (no audit_log + no retention)</td>
+<td>High</td>
+<td>Critical</td>
+<td>🔴 <strong>High</strong></td>
+</tr>
+<tr>
+<td>GDPR right-to-be-forgotten not supported</td>
+<td>Low (no EU tenants)</td>
+<td>High</td>
+<td>🟢 Low</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-phase-12-risks">8.2 Phase 1+2 Risks</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cleanup deletes important data</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Tests + audit_log + grace period</td>
+</tr>
+<tr>
+<td>Archive job fails (partial)</td>
+<td>Low</td>
+<td>High</td>
+<td>Transaction + retry + alert</td>
+</tr>
+<tr>
+<td>pg_cron doesn't work on Neon Free</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Test before relying</td>
+</tr>
+<tr>
+<td>Storage grows during transition</td>
+<td>Low</td>
+<td>Low</td>
+<td>Cleanup runs daily</td>
+</tr>
+</tbody>
+</table>
+<p><strong>حكمي</strong>: Phase 1+2 = <strong>آمن مع اختبارات كافية</strong>.</p>
+<hr />
+<h2 id="part-9-multi-tenant-considerations">🤝 PART 9: Multi-Tenant Considerations</h2>
+<h3 id="91-per-tenant-cleanup">9.1 Per-Tenant Cleanup</h3>
+<p><strong>السؤال</strong>: هل كل tenant عنده cleanup منفصل؟</p>
+<p><strong>الإجابة</strong>: ❌ <strong>لا</strong> — cleanup job واحد لكل tenants (shared WHERE clause).</p>
+<p><strong>Pros</strong>:<br />
+- Simple implementation<br />
+- Predictable resource usage</p>
+<p><strong>Cons</strong>:<br />
+- No per-tenant customization (مثلاً: tenant كبير يبي 1y، tenant صغير يبي 7y)</p>
+<p><strong>الحل</strong>: لو احتاج customization:</p>
+<pre><code class="language-sql">-- Per-tenant retention (future)
+DELETE FROM processed_events pe
+WHERE pe.processed_at &lt; NOW() - INTERVAL (
+  SELECT COALESCE(t.custom_retention_days, 30)
+  FROM tenants t
+  WHERE t.id = pe.tenant_id
+) * INTERVAL '1 day';
+</code></pre>
+<h3 id="92-gdpr-per-tenant">9.2 GDPR Per-Tenant</h3>
+<p><strong>Future</strong>: لو tenants أوروبية:<br />
+- Per-tenant <code>gdpr_enabled</code> flag<br />
+- Hard delete on request (not just soft)</p>
+<hr />
+<h2 id="part-10-open-questions-for-anas">❓ PART 10: Open Questions for Anas</h2>
+<h3 id="q1-libyan-law-retention-5y-ifrs-7y">Q1: Libyan law retention = 5y، IFRS = 7y. شو نعتمد؟</h3>
+<p><strong>توصيتي</strong>: <strong>7 سنوات</strong> (IFRS) — يغطي Libyan + IFRS + SOX.</p>
+<p><strong>Trade-off</strong>: <br />
+- 5y = cheaper storage<br />
+- 7y = full compliance + ready for international expansion</p>
+<h3 id="q2-phase-1">Q2: متى نطبق Phase 1؟</h3>
+<p><strong>خيارات</strong>:<br />
+- a) <strong>الآن</strong> — مع DEC-053 hotfix<br />
+- b) <strong>خلال أسبوع</strong> — independent<br />
+- c) <strong>بعد Phase 2 backup</strong> (DEC-051)</p>
+<p><strong>توصيتي</strong>: (b) — مستقل، يمكن parallel.</p>
+<h3 id="q3-audit_log-table-phase-3">Q3: <code>audit_log</code> table — الآن أو Phase 3؟</h3>
+<p><strong>خيارات</strong>:<br />
+- a) <strong>الآن</strong> (Phase 1) — compliance من البداية<br />
+- b) <strong>Phase 2</strong> — مع GDPR endpoint<br />
+- c) <strong>Phase 3</strong> — مع pg_partman</p>
+<p><strong>توصيتي</strong>: (a) <strong>الآن</strong> — جدول صغير، تأثير minimal، compliance foundation.</p>
+<h3 id="q4-gdpr-endpoint-phase-3">Q4: GDPR endpoint — الآن أو Phase 3؟</h3>
+<p><strong>توصيتي</strong>: <strong>Phase 2</strong> (ليس أولوية حالياً — tenants ليبية فقط).</p>
+<h3 id="q5-cleanup-job-location-pg_cron-ci">Q5: cleanup job location — pg_cron أو CI؟</h3>
+<p><strong>توصيتي</strong>: <strong>pg_cron</strong> (Built-in، في DB، simple).</p>
+<hr />
+<h2 id="part-11-coordination-with-408773242015948">🤝 PART 11: Coordination with خطة-النظام (408773242015948)</h2>
+<h3 id="dec-053">أسئلة (بعد ردها على DEC-053، ممكن نضيف هذه):</h3>
+<ol>
+<li><strong>هل في compliance requirements خاصة لـ Al-Burj / AlFajr Holding</strong> (عقود، لوائح)؟</li>
+<li><strong>هل العملاء (customers) عندهم data retention policy</strong> يجب نلتزم بها؟</li>
+<li><strong>توصيتها</strong>: 5y أو 7y retention؟</li>
+<li><strong>هل شغّلت cleanup قبل كذا</strong> على أنظمة ERP أخرى؟ Lessons learned؟</li>
+</ol>
+<hr />
+<h2 id="part-12-sprint-2-sprint-3-coordination">📊 PART 12: Sprint 2 + Sprint 3 Coordination</h2>
+<h3 id="dec-052-dec-053-dec-051-foundation-trio">DEC-052 + DEC-053 + DEC-051 = Foundation Trio</h3>
+<pre><code>DEC-051 (Backup) ──┐
+                   ├──&gt; Production-Ready
+DEC-052 (Retention)┤
+                   │
+DEC-053 (RBAC) ────┘
+</code></pre>
+<p><strong>Order</strong>:<br />
+1. <strong>DEC-051 Phase 1</strong> (manual snapshot) — <strong>الآن</strong><br />
+2. <strong>DEC-053 Phase 1</strong> (role enforcement) — 3-5 أيام<br />
+3. <strong>DEC-052 Phase 1</strong> (cleanup jobs) — 1-2 يوم (parallel with #2)<br />
+4. <strong>DEC-052 Phase 2</strong> (archive) — 3-5 أيام (after #3)<br />
+5. <strong>DEC-051 Phase 2</strong> (Launch + R2) — 3-5 أيام (after #4)</p>
+<p><strong>Sprint 3 master plan</strong>:<br />
+- Week 1: DEC-051 P1 + DEC-053 P1 + DEC-052 P1 (parallel)<br />
+- Week 2: DEC-051 P2 + DEC-052 P2 (parallel)<br />
+- Week 3: DEC-053 P2 + DEC-053 P3 (high + medium priority)<br />
+- Week 4: DR drill + Sprint 3 review</p>
+<hr />
+<h2 id="part-13-success-criteria">📈 PART 13: Success Criteria</h2>
+<h3 id="phase-1-done">Phase 1 DONE يعني:</h3>
+<ul>
+<li>[ ] 13 جداول missing <code>created_at</code> → added</li>
+<li>[ ] <code>audit_log</code> table created</li>
+<li>[ ] 4 cleanup jobs scheduled (pg_cron)</li>
+<li>[ ] First cleanup run successful</li>
+<li>[ ] Notifications older than 90d deleted</li>
+<li>[ ] processed_events older than 30d deleted</li>
+</ul>
+<h3 id="phase-2-done">Phase 2 DONE يعني:</h3>
+<ul>
+<li>[ ] Archive strategy implemented</li>
+<li>[ ] First monthly archive successful (old journal_entries to R2)</li>
+<li>[ ] GDPR endpoint (اختياري — لو tenants أوروبية)</li>
+<li>[ ] Compliance mapping documented (which retention = which standard)</li>
+</ul>
+<h3 id="phase-3-done">Phase 3 DONE يعني:</h3>
+<ul>
+<li>[ ] pg_partman applied to <code>outbox_events</code> + <code>journal_lines</code> + <code>audit_log</code></li>
+<li>[ ] Auto-drop partitions (verified)</li>
+<li>[ ] Monitoring + alerts</li>
+<li>[ ] Quarterly retention review process</li>
+</ul>
+<hr />
+<h2 id="part-14-immediate-action-items">📋 PART 14: Immediate Action Items</h2>
+<h3 id="this-week-dec-052-phase-1">This Week (DEC-052 Phase 1):</h3>
+<ol>
+<li><strong>TODAY</strong>: Approve DEC-052 + start implementation</li>
+<li><strong>Day 1</strong>: Migration for <code>created_at</code> columns (13 tables)</li>
+<li><strong>Day 1</strong>: <code>audit_log</code> table migration</li>
+<li><strong>Day 1-2</strong>: Setup pg_cron + 4 cleanup jobs</li>
+<li><strong>Day 2</strong>: Tests (cleanup + audit_log)</li>
+<li><strong>Day 2</strong>: Monitoring (cron.job_run_details)</li>
+</ol>
+<h3 id="next-week-dec-052-phase-2">Next Week (DEC-052 Phase 2):</h3>
+<ol>
+<li>Archive workflow (GitHub Actions)</li>
+<li>First monthly archive run</li>
+<li>GDPR endpoint (if needed)</li>
+</ol>
+<h3 id="sprint-3">Sprint 3:</h3>
+<ol>
+<li>pg_partman implementation</li>
+<li>Quarterly retention review process</li>
+</ol>
+<hr />
+<h2 id="_4">📎 روابط</h2>
+<ul>
+<li>DEC-050 (RBAC): <code>/workspace/.mavis/DEC-2026-07-21-050-rbac-analysis-delivered.md</code></li>
+<li>DEC-051 (Backup/DR): <code>/workspace/.mavis/DEC-2026-07-21-051-backup-dr-strategy.md</code></li>
+<li>DEC-053 (Permission Matrix): <code>/workspace/.mavis/DEC-2026-07-21-053-permission-matrix.md</code></li>
+<li>appsettings.json: <code>/workspace/ERP-SYSTEM/src/backend/Host/appsettings.json</code></li>
+<li>Migrations: <code>/workspace/ERP-SYSTEM/src/backend/Shared/Migrations/</code></li>
+<li>pg_cron docs: https://neon.com/docs/extensions/pg_cron</li>
+<li>pg_partman docs: https://neon.com/docs/extensions/pg_partman</li>
+<li>IFRS AS 1215: https://pcaobus.org/oversight/standards/auditing-standards/details/AS1215</li>
+<li>Libyan Commercial Law: https://lawsociety.ly/legislation/</li>
+</ul>
+<hr />
+<p><strong>Status</strong>: 🟢 <strong>Sprint 2 Task 3/3 — Drafted (LAST one)</strong></p>
+<p><strong>Next Action</strong>: Mavis Root review + Anas decisions on Q1-Q5.</p>
+<p><strong>Outcome</strong>: لو Phase 1+2 طُبّق → نظام <strong>compliant + efficient + safe</strong> قبل 5 tenants.</p>
+</body>
+</html>

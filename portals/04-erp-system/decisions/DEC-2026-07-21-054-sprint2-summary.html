@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #054 — Sprint 2 Summary & Decision Package for Anas</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-054-sprint-2-summary-decision-package-for-anas">📋 DECISION #054 — Sprint 2 Summary &amp; Decision Package for Anas</h1>
+<blockquote>
+<p><strong>DEC-054</strong> | Sprint 2 Deliverable Consolidation + 14 Open Questions for Anas<br />
+<strong>Status</strong>: 🟢 Decision Package — <strong>For Anas to review and approve</strong></p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 21:45 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Audience</strong>: 🎯 <strong>Anas (decision maker)</strong> + خطة-النظام (technical review)<br />
+<strong>Goal</strong>: 14 أسئلة → 14 قرارات → Sprint 3 يبدأ<br />
+<strong>Length</strong>: ~9 KB (مختصرة، actionable)</p>
+<hr />
+<h2 id="tldr-30">🎯 TL;DR (30 ثانية)</h2>
+<p>Sprint 2 أنتج <strong>4 DECs</strong> تغطي أهم 3 جوانب لـ production-readiness:</p>
+<ol>
+<li><strong>DEC-053 (CRITICAL)</strong> — لا role enforcement. أي مسجّل يقدر يعمل أي شي. <strong>يجب إصلاحه قبل أي deployment جديد.</strong></li>
+<li><strong>DEC-051 (HIGH)</strong> — لا backup strategy. يعتمد 100% على Neon PITR (6h window). ينفع $11/شهر للحل الكامل.</li>
+<li><strong>DEC-052 (MEDIUM)</strong> — <code>processed_events</code> ينمو forever. لا cleanup. لا <code>audit_log</code> writing. Compliance foundation ناقصة.</li>
+<li><strong>DEC-050 (Analysis)</strong> — RBAC analysis الكاملة (7 gaps + Permission Matrix مُقترح + Implementation Plan).</li>
+</ol>
+<p><strong>التوصية النهائية</strong>: <strong>Sprint 3 يبدأ فوراً</strong> بـ <strong>DEC-053 Phase 1</strong> (role enforcement) + <strong>DEC-051 P1</strong> (manual snapshot procedure) بالتوازي.</p>
+<hr />
+<h2 id="sprint-2-decs-overview">📊 Sprint 2 DECs (Overview)</h2>
+<table>
+<thead>
+<tr>
+<th>DEC</th>
+<th>النوع</th>
+<th>الحجم</th>
+<th>Score</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DEC-050</strong></td>
+<td>RBAC Analysis</td>
+<td>20.5 KB</td>
+<td>9.5/10</td>
+<td>✅ Approved</td>
+</tr>
+<tr>
+<td><strong>DEC-051</strong></td>
+<td>Backup/DR Strategy</td>
+<td>30 KB</td>
+<td>9/10</td>
+<td>✅ Approved</td>
+</tr>
+<tr>
+<td><strong>DEC-052</strong></td>
+<td>Data Retention</td>
+<td>30 KB</td>
+<td>9/10</td>
+<td>✅ Approved</td>
+</tr>
+<tr>
+<td><strong>DEC-053</strong></td>
+<td>Permission Matrix + Implementation</td>
+<td>30 KB</td>
+<td>9.5/10</td>
+<td>✅ Approved</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>110 KB</strong></td>
+<td><strong>9.2/10 avg</strong></td>
+<td><strong>4/4 ✅</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cross-references</strong>:<br />
+- DEC-050 → DEC-053 (RBAC analysis → Permission Matrix)<br />
+- DEC-051 ↔ DEC-053 (Backup = safety net for hotfixes)<br />
+- DEC-052 ↔ DEC-053 (Cleanup = runtime hygiene)</p>
+<hr />
+<h2 id="14-open-questions-for-anas-decision-package">🚨 14 Open Questions for Anas (Decision Package)</h2>
+<h3 id="group-a-security-dec-053-most-urgent">Group A: SECURITY (DEC-053) — <strong>MOST URGENT</strong></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Recommendation</th>
+<th>Effort</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q1</strong></td>
+<td><strong>Deployment freeze</strong> حتى Critical fixes تنحل؟</td>
+<td>✅ نعم، freeze + Hotfix فقط</td>
+<td>—</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q2</strong></td>
+<td><strong>Al-Burj + AlFajr data</strong> (حقيقي على HF) — شو نعمل؟</td>
+<td>✅ لا شي، fix على auth/authorization فقط</td>
+<td>—</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q3</strong></td>
+<td><strong>Priority</strong>: DEC-051 (Backup) قبل DEC-053 (Permission Matrix)؟</td>
+<td>🔴 DEC-053 أولاً (Security &gt; Reliability)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Q4</strong></td>
+<td><strong>Jimi تنفيذي allocation</strong>: متفرّغ أم parallel مع warshet-احمد؟</td>
+<td>🎯 100% على hotfixes، <strong>لا warshet</strong></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-b-reliability-dec-051">Group B: RELIABILITY (DEC-051)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Recommendation</th>
+<th>Effort</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q5</strong></td>
+<td><strong>Phase 1 (مجاني) أو Phase 2</strong> (Launch + R2)؟</td>
+<td>🔴 <strong>Phase 2</strong> (~$11/month)</td>
+<td>3-5d</td>
+<td>$135/yr</td>
+</tr>
+<tr>
+<td><strong>Q6</strong></td>
+<td><strong>متى Phase 2</strong> نطبّق؟</td>
+<td><strong>بعد DEC-053 hotfix</strong>، قبل deployment جديد</td>
+<td>3-5d</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Q7</strong></td>
+<td><strong>DR Drill متى</strong>؟</td>
+<td><strong>بعد Phase 1</strong> (1-2 أسبوع)، مع tabletop exercise أولاً</td>
+<td>1d</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q8</strong></td>
+<td><strong>لو حصل disaster الآن</strong> — شو الخطة؟</td>
+<td>1-2 ساعة RTO (manual Neon PITR)</td>
+<td>—</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q9</strong></td>
+<td><strong>من يدير backup</strong>؟</td>
+<td>CI = automated، Manual = أنس + Mavis، Restore = Jimi، Drills = ربع سنوي</td>
+<td>ongoing</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-c-compliance-dec-052">Group C: COMPLIANCE (DEC-052)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Recommendation</th>
+<th>Effort</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q10</strong></td>
+<td><strong>Retention</strong>: 5y (Libyan) أو 7y (IFRS)؟</td>
+<td>🔴 <strong>7 سنوات</strong> (يغطي الكل)</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Q11</strong></td>
+<td><strong>متى Phase 1</strong> (cleanup jobs)؟</td>
+<td><strong>خلال أسبوع</strong> (parallel مع DEC-053)</td>
+<td>1-2d</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q12</strong></td>
+<td><strong><code>audit_log</code> table</strong> — الآن أو Phase 3؟</td>
+<td>✅ <strong>الآن</strong> (موجود فعلاً، بس 0 rows، نفعّله مع DEC-053)</td>
+<td>1d</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q13</strong></td>
+<td><strong>GDPR endpoint</strong> — الآن أو Phase 3؟</td>
+<td><strong>Phase 2</strong> (tenants ليبية فقط، ليس أولوية)</td>
+<td>1-2d</td>
+<td>$0</td>
+</tr>
+<tr>
+<td><strong>Q14</strong></td>
+<td><strong>Cleanup location</strong>: pg_cron أو CI؟</td>
+<td>✅ <strong>pg_cron</strong> (Built-in Neon، في DB، simple)</td>
+<td>0.5d</td>
+<td>$0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">ملخص سريع:</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Questions</th>
+<th>Total Cost</th>
+<th>Total Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security (DEC-053)</td>
+<td>4 (Q1-Q4)</td>
+<td>$0</td>
+<td>3-5 أيام (Jimi تنفيذي)</td>
+</tr>
+<tr>
+<td>Reliability (DEC-051)</td>
+<td>5 (Q5-Q9)</td>
+<td>$135/year</td>
+<td>4-6 أيام (setup + ongoing)</td>
+</tr>
+<tr>
+<td>Compliance (DEC-052)</td>
+<td>5 (Q10-Q14)</td>
+<td>$0</td>
+<td>3-4 أيام</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>14</strong></td>
+<td><strong>$135/yr + 1-2 weeks</strong></td>
+<td><strong>10-15 days</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="foundation-trio">🛡️ Foundation Trio (موافق)</h2>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>DEC</th>
+<th>Effort</th>
+<th>Critical?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 (NOW)</strong></td>
+<td><strong>DEC-051 P1</strong> (manual snapshot)</td>
+<td>1-2h</td>
+<td>Critical safety net</td>
+</tr>
+<tr>
+<td><strong>2 (parallel)</strong></td>
+<td><strong>DEC-053 P1</strong> (role enforcement)</td>
+<td>3-5d</td>
+<td>🔴 Critical security</td>
+</tr>
+<tr>
+<td><strong>3 (parallel)</strong></td>
+<td><strong>DEC-052 P1</strong> (cleanup jobs)</td>
+<td>1-2d</td>
+<td>Medium compliance</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>DEC-051 P2</strong> (Launch + R2 backup)</td>
+<td>3-5d</td>
+<td>High reliability</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>DEC-052 P2</strong> (archive to R2)</td>
+<td>3-5d</td>
+<td>Medium compliance</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>DEC-053 P2</strong> (soft revoke + tenant validation)</td>
+<td>2-3d</td>
+<td>High security</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الترتيب</strong>: Hotfix-critical أولاً، ثم Reliability، ثم enhancements.</p>
+<hr />
+<h2 id="sprint-3-master-plan-4">📅 Sprint 3 Master Plan (4 أسابيع)</h2>
+<h3 id="week-1-critical-security">Week 1: 🔴 Critical Security (الأساس)</h3>
+<ul>
+<li><strong>Day 1-2</strong>: DEC-051 P1 (manual snapshot قبل أي شي)</li>
+<li><strong>Day 1-5</strong>: DEC-053 P1 (13 controller role enforcement)</li>
+<li><strong>Day 4-5</strong>: DEC-052 P1 (pg_cron cleanup jobs)</li>
+<li><strong>Day 5</strong>: First smoke test + regression</li>
+</ul>
+<p><strong>Deliverable</strong>: نظام فيه role enforcement + cleanup + manual backup</p>
+<h3 id="week-2-reliability-archive">Week 2: Reliability + Archive</h3>
+<ul>
+<li><strong>Day 6-7</strong>: DEC-051 P2 (Launch + R2 backup setup)</li>
+<li><strong>Day 8-9</strong>: DEC-052 P2 (archive workflow + first run)</li>
+<li><strong>Day 10</strong>: First DR drill (tabletop exercise)</li>
+</ul>
+<p><strong>Deliverable</strong>: 7-day PITR + external R2 backup + archive strategy</p>
+<h3 id="week-3-high-priority-rbac-enhancements">Week 3: High Priority + RBAC enhancements</h3>
+<ul>
+<li><strong>Day 11-12</strong>: DEC-053 P2 (soft revoke + tenant validation)</li>
+<li><strong>Day 13-14</strong>: UI for role management</li>
+<li><strong>Day 15</strong>: Second DR drill (full simulation)</li>
+</ul>
+<p><strong>Deliverable</strong>: Full audit trail + tenant isolation + role management UI</p>
+<h3 id="week-4-medium-retrospective">Week 4: Medium + Retrospective</h3>
+<ul>
+<li><strong>Day 16-18</strong>: DEC-053 P3 (permissions table + IAuthorizationHandler)</li>
+<li><strong>Day 19-20</strong>: pg_partman for huge tables</li>
+<li><strong>Day 21</strong>: Sprint 3 retrospective (what worked, what didn't)</li>
+</ul>
+<p><strong>Deliverable</strong>: Production-ready + lessons learned</p>
+<hr />
+<h2 id="decision-framework">🎯 Decision Framework (كيف يقرر أنس)</h2>
+<h3 id="critical">الفلتر الأول: Critical أو لا؟</h3>
+<pre><code>SECURITY (DEC-053):  🔴 Critical — بدونه النظام مكشوف
+RELIABILITY (DEC-051): 🟠 High — بدونه data في خطر
+COMPLIANCE (DEC-052): 🟡 Medium — بدونه technical debt
+</code></pre>
+<h3 id="cost-vs-risk">الفلتر الثاني: Cost vs Risk</h3>
+<table>
+<thead>
+<tr>
+<th>DEC</th>
+<th>Cost</th>
+<th>Risk if not done</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEC-053</td>
+<td>$0</td>
+<td>🔴 privilege escalation</td>
+<td>No-brainer</td>
+</tr>
+<tr>
+<td>DEC-051 P1</td>
+<td>$0</td>
+<td>🟠 data loss (bad migration)</td>
+<td>Cheap safety</td>
+</tr>
+<tr>
+<td>DEC-051 P2</td>
+<td>$135/yr</td>
+<td>🟠 data loss (region failure)</td>
+<td>$11/mo = قهوة واحدة</td>
+</tr>
+<tr>
+<td>DEC-052</td>
+<td>$0.6/yr</td>
+<td>🟡 compliance + perf</td>
+<td>Cheap hygiene</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_2">الفلتر الثالث: متى؟</h3>
+<pre><code>NOW (before any deploy):  DEC-051 P1 + DEC-053 P1 + DEC-052 P1
+Week 2-3:                DEC-051 P2 + DEC-052 P2
+Week 4+:                 DEC-053 P2 + P3 (enhancements)
+</code></pre>
+<hr />
+<h2 id="quick-decision-path-10">💡 Quick Decision Path (10 قرارات فقط)</h2>
+<p>لو أنس عنده 5 دقائق فقط، يقرر:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Default</th>
+<th>Alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Freeze deployment?</td>
+<td>✅ Yes</td>
+<td>No (risky)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Al-Burj/AlFajr data?</td>
+<td>✅ No action</td>
+<td>(N/A)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>DEC-053 أولاً؟</td>
+<td>✅ Yes</td>
+<td>DEC-051 first (wrong)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Jimi تنفيذي allocation?</td>
+<td>✅ 100% hotfixes</td>
+<td>Parallel warshet (risky)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Phase 1 or Phase 2 (DEC-051)?</td>
+<td>🔴 Phase 2 ($11/mo)</td>
+<td>Phase 1 only</td>
+</tr>
+<tr>
+<td>6</td>
+<td>When Phase 2?</td>
+<td>✅ After hotfix</td>
+<td>Now (parallel)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>DR Drill?</td>
+<td>✅ After Phase 1</td>
+<td>Delayed</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Disaster plan?</td>
+<td>✅ Approved (Neon PITR)</td>
+<td>(N/A)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>5y or 7y (DEC-052)?</td>
+<td>🔴 7y (IFRS)</td>
+<td>5y (Libyan only)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Phase 1 of DEC-052?</td>
+<td>✅ Within 1 week</td>
+<td>Delayed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>10 قرارات → 14 questions covered</strong> (Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q14 implicitly; Q13 deferred to Phase 2).</p>
+<hr />
+<h2 id="-pending-questions-11">🤝 خطة-النظام Pending Questions (11)</h2>
+<p><strong>Note</strong>: هذه أسئلة فنية منفصلة — يرد عليها خطة-النظام (مستني الرد من Mavis Root forwarding).</p>
+<h3 id="dec-053-7">DEC-053 (7 أسئلة):</h3>
+<ol>
+<li>visibility على الـ 7 RBAC gaps؟</li>
+<li>Permission Matrix يتوافق مع رؤيتك؟</li>
+<li>بديل مقترح لـ <code>[Authorize(Roles=)]</code>؟</li>
+<li>أولويات Production Readiness من عندك؟</li>
+<li>Context على tenants الحاليين (Al-Burj, AlFajr)؟</li>
+<li>Testing strategy كافية؟</li>
+<li>Effort estimation realistic؟</li>
+</ol>
+<h3 id="dec-051-4">DEC-051 (4 أسئلة):</h3>
+<ol>
+<li>scenarios شو تشوفها في الـ DR؟</li>
+<li>recovery process مُقترح؟</li>
+<li>data ownership per-tenant؟</li>
+<li>testing approach؟</li>
+</ol>
+<p><strong>Format</strong>: A/B/C (A = موافقة، B = تعديلات، C = اعتراض كبير).</p>
+<hr />
+<h2 id="sprint-2-final">📊 الإحصائيات (Sprint 2 Final)</h2>
+<table>
+<thead>
+<tr>
+<th>المقياس</th>
+<th>القيمة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DECs delivered</td>
+<td>4 (4/4 ✅)</td>
+</tr>
+<tr>
+<td>Total content</td>
+<td>110 KB</td>
+</tr>
+<tr>
+<td>Critical findings</td>
+<td>16 (5 Posting Rules + 7 RBAC + 4 Backup)</td>
+</tr>
+<tr>
+<td>Critical security issue</td>
+<td>1 (DEC-053: 0 role enforcement)</td>
+</tr>
+<tr>
+<td>Tables in DB</td>
+<td>27 (10 need retention, 13 missing created_at)</td>
+</tr>
+<tr>
+<td>Controllers audited</td>
+<td>21 (101 endpoints)</td>
+</tr>
+<tr>
+<td>Open questions for Anas</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Open questions for خطة-النظام</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Estimated Sprint 3 effort</td>
+<td>4 أسابيع (full coverage)</td>
+</tr>
+<tr>
+<td>Estimated Sprint 3 cost</td>
+<td>$135/yr + ongoing</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="bonus-retrospective-template-after-sprint-3">🎁 Bonus: Retrospective Template (After Sprint 3)</h2>
+<p><strong>استخدم بعد Week 4</strong> — يبني knowledge base للفريق:</p>
+<pre><code class="language-markdown">## Sprint 3 Retrospective
+
+### Planned vs Actual
+| Item | Planned | Actual | Notes |
+|---|---|---|---|
+| DEC-053 P1 | 3-5d | __d | |
+| DEC-051 P2 | 3-5d | __d | |
+| DEC-052 P1 | 1-2d | __d | |
+| DR drill | 1d | __d | |
+
+### What worked
+- __
+- __
+
+### What didn't
+- __
+- __
+
+### Lessons learned
+- __
+- __
+
+### Action items for Sprint 4
+- __
+- __
+</code></pre>
+<hr />
+<h2 id="_3">📎 روابط</h2>
+<ul>
+<li>DEC-050: <code>/workspace/.mavis/DEC-2026-07-21-050-rbac-analysis-delivered.md</code></li>
+<li>DEC-051: <code>/workspace/.mavis/DEC-2026-07-21-051-backup-dr-strategy.md</code></li>
+<li>DEC-052: <code>/workspace/.mavis/DEC-2026-07-21-052-data-retention-policy.md</code></li>
+<li>DEC-053: <code>/workspace/.mavis/DEC-2026-07-21-053-permission-matrix.md</code></li>
+<li>README: <code>/workspace/projects/erp-system/docs/analysis/README.md</code> (v1.4)</li>
+<li>07-rbac-arabic.md: <code>/workspace/projects/erp-system/docs/analysis/07-rbac-arabic.md</code></li>
+</ul>
+<hr />
+<p><strong>Status</strong>: 🟢 <strong>Sprint 2 Decision Package — Ready for Anas Approval</strong></p>
+<p><strong>Next Action</strong>: Anas reviews + approves 10 default decisions → Sprint 3 kicks off Week 1.</p>
+<p><strong>If Anas approves default decisions → 14 questions answered in 5 minutes.</strong> 🚀</p>
+</body>
+</html>

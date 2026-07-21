@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #041 — ERP-SYSTEM 2nd Outage in 24h</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-041-erp-system-2nd-outage-in-24h">📋 DECISION #041 — ERP-SYSTEM 2nd Outage in 24h</h1>
+<p><strong>Date</strong>: 2026-07-21 10:10 UTC<br />
+<strong>Author</strong>: Mavis (Lab) — Root<br />
+<strong>Status</strong>: 🚨 CRITICAL — pattern detected<br />
+<strong>Severity</strong>: 🔴 HIGH (recurring outage)</p>
+<hr />
+<h2 id="pattern-2nd-outage-in-24-hours">🚨 Pattern: 2nd Outage in 24 hours</h2>
+<table>
+<thead>
+<tr>
+<th>Outage</th>
+<th>Time</th>
+<th>Duration</th>
+<th>Recovery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alert #4+#5</td>
+<td>2026-07-20 04:00</td>
+<td><strong>12+ hours</strong></td>
+<td>Auto-recovered ~22h later</td>
+</tr>
+<tr>
+<td>Recovery</td>
+<td>2026-07-21 ~04:00</td>
+<td>6h uptime</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Alert #6</strong></td>
+<td>2026-07-21 10:00</td>
+<td><strong>NOW (start of 2nd outage)</strong></td>
+<td>TBD</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pattern</strong>: system goes down, recovers after many hours, then goes down again.</p>
+<hr />
+<h2 id="current-status-verified-by-lab">❌ Current Status (verified by Lab):</h2>
+<ul>
+<li>HTTP <code>/</code>: <strong>404</strong> (5x consecutive probes)</li>
+<li>HTTP <code>/api/health/live</code>: <strong>404</strong> (5x)</li>
+<li>HTTP <code>/api/health/startup-deep</code>: <strong>404</strong> (5x)</li>
+<li>Login: <strong>404</strong> (HF welcome page body, not app)</li>
+<li>HF API: 429 (rate-limited from CloudFront IAD55-P8)</li>
+</ul>
+<p><strong>Conclusion</strong>: App container not serving requests. Same pattern as 2026-07-20 outage.</p>
+<hr />
+<h2 id="possible-causes-theory">🤔 Possible Causes (theory):</h2>
+<ol>
+<li><strong>HF Space sleeping</strong> — Spaces may sleep if no traffic</li>
+<li><strong>Restart loop</strong> — app crashes, restarts, crashes again</li>
+<li><strong>Resource exhaustion</strong> — CPU/RAM limits hit</li>
+<li><strong>DB connection issue</strong> — Neon quota or network</li>
+<li><strong>External dependency</strong> — Twilio, Neon, etc. failure cascades</li>
+</ol>
+<hr />
+<h2 id="lab-actions">📡 Lab actions:</h2>
+<ol>
+<li>✅ Sent Telegram alert (msg 808)</li>
+<li>⏳ Awaiting user action</li>
+<li>⏳ Will re-verify on next bridge run</li>
+</ol>
+<hr />
+<h2 id="user-options-5-10-min-each">🛡️ User Options (5-10 min each):</h2>
+<h3 id="option-a-wake-space-verify">Option A: Wake Space + Verify</h3>
+<pre><code>1. Open https://anas-assasket-erp-system.hf.space in browser
+2. If 200 → was sleeping (add keep-alive ping)
+3. If 404 → check logs
+</code></pre>
+<h3 id="option-b-restart-space">Option B: Restart Space</h3>
+<pre><code>1. HF Settings → Restart
+2. Watch logs immediately
+3. If crash → fix + redeploy
+</code></pre>
+<h3 id="option-c-check-neon-db">Option C: Check Neon DB</h3>
+<pre><code>1. DB_CONNECTION correct?
+2. Quota exceeded?
+3. Network issue?
+</code></pre>
+<h3 id="option-d-pause-bridge">Option D: Pause Bridge</h3>
+<pre><code>1. Stop alerts until resolved
+2. Lab silent monitoring
+3. Notify when up
+</code></pre>
+<hr />
+<h2 id="data-risk">⚠️ Data Risk:</h2>
+<ul>
+<li>TB was balanced 11.2M LYD (last verified at 04:02 UTC, before this outage)</li>
+<li>DB is on <strong>Neon</strong> (external to HF) — should be safe</li>
+<li>HF container only runs app, doesn't store data</li>
+</ul>
+<hr />
+<h2 id="bridge-status">🛡️ Bridge Status:</h2>
+<ul>
+<li>Cron updated (HOLD FIRE)</li>
+<li>CRITICAL bypasses HOLD FIRE</li>
+<li>Bridge will continue to alert every 6h</li>
+<li>User silence doesn't stop critical alerts</li>
+</ul>
+<hr />
+<h2 id="final-score-critical">📊 Final Score: CRITICAL</h2>
+<ul>
+<li>ERP-SYSTEM: ❌ DOWN (2nd time in 24h)</li>
+<li>warshet-احمد: ✅ OK</li>
+<li>Bridge: ✅ alerting</li>
+<li>Lab: ✅ monitoring</li>
+<li>User: ❌ silent 11.3 days</li>
+</ul>
+<p><strong>Recurring outages suggest stability issue — needs investigation beyond Restart.</strong></p>
+</body>
+</html>

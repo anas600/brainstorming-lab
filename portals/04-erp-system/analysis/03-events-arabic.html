@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔔 الأحداث والربط بين الموديلات (Events &amp; Cross-Module) — شرح بالعربي</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --accent: #38bdf8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+}
+.container { max-width: 900px; margin: 0 auto; }
+.back-link { 
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
+h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
+h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
+p { margin: 8px 0; color: var(--text); }
+blockquote {
+    background: var(--bg-card);
+    border-right: 4px solid var(--accent);
+    padding: 10px 15px;
+    margin: 10px 0;
+    color: var(--text-soft);
+}
+code {
+    background: var(--bg-card);
+    color: #f472b6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+pre {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+pre code {
+    background: transparent;
+    color: var(--text);
+    padding: 0;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: var(--bg-card);
+    border-radius: 6px;
+    overflow: hidden;
+}
+th {
+    background: var(--border);
+    color: var(--accent);
+    padding: 10px;
+    text-align: right;
+}
+td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+tr:hover { background: rgba(56, 189, 248, 0.05); }
+ul, ol { padding-right: 30px; margin: 10px 0; }
+li { margin: 5px 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+strong { color: var(--accent); }
+em { color: var(--text-soft); }
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
+<h1>🔔 الأحداث والربط بين الموديلات (Events &amp; Cross-Module) — شرح بالعربي</h1>
+
+<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
+<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
+<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
+<p>&gt; <strong>المصدر</strong>: live DB via Neon MCP</p>
+
+<hr>
+
+<h2>🎯 شو هي &quot;الأحداث&quot;؟</h2>
+
+<p>الأحداث هي <strong>الرسايل</strong> اللي تطلع من موديل لما يصير شي مهم، والموديلات الثانية تسمعها وتتفاعل معها.</p>
+
+<strong>مثال واقعي</strong>:
+<pre><code class="language-">
+في الـ ERP:
+1. المبيعات يطلع فاتورة → حدث &quot;invoice_created&quot;
+2. Finance يسمع → يعمل قيد يومية تلقائي
+3. المخزون يسمع → ينقص الكمية
+4. الإشعارات تسمع → تبعت notification للعميل
+5. التقارير تسمع → تحدد الإحصائيات
+</code></pre>
+
+<strong>بدون الأحداث</strong>: الموديلات تكون &quot;جزر منعزلة&quot; — كل واحد يشتغل لحاله.
+
+<strong>مع الأحداث</strong>: النظام كله <strong>مترابط</strong> و <strong>ذكي</strong>.
+
+<hr>
+
+<h2>📬 طاولة outbox_events (صندوق الصادر)</h2>
+
+<h3>شو هي؟</h3>
+
+<strong>كل حدث في النظام</strong> يسجل هنا — قبل ما يتنفذ. زي &quot;صندوق بريد الصادر&quot; في الدوائر الحكومية.
+
+<h3>مثال على event:</h3>
+
+<pre><code class="language-json">
+{
+  &quot;id&quot;: &quot;uuid-1234&quot;,
+  &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
+  &quot;event_type&quot;: &quot;sales_invoice.created&quot;,
+  &quot;aggregate_id&quot;: &quot;INV-2026-0042&quot;,
+  &quot;aggregate_type&quot;: &quot;sales_invoice&quot;,
+  &quot;payload&quot;: &quot;{...تفاصيل الفاتورة...}&quot;,
+  &quot;occurred_at&quot;: &quot;2026-07-21T15:30:00Z&quot;,
+  &quot;processed_at&quot;: null,
+  &quot;retry_count&quot;: 0,
+  &quot;max_retries&quot;: 5,
+  &quot;last_error&quot;: null
+}
+</code></pre>
+
+<h3>الحقول:</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`event_type`</td>
+<td>نوع الحدث (مثلاً `sales_invoice.created`)</td>
+</tr>
+<tr>
+<td>`aggregate_id`</td>
+<td>ID الكيان المرتبط (رقم الفاتورة مثلاً)</td>
+</tr>
+<tr>
+<td>`aggregate_type`</td>
+<td>نوع الكيان (`sales_invoice`، `payment`، ...)</td>
+</tr>
+<tr>
+<td>`payload`</td>
+<td>محتوى الحدث (JSON بكل التفاصيل)</td>
+</tr>
+<tr>
+<td>`occurred_at`</td>
+<td>متى وقع الحدث</td>
+</tr>
+<tr>
+<td>`processed_at`</td>
+<td>متى اتعالج (null = لسه ما اتعالج)</td>
+</tr>
+<tr>
+<td>`retry_count`</td>
+<td>كم محاولة فشلت</td>
+</tr>
+<tr>
+<td>`max_retries`</td>
+<td>الحد الأقصى للمحاولات</td>
+</tr>
+<tr>
+<td>`last_error`</td>
+<td>رسالة الخطأ الأخيرة (لو فشلت)</td>
+</tr>
+</tbody></table>
+
+<h3>أنواع الأحداث الشائعة:</h3>
+
+<pre><code class="language-">
+# Finance events
+&quot;journal_entry.created&quot;
+&quot;journal_entry.posted&quot;
+&quot;payment.received&quot;
+&quot;payment.made&quot;
+
+# Procurement events
+&quot;purchase_order.created&quot;
+&quot;purchase_order.approved&quot;
+&quot;goods_received.created&quot;
+&quot;vendor_bill.created&quot;
+
+# Sales events
+&quot;sales_invoice.created&quot;
+&quot;sales_invoice.paid&quot;
+&quot;customer.created&quot;
+
+# Inventory events
+&quot;item.stock_low&quot;
+&quot;stock_movement.created&quot;
+
+# HR events
+&quot;employee.hired&quot;
+&quot;payroll.run_completed&quot;
+&quot;leave_request.approved&quot;
+
+# Projects events
+&quot;project.created&quot;
+&quot;project.status_changed&quot;
+&quot;project.completed&quot;
+&quot;project_task.completed&quot;
+&quot;budget.exceeded&quot;  # ⚠️ لو الميزانية انفقت
+</code></pre>
+
+<hr>
+
+<h2>✅ طاولة processed_events (الأحداث المعالجة)</h2>
+
+<h3>شو هي؟</h3>
+
+<p>سجل بكل الأحداث اللي <strong>تمت معالجتها بنجاح</strong>. مهم للـ <strong>idempotency</strong> (ضمان عدم المعالجة المزدوجة).</p>
+
+<h3>مثال:</h3>
+
+<pre><code class="language-json">
+{
+  &quot;event_id&quot;: &quot;uuid-1234&quot;,
+  &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
+  &quot;processed_at&quot;: &quot;2026-07-21T15:30:05Z&quot;
+}
+</code></pre>
+
+<h3>ليش مهمة؟</h3>
+
+<strong>بدون processed_events</strong>: لو الـ event اتبعت مرتين (network issue) → قيد يتسجل مرتين → خطأ محاسبي!
+
+<strong>مع processed_events</strong>: قبل ما يعالج event، يتحقق لو <code>event_id</code> موجود في <code>processed_events</code>:
+<li>✅ موجود → skip (عُولج قبل)</li>
+<li>❌ مش موجود → عالج + سجّل في processed_events</li>
+
+<strong>هذا يضمن</strong>:
+<li>مرة واحدة فقط لكل event</li>
+<li>حتى لو فشلت المعالجة، retry ما يكرر</li>
+<li>Audit trail نظيف</li>
+
+<hr>
+
+<h2>📨 طاولة notifications (الإشعارات)</h2>
+
+<h3>شو هي؟</h3>
+
+<p>الإشعارات اللي تطلع للمستخدمين (in-app). زي inbox صغير.</p>
+
+<h3>مثال:</h3>
+
+<pre><code class="language-json">
+{
+  &quot;id&quot;: &quot;uuid-9999&quot;,
+  &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
+  &quot;user_id&quot;: &quot;user-anas&quot;,
+  &quot;type&quot;: &quot;project_budget_exceeded&quot;,
+  &quot;title&quot;: &quot;تجاوز ميزانية المشروع&quot;,
+  &quot;message&quot;: &quot;مشروع P-2026-001 صرف 95% من الميزانية&quot;,
+  &quot;reference_type&quot;: &quot;project&quot;,
+  &quot;reference_id&quot;: &quot;uuid-project-1&quot;,
+  &quot;is_read&quot;: false,
+  &quot;created_at&quot;: &quot;2026-07-21T15:30:00Z&quot;,
+  &quot;read_at&quot;: null
+}
+</code></pre>
+
+<h3>الحقول:</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`user_id`</td>
+<td>مين يستلم الإشعار</td>
+</tr>
+<tr>
+<td>`type`</td>
+<td>نوع الإشعار (مفتاح للـ icon واللون)</td>
+</tr>
+<tr>
+<td>`title`</td>
+<td>العنوان القصير</td>
+</tr>
+<tr>
+<td>`message`</td>
+<td>النص الكامل</td>
+</tr>
+<tr>
+<td>`reference_type`</td>
+<td>نوع الكيان المرتبط (project, invoice, ...)</td>
+</tr>
+<tr>
+<td>`reference_id`</td>
+<td>ID الكيان (للضغط عليه يفتح)</td>
+</tr>
+<tr>
+<td>`is_read`</td>
+<td>هل المستخدم قرأه؟</td>
+</tr>
+<tr>
+<td>`read_at`</td>
+<td>متى قرأه</td>
+</tr>
+</tbody></table>
+
+<h3>أنواع الإشعارات الشائعة:</h3>
+
+<pre><code class="language-">
+# Budget alerts
+&quot;project_budget_warning&quot;  # 80% من الميزانية
+&quot;project_budget_exceeded&quot;  # 100%+
+&quot;project_budget_critical&quot;  # 110%+
+
+# Approval requests
+&quot;po_pending_approval&quot;
+&quot;invoice_pending_approval&quot;
+&quot;leave_request_pending&quot;
+
+# Status changes
+&quot;po_approved&quot;
+&quot;po_rejected&quot;
+&quot;invoice_paid&quot;
+&quot;payment_received&quot;
+
+# System alerts
+&quot;user_login_new_device&quot;
+&quot;password_changed&quot;
+&quot;role_assigned&quot;
+</code></pre>
+
+<hr>
+
+<h2>📝 طاولة audit_log (سجل التدقيق)</h2>
+
+<h3>شو هي؟</h3>
+
+<strong>سجل كامل</strong> بكل التغييرات اللي صارت على البيانات — مين عمل شنو ومتى.
+
+<h3>مثال:</h3>
+
+<pre><code class="language-json">
+{
+  &quot;id&quot;: 12345,
+  &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
+  &quot;entity_type&quot;: &quot;sales_invoice&quot;,
+  &quot;entity_id&quot;: &quot;INV-2026-0042&quot;,
+  &quot;action&quot;: &quot;updated&quot;,
+  &quot;user_id&quot;: &quot;user-anas&quot;,
+  &quot;changes&quot;: {
+    &quot;before&quot;: {&quot;status&quot;: &quot;draft&quot;, &quot;total&quot;: 5000},
+    &quot;after&quot;: {&quot;status&quot;: &quot;posted&quot;, &quot;total&quot;: 5000}
+  },
+  &quot;ip_address&quot;: &quot;192.168.1.10&quot;,
+  &quot;created_at&quot;: &quot;2026-07-21T15:30:00Z&quot;
+}
+</code></pre>
+
+<h3>الحقول:</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`entity_type`</td>
+<td>نوع الكيان (`sales_invoice`, `project`, ...)</td>
+</tr>
+<tr>
+<td>`entity_id`</td>
+<td>ID الكيان</td>
+</tr>
+<tr>
+<td>`action`</td>
+<td>الإجراء (`created`, `updated`, `deleted`, `viewed`, `exported`)</td>
+</tr>
+<tr>
+<td>`user_id`</td>
+<td>مين عمل الإجراء</td>
+</tr>
+<tr>
+<td>`changes`</td>
+<td>JSON فيه قبل وبعد التغيير</td>
+</tr>
+<tr>
+<td>`ip_address`</td>
+<td>IP المستخدم</td>
+</tr>
+<tr>
+<td>`created_at`</td>
+<td>متى</td>
+</tr>
+</tbody></table>
+
+<h3>ليش مهمة؟</h3>
+
+<li>🔍 **تتبع الأخطاء** — &quot;مين عدّل هذا الرقم؟&quot;</li>
+<li>🛡️ **الأمان** — كشف التلاعب</li>
+<li>📋 **Compliance** — مطلوب قانونياً في كثير من الدول</li>
+<li>👨‍⚖️ **حل النزاعات** — &quot;الفاتورة كانت X أو Y؟&quot;</li>
+
+<hr>
+
+<h2>🔄 كيف يشتغل النظام كاملاً (Flow كامل)</h2>
+
+<h3>مثال واقعي: &quot;فاتورة مبيعات جديدة&quot;</h3>
+
+<pre><code class="language-">
+الخطوة 1: المستخدم يعمل فاتورة
+  ↓
+  sales_invoice table: row جديد
+  ↓
+الخطوة 2: النظام يطلع events
+  ↓
+  outbox_events: 
+    - event_type: &quot;sales_invoice.created&quot;
+    - payload: {invoice_id, customer, total, ...}
+  
+الخطوة 3: مستمعين الأحداث يسمعون
+  ↓
+  ┌─────────────────────────────────────┐
+  │  Finance listener:                  │
+  │    - استلم event                    │
+  │    - طبق posting_rule               │
+  │    - أنشأ journal_entry + lines     │
+  │    - سجّل في processed_events       │
+  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────┐
+  │  Inventory listener:                │
+  │    - استلم event                    │
+  │    - أنقص الكمية من stock_levels    │
+  │    - سجّل stock_movement            │
+  │    - سجّل في processed_events       │
+  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────┐
+  │  Notifications listener:            │
+  │    - أنشأ notification للعميل        │
+  │    - سجّل في processed_events       │
+  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────┐
+  │  Audit listener:                    │
+  │    - سجّل في audit_log              │
+  │    - سجّل في processed_events       │
+  └─────────────────────────────────────┘
+  
+الخطوة 4: outbox_events → processed_at = now()
+الخطوة 5: sales_invoice: outbox marked as processed
+</code></pre>
+
+<strong>كل هذا في ثوانٍ معدودة — أوتوماتيكي بالكامل.</strong>
+
+<hr>
+
+<h2>🛡️ ضمانات الأمان (Reliability)</h2>
+
+<h3>1. Idempotency (مرة واحدة فقط)</h3>
+<li>`processed_events` يمنع المعالجة المكررة</li>
+<li>حتى لو الـ event اتكرر (network glitch)</li>
+
+<h3>2. Retry Logic (إعادة المحاولة)</h3>
+<li>لو فشلت المعالجة → `retry_count++`</li>
+<li>لحد `max_retries` (عادة 5)</li>
+<li>لو وصلت الحد → `last_error` يُحفظ + alert</li>
+
+<h3>3. Transactional Outbox Pattern</h3>
+<li>الـ event يحفظ **في نفس الـ transaction** مع الـ data</li>
+<li>لو الـ data ما اتحفظت → الـ event ما يتحفظ</li>
+<li>ضمان: مفيش event بدون data، مفيش data بدون event</li>
+
+<h3>4. Eventual Consistency</h3>
+<li>الـ events ممكن تتأخر ثواني/دقائق</li>
+<li>لكن ما تضيع أبداً</li>
+<li>eventually consistent state</li>
+
+<hr>
+
+<h2>🎯 ملخص سريع</h2>
+
+<table>
+<thead><tr>
+<th>الطاولة</th>
+<th>الدور</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`outbox_events`</td>
+<td>صندوق الصادر (كل الأحداث)</td>
+</tr>
+<tr>
+<td>`processed_events`</td>
+<td>اللي اتعالج (لـ idempotency)</td>
+</tr>
+<tr>
+<td>`notifications`</td>
+<td>إشعارات المستخدمين (in-app)</td>
+</tr>
+<tr>
+<td>`audit_log`</td>
+<td>سجل التدقيق (مين عمل شنو)</td>
+</tr>
+</tbody></table>
+
+<strong>النمط</strong>: Transactional Outbox + Idempotency
+
+<strong>الفايدة</strong>: الموديلات مترابطة + آمنة + قابلة للتوسع
+
+<hr>
+
+<h2>📎 روابط مفيدة</h2>
+
+<li>📊 ERD: `/workspace/erd-images/notifications_events.png`</li>
+<li>📋 Schema: `/workspace/erd-source/erd_notifications_events.mmd`</li>
+<li>🌐 Portal: https://xfe6jmg938jjh.space.minimax.io/#notifications_events</li>
+
+<hr>
+
+<h2>🧠 الموديلات الثانية تستمع لـ events من Finance و Projects:</h2>
+
+<h3>Finance يبعت events عند:</h3>
+<li>✅ قيد مُرحّل → `journal_entry.posted`</li>
+<li>✅ دفعة مستلمة → `payment.received`</li>
+<li>✅ تجاوز ميزانية → `budget.exceeded`</li>
+
+<h3>Projects يبعت events عند:</h3>
+<li>✅ مشروع جديد → `project.created`</li>
+<li>✅ تغيير حالة → `project.status_changed`</li>
+<li>✅ تجاوز 80% من الميزانية → `project_budget_warning`</li>
+<li>✅ تجاوز 100% → `project_budget_exceeded`</li>
+<li>✅ مهمة مكتملة → `project_task.completed`</li>
+<li>✅ مشروع مكتمل → `project.completed`</li>
+
+<h3>اللي يسمع:</h3>
+<li>**HR**: يحسب تكلفة المشروع من ساعات العمل</li>
+<li>**Procurement**: يربط POs بالمشروع</li>
+<li>**Inventory**: ينقص الكمية</li>
+<li>**Reports**: يحدّث KPIs</li>
+<li>**Notifications**: يبعت للمستخدمين</li>
+
+<strong>النتيجة</strong>: <strong>نظام واحد متماسك</strong>، كل موديل يعرف شو يصير في الباقي بدون coupling مباشر.
+
+</div>
+</body>
+</html>

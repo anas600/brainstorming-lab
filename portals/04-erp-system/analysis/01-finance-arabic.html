@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 موديل المالية (Finance Module) — شرح بالعربي</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --accent: #38bdf8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+}
+.container { max-width: 900px; margin: 0 auto; }
+.back-link { 
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
+h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
+h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
+p { margin: 8px 0; color: var(--text); }
+blockquote {
+    background: var(--bg-card);
+    border-right: 4px solid var(--accent);
+    padding: 10px 15px;
+    margin: 10px 0;
+    color: var(--text-soft);
+}
+code {
+    background: var(--bg-card);
+    color: #f472b6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+pre {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+pre code {
+    background: transparent;
+    color: var(--text);
+    padding: 0;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: var(--bg-card);
+    border-radius: 6px;
+    overflow: hidden;
+}
+th {
+    background: var(--border);
+    color: var(--accent);
+    padding: 10px;
+    text-align: right;
+}
+td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+tr:hover { background: rgba(56, 189, 248, 0.05); }
+ul, ol { padding-right: 30px; margin: 10px 0; }
+li { margin: 5px 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+strong { color: var(--accent); }
+em { color: var(--text-soft); }
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
+<h1>💰 موديل المالية (Finance Module) — شرح بالعربي</h1>
+
+<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
+<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
+<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
+<p>&gt; <strong>المصدر</strong>: live DB via Neon MCP</p>
+
+<hr>
+
+<h2>🎯 شو هو موديل المالية؟</h2>
+
+<p>موديل المالية هو <strong>القلب المحاسبي</strong> للنظام. مسؤول عن:</p>
+
+<li>📊 تسجيل كل المعاملات المالية (قيود يومية)</li>
+<li>📒 دليل الحسابات (Chart of Accounts)</li>
+<li>💱 ربط الحركات بالأحداث اللي تجي من الموديلات الثانية</li>
+<li>📈 إصدار التقارير (ميزان مراجعة، قائمة دخل، ميزانية)</li>
+
+<strong>بدون هذا الموديل، النظام ما يعرف:</strong>
+<li>كم صرفت؟</li>
+<li>كم لك؟</li>
+<li>كم عليك؟</li>
+<li>هل الميزانية منفذة؟</li>
+
+<hr>
+
+<h2>🏗️ الطاولة المركزية: دليل الحسابات (accounts)</h2>
+
+<h3>شو هي؟</h3>
+
+<p>قائمة فيها <strong>كل الحسابات</strong> اللي الشركة تستخدمها. زي دليل الهاتف، بس للحسابات.</p>
+
+<h3>مثال حقيقي من الـ DB:</h3>
+
+<table>
+<thead><tr>
+<th>الكود</th>
+<th>الاسم</th>
+<th>النوع</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`0000`</td>
+<td>حسابات المجموعة القابضة (الإدارة العامة)</td>
+<td>3 (Rapatrié/رأس مال)</td>
+</tr>
+<tr>
+<td>`1000`</td>
+<td>الأصول</td>
+<td>1 (أصل)</td>
+</tr>
+<tr>
+<td>`1100`</td>
+<td>أصول غير متداولة</td>
+<td>1 (أصل)</td>
+</tr>
+<tr>
+<td>`1101`</td>
+<td>العقارات</td>
+<td>1 (أصل)</td>
+</tr>
+<tr>
+<td>`1102`</td>
+<td>المركبات والأثاث</td>
+<td>1 (أصل)</td>
+</tr>
+<tr>
+<td>`1103`</td>
+<td>أصول ثابتة أخرى</td>
+<td>1 (أصل)</td>
+</tr>
+<tr>
+<td>`1200`</td>
+<td>أصول متداولة</td>
+<td>1 (أصل)</td>
+</tr>
+</tbody></table>
+
+<h3>الحقول المهمة:</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+<th>مثال</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`code`</td>
+<td>الكود الفريد للحساب (زي رقم الحساب)</td>
+<td>&quot;1101&quot;</td>
+</tr>
+<tr>
+<td>`name`</td>
+<td>اسم الحساب (عربي)</td>
+<td>&quot;العقارات&quot;</td>
+</tr>
+<tr>
+<td>`type`</td>
+<td>النوع (1=أصل، 2=خصم، 3=حقوق ملكية، 4=إيراد، 5=مصروف)</td>
+<td>1</td>
+</tr>
+<tr>
+<td>`normal_balance`</td>
+<td>الرصيد الطبيعي (1=مدين، 2=دائن)</td>
+<td>1</td>
+</tr>
+<tr>
+<td>`parent_account_id`</td>
+<td>الحساب الأب (لو حساب فرعي)</td>
+<td>&quot;1100&quot; (أصول غير متداولة)</td>
+</tr>
+<tr>
+<td>`is_postable`</td>
+<td>هل يقبل قيود مباشرة؟</td>
+<td>true/false</td>
+</tr>
+<tr>
+<td>`is_active`</td>
+<td>هل نشط؟</td>
+<td>true/false</td>
+</tr>
+<tr>
+<td>`is_intercompany`</td>
+<td>هل بين شركات المجموعة؟</td>
+<td>true/false</td>
+</tr>
+</tbody></table>
+
+<h3>الأنواع الخمسة (Standard Accounting):</h3>
+
+<pre><code class="language-">
+type=1 → أصول (Assets)     — اللي تملكه الشركة
+type=2 → خصوم (Liabilities) — اللي عليك
+type=3 → حقوق ملكية (Equity) — رأس المال + الأرباح المحتجزة
+type=4 → إيرادات (Revenue) — اللي تكسبه
+type=5 → مصروفات (Expenses) — اللي تصرفه
+</code></pre>
+
+<h3>الرصيد الطبيعي (normal_balance):</h3>
+
+<pre><code class="language-">
+normal_balance=1 → مدين (Debit)  — للأصول والمصروفات
+normal_balance=2 → دائن (Credit) — للخصوم وحقوق الملكية والإيرادات
+</code></pre>
+
+<h3>البنية الشجرية (Hierarchy):</h3>
+
+<pre><code class="language-">
+0000 حسابات المجموعة القابضة
+└── 1000 الأصول
+    ├── 1100 أصول غير متداولة
+    │   ├── 1101 العقارات
+    │   ├── 1102 المركبات والأثاث
+    │   └── 1103 أصول ثابتة أخرى
+    ├── 1200 أصول متداولة
+    │   ├── 1201 النقدية في الصندوق
+    │   ├── 1202 البنك
+    │   └── 1203 المدينون
+    └── ...
+</code></pre>
+
+<hr>
+
+<h2>📒 القيود اليومية (journal_entries + journal_lines)</h2>
+
+<h3>شو هي؟</h3>
+
+<p>كل عملية مالية = <strong>قيد يومي</strong> (Journal Entry) واحد.</p>
+<p>كل قيد فيه <strong>سطور</strong> (Journal Lines) — على الأقل سطرين (مدين + دائن).</p>
+
+<h3>القاعدة الذهبية (Double-Entry Bookkeeping):</h3>
+
+<p>&gt; <strong>مجموع المدين = مجموع الدائن</strong> (دايماً!)</p>
+
+<h3>مثال حقيقي من DB:</h3>
+
+<pre><code class="language-">
+القيد: JE-2026-0012
+التاريخ: 2026-12-31
+الوصف: Payroll run — 2026-12-01 → 2026-12-31
+الحالة: 2 (مُرحّل/posted)
+
+السطر 1:  مدين  35,358.75  حساب &quot;مصروف الرواتب&quot;
+السطر 2:  دائن  35,358.75  حساب &quot;البنك&quot;
+</code></pre>
+
+<strong>المجموع: مدين 35,358.75 = دائن 35,358.75</strong> ✅
+
+<h3>جدول journal_entries (القيود):</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`entry_number`</td>
+<td>رقم تسلسلي (مثلاً JE-2026-0012)</td>
+</tr>
+<tr>
+<td>`entry_date`</td>
+<td>تاريخ القيد</td>
+</tr>
+<tr>
+<td>`description`</td>
+<td>وصف القيد</td>
+</tr>
+<tr>
+<td>`status`</td>
+<td>1=مسودة (Draft)، 2=مُرحّل (Posted)، 3=ملغى</td>
+</tr>
+<tr>
+<td>`created_by_user_id`</td>
+<td>مين عمل القيد</td>
+</tr>
+<tr>
+<td>`posted_at`</td>
+<td>متى تم الترحيل</td>
+</tr>
+<tr>
+<td>`reference`</td>
+<td>مرجع خارجي (رقم شيك، رقم فاتورة)</td>
+</tr>
+</tbody></table>
+
+<h3>جدول journal_lines (السطور):</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`journal_entry_id`</td>
+<td>ربط بالقيد الأب</td>
+</tr>
+<tr>
+<td>`account_id`</td>
+<td>الحساب اللي تأثر</td>
+</tr>
+<tr>
+<td>`debit`</td>
+<td>المبلغ المدين (لو صفر = مفيش)</td>
+</tr>
+<tr>
+<td>`credit`</td>
+<td>المبلغ الدائن (لو صفر = مفيش)</td>
+</tr>
+<tr>
+<td>`description`</td>
+<td>وصف السطر</td>
+</tr>
+<tr>
+<td>`line_number`</td>
+<td>ترتيب السطر (1, 2, 3...)</td>
+</tr>
+<tr>
+<td>`cost_center_id`</td>
+<td>مركز التكلفة (لو موجود)</td>
+</tr>
+</tbody></table>
+
+<strong>قاعدة</strong>: في كل سطر، debit XOR credit — واحد منهم بس في القيمة.
+
+<hr>
+
+<h2>🪄 الأوتوماتيكية: posting_rules</h2>
+
+<h3>شو هي؟</h3>
+
+<strong>قواعد الترحيل التلقائي</strong> — لما يصير حدث في النظام (فاتورة، سند، إلخ)، النظام يطلع قيد تلقائي.
+
+<h3>مثال:</h3>
+
+<pre><code class="language-">
+القاعدة: &quot;ترحيل فاتورة مبيعات&quot;
+الحدث: sales_invoice.created
+النتيجة:
+  - مدين: حساب المدينين (1203) — بالمبلغ
+  - دائن: حساب الإيرادات (4100) — بالمبلغ
+</code></pre>
+
+<h3>الحقول:</h3>
+
+<table>
+<thead><tr>
+<th>الحقل</th>
+<th>المعنى</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`name`</td>
+<td>اسم القاعدة (مثلاً &quot;ترحيل فاتورة مبيعات&quot;)</td>
+</tr>
+<tr>
+<td>`event_type`</td>
+<td>نوع الحدث (1=invoice, 2=payment, 3=receipt...)</td>
+</tr>
+<tr>
+<td>`is_active`</td>
+<td>هل القاعدة مفعّلة؟</td>
+</tr>
+<tr>
+<td>`template_json`</td>
+<td>قالب القيد (JSON فيه الحسابات والشروط)</td>
+</tr>
+</tbody></table>
+
+<strong>الفايدة</strong>: المحاسب ما يحتاج يكتب قيد لكل عملية يدوياً — النظام يعمله أوتوماتيك.
+
+<hr>
+
+<h2>🔗 الربط بالموديلات الثانية</h2>
+
+<h3>Finance ↔ Procurement (المشتريات):</h3>
+<pre><code class="language-">
+عند استلام بضاعة (GRN):
+  - مدين: حساب المخزون (1300)
+  - دائن: حساب الدائنين (2100) أو حساب الموردين
+
+عند دفع فاتورة مورد:
+  - مدين: حساب الدائنين (2100)
+  - دائن: حساب البنك (1202) أو الصندوق (1201)
+</code></pre>
+
+<h3>Finance ↔ Sales (المبيعات):</h3>
+<pre><code class="language-">
+عند إصدار فاتورة مبيعات:
+  - مدين: حساب المدينين (1203)
+  - دائن: حساب الإيرادات (4100)
+  - دائن: حساب ضريبة المخرجات (لو موجود)
+
+عند استلام دفعة من عميل:
+  - مدين: البنك (1202)
+  - دائن: حساب المدينين (1203)
+</code></pre>
+
+<h3>Finance ↔ HR (الرواتب):</h3>
+<pre><code class="language-">
+عند صرف الرواتب (مثال من DB):
+  - مدين: مصروف الرواتب (5001)
+  - دائن: البنك (1202)
+</code></pre>
+
+<h3>Finance ↔ Projects (المشاريع):</h3>
+<li>**project_budgets**: يربط المشروع بحساب + مركز تكلفة + مبلغ ميزانية</li>
+<li>**cost_center_id**: كل قيد يقدر ينسب لمركز تكلفة (ومشروع)</li>
+<li>**الاستخدام**: تقرير &quot;تكلفة المشروع&quot; = مجموع القيود على cost_center الخاص بالمشروع</li>
+
+<hr>
+
+<h2>🏢 Multi-Company / Multi-Tenant</h2>
+
+<p>كل حساب عنده <code>tenant_id</code> و <code>company_id</code>:</p>
+
+<li>**tenant_id**: الشركة القابضة (مثلاً AlFajr Holding)</li>
+<li>**company_id**: الشركة الفرعية (لو في multiple companies)</li>
+<li>**is_intercompany**: هل الحساب بين الشركات؟ (للتوحيد)</li>
+
+<strong>هذا يخلي النظام يدعم:</strong>
+<li>✅ Multi-tenant (عدة شركات مستقلة)</li>
+<li>✅ Multi-company (عدة شركات داخل نفس الـ tenant)</li>
+<li>✅ Inter-company transactions (تحويلات بين الشركات)</li>
+
+<hr>
+
+<h2>📊 التقارير اللي تطلع من Finance</h2>
+
+<table>
+<thead><tr>
+<th>التقرير</th>
+<th>شو يقول</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>**ميزان المراجعة** (Trial Balance)</td>
+<td>كل حساب + رصيده (مدين - دائن)</td>
+</tr>
+<tr>
+<td>**قائمة الدخل** (P&amp;L)</td>
+<td>الإيرادات - المصروفات = الربح</td>
+</tr>
+<tr>
+<td>**الميزانية** (Balance Sheet)</td>
+<td>الأصول = الخصوم + حقوق الملكية</td>
+</tr>
+<tr>
+<td>**التدفقات النقدية** (Cash Flow)</td>
+<td>من وين جاء الفلوس، وين راحت</td>
+</tr>
+<tr>
+<td>**أعمار الديون** (A/R Aging)</td>
+<td>كم لك وكم تأخر</td>
+</tr>
+</tbody></table>
+
+<hr>
+
+<h2>🆘 شو يصير لو في خطأ؟</h2>
+
+<h3>مثال: قيد مشبوه</h3>
+<pre><code class="language-">
+الحالة: 1 (مسودة) → لسه ما اترحل
+الحل: عدّل أو احذف (المسودة قابلة للتعديل)
+
+الحالة: 2 (مُرحّل) → اترحل في الدفاتر
+الحل: اعمل &quot;قيد عكسي&quot; (Reversing Entry)
+   - قيد جديد يعكس التأثير
+   - بدل ما تعدل، تنشئ قيد جديد يلغي القديم
+</code></pre>
+
+<strong>هذا ضمان محاسبي</strong> — القيود المرحّلة لا تُعدّل أبداً (audit trail نظيف).
+
+<hr>
+
+<h2>🎯 ملخص سريع</h2>
+
+<table>
+<thead><tr>
+<th>الجدول</th>
+<th>الدور</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>`accounts`</td>
+<td>دليل الحسابات (CoA)</td>
+</tr>
+<tr>
+<td>`journal_entries`</td>
+<td>رأس القيد (العملية المالية)</td>
+</tr>
+<tr>
+<td>`journal_lines`</td>
+<td>سطور القيد (الحسابات اللي تأثرت)</td>
+</tr>
+<tr>
+<td>`posting_rules`</td>
+<td>قواعد الترحيل التلقائي</td>
+</tr>
+</tbody></table>
+
+<strong>القاعدة الذهبية</strong>: مدين = دائن (دايماً)
+
+<strong>الربط</strong>: Finance هو القلب — كل الموديلات الثانية ترسل أحداث لـ Finance.
+
+<strong>الـ Events</strong>: كل قيد ممكن يطلع event في <code>outbox_events</code> (للإشعارات، التقارير، إلخ).
+
+<hr>
+
+<h2>📎 روابط مفيدة</h2>
+
+<li>📊 ERD: `/workspace/erd-images/finance.png`</li>
+<li>📋 Schema source: `/workspace/erd-source/erd_finance.mmd`</li>
+<li>🌐 Portal: https://xfe6jmg938jjh.space.minimax.io/#finance</li>
+
+</div>
+</body>
+</html>

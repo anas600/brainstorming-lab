@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #053 — Permission Matrix + Implementation Plan (CRITICAL SECURITY)</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-053-permission-matrix-implementation-plan-critical-security">📋 DECISION #053 — Permission Matrix + Implementation Plan (CRITICAL SECURITY)</h1>
+<blockquote>
+<p><strong>DEC-053</strong> | 🚨 <strong>CRITICAL SECURITY DECISION</strong> — System Currently UNENFORCED<br />
+<strong>Status</strong>: 🟠 AWAITING Anas (User) approval on 4 questions<br />
+<strong>Priority</strong>: 🔴 <strong>HIGHEST</strong> — blocks new deployments</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 21:20 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Severity</strong>: 🔴 <strong>CRITICAL SECURITY INCIDENT</strong><br />
+<strong>Related</strong>: DEC-046 (Initial Review), DEC-047 (Posting Rules), DEC-050 (RBAC Analysis)<br />
+<strong>Estimated Effort</strong>: 3-5 days (Phase 1 only)</p>
+<hr />
+<h2 id="executive-summary-1-minute-read">🚨 EXECUTIVE SUMMARY (1 minute read)</h2>
+<h3 id="_1">المشكلة (التي يعلمها الجميع الآن):</h3>
+<blockquote>
+<p>النظام عنده 4 أدوار (Admin/Accountant/ProjectManager/Viewer) لكن <strong>لا يوجد role enforcement</strong> على أي endpoint.</p>
+<p><strong>الدليل</strong>: <code>grep -rn "\[Authorize(Roles" src/backend/</code> = <strong>0 matches</strong>.</p>
+<p><strong>النتيجة</strong>: أي مستخدم مسجّل — حتى بدون دور — يستطيع تنفيذ <strong>أي عملية</strong> حساسة (حذف شركات، تعديل قواعد الترحيل، استرجاع أحداث يدوياً، ترحيل قيود).</p>
+</blockquote>
+<h3 id="dec">الحل المقترح (هذا الـ DEC):</h3>
+<ol>
+<li><strong>Permission Matrix كامل</strong> (55 خلية، 4 أدوار × 14 endpoint category)</li>
+<li><strong>Implementation Plan</strong> على 3 مراحل (Critical → High → Medium)</li>
+<li><strong>Testing Strategy</strong> (regression + security + role-based)</li>
+<li><strong>Deployment Strategy</strong> (staging → production gradual rollout)</li>
+<li><strong>Communication Plan</strong> (إبلاغ المستخدمين + admin assignment)</li>
+</ol>
+<h3 id="_2">الأثر:</h3>
+<ul>
+<li><strong>منع privilege escalation</strong> — لا مستخدم بدون صلاحية يصل لعملية حرجة</li>
+<li><strong>Audit trail واضح</strong> — مَن عمل شنو ومتى (مع الدور)</li>
+<li><strong>Compliance</strong> — IFRS + SOC2 + GDPR (Access Control)</li>
+<li><strong>حماية البيانات الحقيقية</strong> — Al-Burj + AlFajr Holding (LIVE on HF Space)</li>
+</ul>
+<hr />
+<h2 id="part-1-permission-matrix-55">📊 PART 1: PERMISSION MATRIX (55 خلية كاملة)</h2>
+<h3 id="11-conventions">1.1 Conventions</h3>
+<ul>
+<li><strong>R</strong> = Read (GET)</li>
+<li><strong>C</strong> = Create (POST)</li>
+<li><strong>U</strong> = Update (PUT/PATCH)</li>
+<li><strong>D</strong> = Delete (DELETE)</li>
+<li><strong>P</strong> = Post (Special action: ترحيل، تفعيل، manual retry)</li>
+<li>✅ = مسموح</li>
+<li>❌ = ممنوع</li>
+<li>🟡 = مسموح بشروط (يُفصَّل)</li>
+</ul>
+<h3 id="12-4-rolerepositoryensuredefaultrolesasync">1.2 الأدوار (4 — مُعرَّفة في <code>RoleRepository.EnsureDefaultRolesAsync</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>الوصف</th>
+<th>المسؤولية</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong></td>
+<td>مدير النظام</td>
+<td>كل شي داخل tenant</td>
+</tr>
+<tr>
+<td><strong>Accountant</strong></td>
+<td>محاسب</td>
+<td>Finance + Reports (Finance)</td>
+</tr>
+<tr>
+<td><strong>ProjectManager</strong></td>
+<td>مدير مشاريع</td>
+<td>Projects + Tasks + Resources + Budgets</td>
+</tr>
+<tr>
+<td><strong>Viewer</strong></td>
+<td>مشاهد</td>
+<td>قراءة فقط</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-55">1.3 المصفوفة الكاملة (55 خلية)</h3>
+<h4 id="identity-tenants">🪪 Identity &amp; Tenants</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/auth/register</code></td>
+<td>C</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><code>[AllowAnonymous]</code> (نقاط عامة)</td>
+</tr>
+<tr>
+<td><code>POST /api/auth/login</code></td>
+<td>C</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><code>[AllowAnonymous]</code></td>
+</tr>
+<tr>
+<td><code>POST /api/auth/refresh</code></td>
+<td>C</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><code>[AllowAnonymous]</code></td>
+</tr>
+<tr>
+<td><code>POST /api/auth/logout</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>مسجّل فقط</td>
+</tr>
+<tr>
+<td><code>GET /api/auth/me</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>مسجّل فقط</td>
+</tr>
+<tr>
+<td><code>POST /api/users</code> (مُقترح)</td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>إدارة المستخدمين</td>
+</tr>
+<tr>
+<td><code>GET /api/users</code></td>
+<td>R</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>PII حساس</td>
+</tr>
+<tr>
+<td><code>POST /api/users/{id}/roles</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>تعيين أدوار</td>
+</tr>
+<tr>
+<td><code>DELETE /api/users/{id}/roles/{roleId}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>سحب دور</td>
+</tr>
+</tbody>
+</table>
+<h4 id="companies">🏢 Companies</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/companies</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/companies/tree</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/companies/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/companies/{id}/subsidiaries</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/companies/holding</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/companies/subsidiary</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/companies/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="finance-accounts">💰 Finance — Accounts</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/finance/accounts</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/finance/accounts/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/finance/accounts/by-code/{code}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/finance/accounts</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/finance/accounts/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="finance-journal-entries">💰 Finance — Journal Entries</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/finance/journal-entries</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/finance/journal-entries/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/finance/journal-entries</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/finance/journal-entries/{id}/post</code></td>
+<td>P</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="finance-ledger-reports">💰 Finance — Ledger (Reports)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/finance/ledger/trial-balance</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/finance/ledger/accounts/{accountId}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h4 id="finance-posting-rules-critical">💰 Finance — Posting Rules (🚨 CRITICAL)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/finance/posting-rules</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/finance/posting-rules</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/finance/posting-rules/trigger/{eventType}</code></td>
+<td>P</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="projects">📁 Projects</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/projects</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/projects</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>PUT /api/projects/{id}</code></td>
+<td>U</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/projects/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/projects/{id}/status</code></td>
+<td>P</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{id}/tasks</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h4 id="project-tasks">📁 Project Tasks</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/tasks/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/tasks</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>PUT /api/tasks/{id}</code></td>
+<td>U</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/tasks/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="resources">📁 Resources</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/resources</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/resources/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/resources</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>PUT /api/resources/{id}</code></td>
+<td>U</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cost-centers">📁 Cost Centers</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/cost-centers</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/cost-centers/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/cost-centers/{id}/children</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/cost-centers/{id}/budget-status</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/cost-centers</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/cost-centers/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="inventory-items">📦 Inventory — Items</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/items</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/items/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/items</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>PUT /api/items/{id}</code></td>
+<td>U</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/items/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="inventory-item-categories-uom-warehouses">📦 Inventory — Item Categories, UoM, Warehouses (نفس النمط)</h4>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>R</th>
+<th>C</th>
+<th>U</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Item Categories</td>
+<td>كل الأدوار</td>
+<td>Admin</td>
+<td>Admin</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>Unit of Measures</td>
+<td>كل الأدوار</td>
+<td>Admin</td>
+<td>Admin</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>Warehouses</td>
+<td>كل الأدوار</td>
+<td>Admin</td>
+<td>Admin</td>
+<td>Admin</td>
+</tr>
+</tbody>
+</table>
+<h4 id="inventory-stock-movements-critical">📦 Inventory — Stock Movements (🚨 CRITICAL)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/inventory/stock-movements</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/inventory/stock-movements/{id}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-movements/receive</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-movements/issue</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-movements/transfer</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-movements/adjust</code></td>
+<td>C</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-movements/{id}/post</code></td>
+<td>P</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="inventory-stock-levels-r-only">📦 Inventory — Stock Levels (R only)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/inventory/stock-levels</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/inventory/stock-levels/items/{itemId}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/inventory/stock-levels/warehouses/{warehouseId}</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/inventory/stock-levels/low-stock</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h4 id="inventory-stock-reservations-crud">📦 Inventory — Stock Reservations (CRUD)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/inventory/stock-reservations</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/inventory/stock-reservations</code></td>
+<td>C</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>DELETE /api/inventory/stock-reservations/{id}</code></td>
+<td>D</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h4 id="reports">📊 Reports</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/reports/projects/{id}/pnl</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/projects/{id}/budget-vs-actual</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/projects/summary</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/inventory/valuation</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/inventory/movements</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/inventory/low-stock</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/reports/inventory/aging</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h4 id="notifications">🔔 Notifications</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/notifications</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/notifications/unread</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /api/notifications/{id}/mark-read</code></td>
+<td>U</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h4 id="events-outbox-critical">🔔 Events / Outbox (🚨 CRITICAL)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>PM</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/events/outbox</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/events/processed</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /api/events/pending-count</code></td>
+<td>R</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>POST /api/events/retry/{id}</strong></td>
+<td><strong>P</strong></td>
+<td><strong>✅</strong></td>
+<td><strong>❌</strong></td>
+<td><strong>❌</strong></td>
+<td><strong>❌</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="health-public">💊 Health (Public)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Action</th>
+<th>الكل</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /health</code></td>
+<td>R</td>
+<td><code>[AllowAnonymous]</code></td>
+</tr>
+<tr>
+<td><code>GET /health/ready</code></td>
+<td>R</td>
+<td><code>[AllowAnonymous]</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-2-implementation-plan-3-phases">🎯 PART 2: IMPLEMENTATION PLAN (3 Phases)</h2>
+<h3 id="phase-1-critical-3-5-deployment">Phase 1 (CRITICAL — 3-5 أيام) — <strong>يجب قبل أي deployment جديد</strong></h3>
+<h4 id="sprint-311-role-enforcement-1-2">Sprint 3.1.1: Role Enforcement (يوم 1-2)</h4>
+<p><strong>التغييرات في الكود</strong>:</p>
+<ol>
+<li><strong>تعديل <code>PostingRulesController</code></strong> (CRITICAL):</li>
+</ol>
+<pre><code class="language-csharp">[HttpGet]
+[Authorize]  // أي مسجّل
+public async Task&lt;IActionResult&gt; List(...) { ... }
+
+[HttpPost]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]  // ✅ Admin + Accountant فقط
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpPost(&quot;trigger/{eventType}&quot;)]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]  // ✅ Admin + Accountant فقط
+public async Task&lt;IActionResult&gt; Trigger(...) { ... }
+</code></pre>
+<ol>
+<li><strong>تعديل <code>EventsController</code></strong> (CRITICAL):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost(&quot;retry/{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]  // ✅ Admin فقط — موثّق &quot;Admin&quot; لكن غير مطبَّق!
+public async Task&lt;IActionResult&gt; Retry(Guid id, CancellationToken ct) { ... }
+</code></pre>
+<ol>
+<li><strong>تعديل <code>JournalEntriesController</code></strong> (CRITICAL):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpPost(&quot;{id:guid}/post&quot;)]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Post(Guid id, CancellationToken ct) { ... }
+</code></pre>
+<ol>
+<li><strong>تعديل <code>AccountsController</code></strong>:</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpDelete(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]
+public async Task&lt;IActionResult&gt; Delete(...) { ... }
+</code></pre>
+<ol>
+<li><strong>تعديل <code>CompaniesController</code></strong>:</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost(&quot;holding&quot;)]
+[HttpPost(&quot;subsidiary&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]  // ✅ Admin فقط — إنشاء شركات
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpDelete(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]
+public async Task&lt;IActionResult&gt; Delete(...) { ... }
+</code></pre>
+<ol>
+<li><strong>Inventory Writes</strong> (<code>StockMovementsController</code>):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost(&quot;receive&quot;)]
+[HttpPost(&quot;issue&quot;)]
+[HttpPost(&quot;transfer&quot;)]
+[HttpPost(&quot;adjust&quot;)]
+[HttpPost(&quot;{id:guid}/post&quot;)]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Post(...) { ... }
+
+// Exception: issue مسموح لـ PM
+[HttpPost(&quot;issue&quot;)]
+[Authorize(Roles = &quot;Admin,Accountant,ProjectManager&quot;)]
+public async Task&lt;IActionResult&gt; Issue(...) { ... }
+</code></pre>
+<ol>
+<li><strong>Projects Writes</strong> (<code>ProjectsController</code>):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[HttpPut(&quot;{id:guid}&quot;)]
+[HttpPost(&quot;{id:guid}/status&quot;)]
+[Authorize(Roles = &quot;Admin,ProjectManager&quot;)]
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpDelete(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]
+public async Task&lt;IActionResult&gt; Delete(...) { ... }
+</code></pre>
+<ol>
+<li><strong>Items/Warehouses/Categories/UoM</strong> (CRUD):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[HttpPut(&quot;{id:guid}&quot;)]
+[HttpDelete(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]
+// كل الكتابة = Admin فقط
+</code></pre>
+<ol>
+<li><strong>Resources</strong> (CRUD):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[HttpPut(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin,ProjectManager&quot;)]
+</code></pre>
+<ol>
+<li><strong>Tasks</strong> (CRUD):</li>
+</ol>
+<pre><code class="language-csharp">[HttpPost]
+[HttpPut(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin,ProjectManager&quot;)]
+
+[HttpDelete(&quot;{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]  // PM ما يحذف (soft)
+</code></pre>
+<p><strong>عدد الملفات المُعدَّلة</strong>: 13 controller<br />
+<strong>عدد السطور المُضافة</strong>: ~80 سطر <code>[Authorize(Roles=...)]</code><br />
+<strong>المدة المقدّرة</strong>: يوم-يومين (مع اختبار)</p>
+<h4 id="sprint-312-audit-log-user_roles-3">Sprint 3.1.2: Audit Log للـ user_roles (يوم 3)</h4>
+<p><strong>Migration جديدة</strong>:</p>
+<pre><code class="language-sql">-- 20260721_140000_AddUserRoleAuditFields.cs
+ALTER TABLE user_roles ADD COLUMN assigned_by UUID REFERENCES users(id);
+ALTER TABLE user_roles ADD COLUMN assigned_reason VARCHAR(200);
+ALTER TABLE user_roles ADD COLUMN revoked_at TIMESTAMP;
+ALTER TABLE user_roles ADD COLUMN revoked_by UUID REFERENCES users(id);
+ALTER TABLE user_roles ADD COLUMN revoked_reason VARCHAR(200);
+</code></pre>
+<p><strong>تعديل <code>RoleRepository</code></strong>:<br />
+- تحديث <code>AssignRoleAsync(userId, roleId, assignedBy, reason, ct)</code><br />
+- إضافة <code>RevokeRoleAsync(userId, roleId, revokedBy, reason, ct)</code> (soft revoke)<br />
+- إضافة <code>GetRoleHistoryAsync(userId, ct)</code> (audit trail)</p>
+<p><strong>تعديل <code>AuthService</code></strong> (نقل من <code>EnsureDefaultRolesAsync</code>):<br />
+- عند tenant جديد: تسجيل <code>assigned_by=System, assigned_reason=First admin</code><br />
+- تسجيل في <code>audit_log</code> (إن وجد) أو table منفصل</p>
+<h4 id="sprint-313-tests-security-validation-4-5">Sprint 3.1.3: Tests + Security Validation (يوم 4-5)</h4>
+<p><strong>Unit tests جديدة</strong> (~30 test):<br />
+- <code>PostingRulesControllerTests</code> — test 4 أدوار × 3 endpoints = 12 test<br />
+- <code>EventsControllerTests</code> — test retry لكل دور = 4 test<br />
+- <code>JournalEntriesControllerTests</code> — 8 test<br />
+- <code>AuthRoleEnforcementTests</code> — global test يتأكد كل <code>[Authorize]</code> له role</p>
+<p><strong>Integration tests</strong> (~10 test):<br />
+- <code>Admin_CanDoEverything</code><br />
+- <code>Accountant_CannotCreatePostingRule_IfBlocked</code><br />
+- <code>PM_CannotDeleteProject</code><br />
+- <code>Viewer_CannotDoAnyWrite</code><br />
+- <code>Unauthenticated_Gets401</code><br />
+- <code>AuthenticatedWithoutRole_Gets403</code><br />
+- <code>WrongTenant_Gets403</code> (multi-tenancy)</p>
+<p><strong>Manual security tests</strong>:<br />
+- Burp Suite / OWASP ZAP scan<br />
+- Penetration test: محاولات privilege escalation</p>
+<p><strong>Regression tests</strong> (تأكيد ما كسرنا شي):<br />
+- شغّل كل الـ 92 test الموجودة<br />
+- اختبر يدوياً: register, login, create project, post journal, trigger event</p>
+<p><strong>المدة المقدّرة</strong>: يوم-يومين</p>
+<hr />
+<h3 id="phase-2-high-2-3-phase-1">Phase 2 (HIGH — 2-3 أيام) — بعد Phase 1</h3>
+<h4 id="sprint-321-soft-revoke-ui">Sprint 3.2.1: Soft Revoke + UI</h4>
+<ul>
+<li>✅ واجهة لإدارة الأدوار (CRUD roles, assign/revoke users)</li>
+<li>✅ Soft revoke (<code>revoked_at</code> already added in Phase 1)</li>
+<li>✅ Audit log UI (view role history per user)</li>
+</ul>
+<h4 id="sprint-322-tenant-validation-in-jwt">Sprint 3.2.2: Tenant Validation in JWT</h4>
+<ul>
+<li>تعديل <code>TenantMiddleware</code>:</li>
+</ul>
+<pre><code class="language-csharp">if (Guid.TryParse(tenantClaim, out var tenantId))
+{
+    var tenant = await _tenants.GetByIdAsync(tenantId, ct);
+    if (tenant == null || !tenant.IsActive)
+    {
+        context.Response.StatusCode = 403;
+        await context.Response.WriteAsJsonAsync(new { error = &quot;Invalid tenant&quot; });
+        return;
+    }
+}
+</code></pre>
+<h4 id="sprint-323-notifications-for-security-events">Sprint 3.2.3: Notifications for Security Events</h4>
+<ul>
+<li>عند login جديد من device غير معروف → notification</li>
+<li>عند role changed → notification للمستخدم + admin</li>
+<li>عند failed authorization attempts → log</li>
+</ul>
+<hr />
+<h3 id="phase-3-medium-1-phase-2">Phase 3 (MEDIUM — 1 أسبوع) — Phase 2+</h3>
+<h4 id="sprint-331-permissions">Sprint 3.3.1: جدول <code>permissions</code> منفصل</h4>
+<ul>
+<li>جدول <code>permissions</code> (id, name, description, category)</li>
+<li>جدول <code>role_permissions</code> (role_id, permission_id)</li>
+<li>تخصيص dynamic (Admin يقدر يعدل permissions لـ role معين)</li>
+<li>Permission inheritance (Accountant يرث Viewer)</li>
+</ul>
+<h4 id="sprint-332-iauthorizationhandler">Sprint 3.3.2: <code>IAuthorizationHandler</code> مخصص</h4>
+<ul>
+<li>نقل من <code>[Authorize(Roles="Admin")]</code> إلى <code>[Authorize(Policy="CanCreatePostingRule")]</code></li>
+<li>Policies مسجّلة في Program.cs</li>
+<li>يدعم custom logic (مثلاً: "PM يمكنه حذف مشاريعه فقط")</li>
+</ul>
+<h4 id="sprint-333-row-level-security-postgres-rls">Sprint 3.3.3: Row-Level Security (Postgres RLS)</h4>
+<ul>
+<li>تفعيل RLS على tables الحساسة (journal_entries, accounts, projects)</li>
+<li>كل query يضيف تلقائياً <code>WHERE tenant_id = current_setting('app.tenant_id')</code></li>
+<li>مَن يدخل tenant_id خطأ → 0 rows (بدلاً من error)</li>
+</ul>
+<hr />
+<h2 id="part-3-testing-strategy">🧪 PART 3: TESTING STRATEGY</h2>
+<h3 id="31-test-pyramid">3.1 Test Pyramid</h3>
+<pre><code>       /\
+      /E2E\          5 manual tests
+     /------\         (critical user flows)
+    /Integration\    10 tests
+   /--------------\   (cross-controller flows)
+  /    Unit Tests   \  30 tests
+ /--------------------\ (per-controller per-role)
+/    Regression Tests  \ 92 existing + new
+/________________________\
+</code></pre>
+<h3 id="32-unit-tests-xunit-fluentassertions">3.2 Unit Tests (xUnit + FluentAssertions)</h3>
+<p><strong>قالب test لكل controller</strong>:</p>
+<pre><code class="language-csharp">[Theory]
+[InlineData(&quot;Admin&quot;, true)]
+[InlineData(&quot;Accountant&quot;, true)]
+[InlineData(&quot;ProjectManager&quot;, false)]
+[InlineData(&quot;Viewer&quot;, false)]
+public async Task Create_PostingRule_EnforcesRoles(string role, bool shouldSucceed)
+{
+    // Arrange
+    var user = CreateUserWithRole(role);
+    var controller = CreateControllerWithUser(user);
+
+    // Act
+    var result = await controller.Create(validRequest, CancellationToken.None);
+
+    // Assert
+    if (shouldSucceed)
+        Assert.IsType&lt;CreatedAtActionResult&gt;(result);
+    else
+        Assert.IsType&lt;ForbidResult&gt;(result);  // أو UnauthorizedResult
+}
+</code></pre>
+<h3 id="33-integration-tests">3.3 Integration Tests</h3>
+<ul>
+<li>WebApplicationFactory + TestServer</li>
+<li>JWT token مع role claim محدد</li>
+<li>4 اختبارات per endpoint category</li>
+</ul>
+<h3 id="34-security-tests-manual-automated">3.4 Security Tests (Manual + Automated)</h3>
+<ul>
+<li><strong>OWASP Top 10</strong>:</li>
+<li>A01:2021 Broken Access Control ← الـ vulnerability الحالية</li>
+<li>A07:2021 Identification and Authentication Failures</li>
+<li><strong>Burp Suite Community</strong> (manual)</li>
+<li><strong>OWASP ZAP</strong> (automated scan)</li>
+</ul>
+<h3 id="35-regression-tests">3.5 Regression Tests</h3>
+<ul>
+<li>شغّل <code>dotnet test</code> — كل الـ 92 test الموجودة</li>
+<li>اختبر يدوياً: tenant جديد → register → create project → create journal entry → trigger event → manual retry</li>
+<li>قارن مع baseline: هل نفس الـ flows تشتغل؟</li>
+</ul>
+<hr />
+<h2 id="part-4-deployment-strategy">🚢 PART 4: DEPLOYMENT STRATEGY</h2>
+<h3 id="41-pre-deployment-checklist">4.1 Pre-deployment Checklist</h3>
+<ul>
+<li>[ ] كل Critical fixes Phase 1 مكتملة</li>
+<li>[ ] 30+ unit tests جديدة passing</li>
+<li>[ ] 10+ integration tests passing</li>
+<li>[ ] 92 existing tests لا تزال passing (regression)</li>
+<li>[ ] Manual security test: 0 critical findings</li>
+<li>[ ] Code review من Jimi تنفيذي (cross-check)</li>
+<li>[ ] Code review من Mavis (Lab) (independent)</li>
+<li>[ ] DEC-053 updated بـ "Implementation: Done"</li>
+</ul>
+<h3 id="42-deployment-plan-gradual-rollout">4.2 Deployment Plan (Gradual Rollout)</h3>
+<pre><code>Day 0: Deploy to staging (HF Space: Anas-Assasket-erp-system-staging)
+       - Test: Admin can do everything ✓
+       - Test: Accountant can post journal ✓
+       - Test: PM can create project ✓
+       - Test: Viewer cannot post ✗ (should be 403)
+       - Test: Manual retry = Admin only ✓
+       - Test: Regression: 92 existing tests pass ✓
+
+Day 1: Monitoring (24h) — watch logs for 403/401 spikes
+       - لو أي false positive (admin got 403) → rollback فوراً
+       - لو OK → continue
+
+Day 2: Deploy to production (HF Space: Anas-Assaket-erp-system)
+       - Inform users (in-app notification)
+       - Inform Anas via Telegram
+       - Monitor closely for 48h
+
+Day 3-4: Hotfix window (لو ظهرت مشاكل)
+</code></pre>
+<h3 id="43-rollback-plan">4.3 Rollback Plan</h3>
+<ul>
+<li>HF Space يدعم rollback لـ previous revision (built-in)</li>
+<li>في حالة failure: <code>huggingface-cli spaces revert Anas-Assaket/erp-system &lt;previous-revision&gt;</code></li>
+<li>Time to rollback: ~2-5 دقائق</li>
+</ul>
+<h3 id="44-risk-mitigation">4.4 Risk Mitigation</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Admin role مفقود (لا أحد يستطيع الـ operations)</td>
+<td>Low</td>
+<td>High</td>
+<td>Auto-create Admin عند tenant جديد (موجود) + UI prompt</td>
+</tr>
+<tr>
+<td>User موجود بدون role</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Default behavior: read-only (Viewer)</td>
+</tr>
+<tr>
+<td>Existing users مقيّدين فجأة</td>
+<td>Medium</td>
+<td>High</td>
+<td>Communication plan + grace period (24h)</td>
+</tr>
+<tr>
+<td>Test users في production</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Filter by tenant في seed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-5-communication-plan">📣 PART 5: COMMUNICATION PLAN</h2>
+<h3 id="51-t-3">5.1 قبل النشر (T-3 أيام)</h3>
+<ul>
+<li><strong>In-app notification</strong> (للمستخدمين الحاليين):<blockquote>
+<p>"🔒 تحديث أمني قادم في 3 أيام. سنضيف صلاحيات دقيقة على عمليات معيّنة. لو ظهرت لك رسالة 'Forbidden'، تواصل مع Admin tenant."</p>
+</blockquote>
+</li>
+<li><strong>Telegram message</strong> (من Mavis Root لـ Anas):<blockquote>
+<p>"CRITICAL SECURITY: نضيف role enforcement. Sprint 3 Phase 1 خلال 3-5 أيام. freeze deployment حتى تكتمل."</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="52-t-0">5.2 يوم النشر (T-0)</h3>
+<ul>
+<li><strong>In-app notification</strong> (للمستخدمين):<blockquote>
+<p>"✅ التحديث الأمني مفعّل الآن. الـ Admin tenant يقدر يحدد دورك. تواصل معه لو عندك أسئلة."</p>
+</blockquote>
+</li>
+<li><strong>Telegram</strong> (Mavis Root → Anas):<blockquote>
+<p>"Deployment done. Monitoring 48h. لو أي issue، في Hotfix window."</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="53-t1-t7">5.3 بعد النشر (T+1 إلى T+7)</h3>
+<ul>
+<li><strong>Daily check</strong>: لا false positives؟ لا user عالق؟</li>
+<li><strong>Weekly summary</strong> (Mavis Root → Anas): usage statistics + issues</li>
+</ul>
+<hr />
+<h2 id="part-6-risk-assessment">⚠️ PART 6: RISK ASSESSMENT</h2>
+<h3 id="61-status-quo">6.1 لو لم نطبّق (Status Quo)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>مستخدم خبيث يحذف شركات</td>
+<td>🔴 Critical</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>مستخدم يضيف posting rule خاطئ → قيود مكررة</td>
+<td>🔴 Critical</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Manual retry بدون تدقيق → تعطل التدقيق المحاسبي</td>
+<td>🔴 Critical</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Insider threat (موظف سابق) يصل لـ data</td>
+<td>🔴 Critical</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Compliance failure (IFRS/SOC2/GDPR)</td>
+<td>🟠 High</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62">6.2 لو طبّقنا (الوضع المقترح)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Severity</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User مقيّد بدون قصد (لا Admin يحدّث roles)</td>
+<td>🟡 Medium</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Regression في flows موجودة</td>
+<td>🟡 Medium</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Hotfix غير مكتمل → ثغرة متبقية</td>
+<td>🟡 Medium</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Test users في production</td>
+<td>🟢 Low</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الحكم</strong>: الفوائد تفوق المخاطر بشكل كبير.</p>
+<hr />
+<h2 id="part-7-replies-to-anass-4-questions">💬 PART 7: REPLIES TO ANAS's 4 QUESTIONS</h2>
+<h3 id="q1-hf-critical-fixes">Q1: النشر — هل نسحب النشر من HF حتى Critical fixes تنحل؟</h3>
+<p><strong>إجابتي</strong>: ❌ <strong>لا نسحب</strong>، لكن ✅ <strong>نجمّد deployment جديد</strong> (Hotfix فقط).</p>
+<p><strong>السبب</strong>:<br />
+- البيانات الحقيقية (Al-Burj + AlFajr Holding) موجودة — سحب = فقدان<br />
+- النظام ما عنده data export سريع (DEC-051 يحل هذا)<br />
+- الـ Hotfixes (Phase 1) كافية لسد الثغرة دون مساس بالـ data<br />
+- Admin tenant = أنس — يستطيع إدارة roles</p>
+<p><strong>التوصية</strong>: Freeze 1 أسبوع (Phase 1 مدة) → بعدها deployment عادي.</p>
+<h3 id="q2-al-burj-alfajr-holding">Q2: البيانات (Al-Burj + AlFajr Holding) — شو نعمل؟</h3>
+<p><strong>إجابتي</strong>: ✅ <strong>لا شي يتغير في البيانات</strong> — الـ fix على مستوى authentication/authorization فقط.</p>
+<p><strong>الخطوات</strong>:<br />
+1. (بعد Phase 1) أنس يفتح <code>/api/auth/me</code> → يشوف Admin role<br />
+2. يقدر يضيف Accountant/PM roles لـ users آخرين<br />
+3. لو user بدون role (نادر) → default Viewer (read-only)</p>
+<p><strong>لا حاجة لـ data migration</strong>.</p>
+<h3 id="q3-dec-051-backupdr-dec-053-permission-matrix">Q3: الأولوية — DEC-051 (Backup/DR) قبل DEC-053 (Permission Matrix)؟</h3>
+<p><strong>إجابتي</strong>: 🔴 <strong>DEC-053 أولاً (Permission Matrix)</strong>. DEC-051 بعدها.</p>
+<p><strong>السبب</strong>:<br />
+- <strong>SECURITY &gt; RELIABILITY</strong> (PwC, Gartner, NIST consensus)<br />
+- DEC-053 = active vulnerability (يُمكِن استغلاله الآن)<br />
+- DEC-051 = passive risk (سيناريو "لو" حدث شي)<br />
+- Cluster prioritization: Security &gt; Compliance &gt; Reliability &gt; Performance</p>
+<p><strong>الترتيب</strong>:<br />
+1. DEC-053 (Permission Matrix) — 3-5 أيام<br />
+2. DEC-051 (Backup/DR) — 3-4 أيام<br />
+3. DEC-052 (Data Retention) — 1-2 يوم</p>
+<h3 id="q4-jimi-hotfixes">Q4: Jimi تنفيذي — متفرّغ للـ hotfixes؟</h3>
+<p><strong>إجابتي</strong>: 🎯 <strong>نعم، 100%</strong>، لكن <strong>لا بالتوازي مع warshet-احمد</strong>.</p>
+<p><strong>السبب</strong>:<br />
+- Critical security لا تحتمل "شوية تركيز"<br />
+- 13 controller × 4-5 tests per = 50-60 decisions يومياً<br />
+- يحتاج focus كامل</p>
+<p><strong>الترتيب المقترح</strong>:<br />
+- الأسبوع الحالي: DEC-053 (3-5 أيام، critical)<br />
+- بعدها: DEC-051 + DEC-052 (1 أسبوع)<br />
+- بعدها: Sprint 3 Phase 2+ (high + medium)<br />
+- <strong>بعدها</strong>: warshet-احمد (إلا إذا أعطى أنس أولوية أخرى)</p>
+<hr />
+<h2 id="part-8-coordination-ask-for-408773242015948">🤝 PART 8: COORDINATION ASK FOR خطة-النظام (408773242015948)</h2>
+<h3 id="-">أسئلة محددة لـ خطة-النظام (للمراجعة الفنية):</h3>
+<ol>
+<li><strong>هل عندها visibility على الـ 7 RBAC gaps اللي كشفتها؟</strong></li>
+<li><strong>هل Permission Matrix المقترح يتوافق مع رؤيتها للمنتج؟</strong></li>
+<li><strong>هل عندها اقتراحات بديلة لـ <code>[Authorize(Roles=)]</code>؟</strong> (مثلاً: policies-based)</li>
+<li><strong>ما هي أولوياتها لـ Production Readiness؟</strong> (هل توافق DEC-053 = #1؟)</li>
+<li><strong>هل عندها context على tenants الحاليين (Al-Burj, AlFajr)؟</strong> (عدد users، أدوارهم الحالية)</li>
+<li><strong>ما هو نهجها المقترح للـ testing؟</strong> (أي tests حرجة ناقصة؟)</li>
+<li><strong>ما هو تقديرها للـ effort؟</strong> (هل 3-5 أيام realistic؟)</li>
+</ol>
+<h3 id="_3">توقّع الرد:</h3>
+<ul>
+<li>خطة-النظام قد ترد بـ A/B/C</li>
+<li>لو A (موافقة كاملة) → نمشي بالخطة كما هي</li>
+<li>لو B (تعديلات) → ندمج ملاحظاتها</li>
+<li>لو C (اعتراض كبير) → نعيد التفكير</li>
+</ul>
+<hr />
+<h2 id="part-9-sprint-3-roadmap-complete">📊 PART 9: SPRINT 3 ROADMAP (Complete)</h2>
+<pre><code>Week 1 (NOW):
+├── Day 1-2: Phase 1.1 (Role Enforcement — 13 controllers)
+├── Day 3:   Phase 1.2 (Audit Log for user_roles)
+├── Day 4-5: Phase 1.3 (Tests + Security Validation)
+└── Day 5:   Code review + DEC-053 updated
+
+Week 2:
+├── Day 6-7:  Phase 2.1 (Soft Revoke + UI)
+├── Day 8:    Phase 2.2 (Tenant Validation in JWT)
+├── Day 9:    Phase 2.3 (Security Notifications)
+└── Day 10:   DEC-051 (Backup/DR — يبدأ)
+
+Week 3:
+├── Day 11-13: DEC-051 (Backup/DR analysis + plan)
+├── Day 14:    DEC-052 (Data Retention Policy)
+└── Day 15:    Sprint 3 Review + DEC-054 (Production Readiness Checklist)
+
+Week 4+:
+└── Phase 3 (جدول permissions + IAuthorizationHandler + RLS)
+</code></pre>
+<hr />
+<h2 id="part-10-success-criteria">📋 PART 10: SUCCESS CRITERIA</h2>
+<h3 id="phase-1-done">Phase 1 DONE يعني:</h3>
+<ul>
+<li>[ ] 13 controller مُعدَّل مع <code>[Authorize(Roles=...)]</code></li>
+<li>[ ] 30+ unit tests passing</li>
+<li>[ ] 10+ integration tests passing</li>
+<li>[ ] 92 existing tests passing (regression)</li>
+<li>[ ] OWASP ZAP scan: 0 critical</li>
+<li>[ ] Manual penetration test: لا privilege escalation</li>
+<li>[ ] Code review من Mavis (Lab): approved</li>
+<li>[ ] DEC-053 updated: "Phase 1 Implementation: Done"</li>
+<li>[ ] Deploy to staging → 48h monitoring → deploy to production</li>
+</ul>
+<h3 id="sprint-3-done">Sprint 3 DONE يعني:</h3>
+<ul>
+<li>[ ] Phase 1 + Phase 2 + Phase 3 مكتملة</li>
+<li>[ ] كل security audit logs مفعّلة</li>
+<li>[ ] UI لإدارة الأدوار جاهزة</li>
+<li>[ ] Tenant validation 100%</li>
+<li>[ ] جدول permissions منفصل (إذا Phase 3)</li>
+<li>[ ] Documented runbook: "How to add a new role + permissions"</li>
+</ul>
+<hr />
+<h2 id="_4">📎 روابط</h2>
+<ul>
+<li>DEC-050: <code>/workspace/.mavis/DEC-2026-07-21-050-rbac-analysis-delivered.md</code> (RBAC analysis)</li>
+<li>07-rbac-arabic.md: <code>/workspace/projects/erp-system/docs/analysis/07-rbac-arabic.md</code> (full RBAC analysis)</li>
+<li>DEC-046: <code>/workspace/.mavis/DEC-2026-07-21-046-jimi-tahlili-initial-review.md</code></li>
+<li>DEC-047: <code>/workspace/.mavis/DEC-2026-07-21-047-posting-rules-doc-delivered.md</code></li>
+</ul>
+<hr />
+<p><strong>Status</strong>: 🟠 <strong>AWAITING Anas approval on Q1-Q4 + خطة-النظام technical review</strong></p>
+<p><strong>Critical Severity</strong>: Highest priority — block new deployments until Phase 1 complete.</p>
+<p><strong>Next Action</strong>: <br />
+1. Mavis Root → Anas (4 questions via Telegram)<br />
+2. Jimi تحليلي → خطة-النظام (coordination request)<br />
+3. After Anas approval: Jimi تنفيذي starts Phase 1.1 (3-5 days)</p>
+</body>
+</html>

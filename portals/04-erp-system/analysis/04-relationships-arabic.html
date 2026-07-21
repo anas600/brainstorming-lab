@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔗 خريطة العلاقات الشاملة (Master Relationship Map) — شرح بالعربي</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --accent: #38bdf8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+}
+.container { max-width: 900px; margin: 0 auto; }
+.back-link { 
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
+h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
+h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
+p { margin: 8px 0; color: var(--text); }
+blockquote {
+    background: var(--bg-card);
+    border-right: 4px solid var(--accent);
+    padding: 10px 15px;
+    margin: 10px 0;
+    color: var(--text-soft);
+}
+code {
+    background: var(--bg-card);
+    color: #f472b6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+pre {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+pre code {
+    background: transparent;
+    color: var(--text);
+    padding: 0;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: var(--bg-card);
+    border-radius: 6px;
+    overflow: hidden;
+}
+th {
+    background: var(--border);
+    color: var(--accent);
+    padding: 10px;
+    text-align: right;
+}
+td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+tr:hover { background: rgba(56, 189, 248, 0.05); }
+ul, ol { padding-right: 30px; margin: 10px 0; }
+li { margin: 5px 0; }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+strong { color: var(--accent); }
+em { color: var(--text-soft); }
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
+<h1>🔗 خريطة العلاقات الشاملة (Master Relationship Map) — شرح بالعربي</h1>
+
+<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
+<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
+<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
+<p>&gt; <strong>الهدف</strong>: شرح شامل لكيف الموديلات كلها مرتبطة ببعض</p>
+
+<hr>
+
+<h2>🌍 الصورة الكبيرة (Big Picture)</h2>
+
+<p>النظام فيه <strong>12 موديل</strong> كل واحد مسؤول عن شغلة معينة. لكنهم <strong>مش جزر منعزلة</strong> — مرتبطين بـ:</p>
+
+<li>🔗 **Foreign Keys** (روابط مباشرة في الـ DB)</li>
+<li>📬 **Events** (رسايل بين الموديلات)</li>
+<li>💰 **Cost Centers** (محاور مشتركة بين Projects و Finance)</li>
+<li>🏢 **Tenant** (الجذر المشترك لكل البيانات)</li>
+
+<hr>
+
+<h2>🏛️ الجذر: Tenants (المستأجرين)</h2>
+
+<pre><code class="language-">
+كل البيانات في النظام مرتبطة بـ tenant_id
+= كل شركة (أو مجموعة شركات) عندها data خاصة فيها
+= Multi-tenant architecture
+
+Tenant 1: AlFajr Trading &amp; Contracting
+Tenant 2: Al-Burj Construction &amp; Contracting
+Tenant 3: AlFajr Holding
+Tenant 4: الفجر (جديد)
+</code></pre>
+
+<strong>كل جدول عنده <code>tenant_id</code></strong> (إلا القليل مثل <code>VersionInfo</code>).
+
+<hr>
+
+<h2>🪪 Identity (الهوية) — الجذر التقني</h2>
+
+<pre><code class="language-">
+Tenants
+  └── Users
+        └── Roles (عبر user_roles)
+              └── Permissions (داخل الـ role)
+
+Refresh Tokens (للجلسات)
+Password Reset Tokens (لإعادة تعيين كلمة المرور)
+Audit Log (مين عمل شنو)
+</code></pre>
+
+<strong>Authentication flow</strong>:
+<pre><code class="language-">
+1. User يكتب email + password
+2. System يبحث في users table
+3. يتحقق من password_hash (bcrypt)
+4. يطلع JWT token
+5. يحفظ refresh token في refresh_tokens
+6. يحدّث last_login في audit_log
+</code></pre>
+
+<hr>
+
+<h2>🏢 Companies (الشركات)</h2>
+
+<pre><code class="language-">
+Tenants (الشركة القابضة)
+  └── Companies (الشركات الفرعية)
+        ├── Users (ممكن يكون مرتبط بشركة محددة)
+        ├── Accounts (دليل حسابات)
+        ├── Journal Entries
+        ├── Vendors
+        ├── Customers
+        ├── Items
+        ├── Employees
+        └── Projects
+</code></pre>
+
+<strong>Multi-Company</strong> = داخل نفس الـ tenant ممكن يكون عدة شركات (subsidiaries).
+<p>كل عملية ممكن تنسب لشركة محددة.</p>
+
+<hr>
+
+<h2>💰 Finance ↔ كل الموديل الثانية</h2>
+
+<h3>Finance ↔ Procurement (المشتريات):</h3>
+
+<pre><code class="language-">
+عند استلام فاتورة من مورد (vendor_bill):
+  vendor_bill → يحفظ في accounts payable
+  posting_rule → يطلع journal_entry:
+    - مدين: حساب مصروفات (5100)
+    - دائن: حساب الدائنين (2100)
+
+عند الدفع:
+  payment → ينقص من account payable
+  posting_rule → يطلع journal_entry:
+    - مدين: حساب الدائنين (2100)
+    - دائن: البنك (1202)
+</code></pre>
+
+<h3>Finance ↔ Sales (المبيعات):</h3>
+
+<pre><code class="language-">
+عند إصدار فاتورة (sales_invoice):
+  posting_rule → يطلع journal_entry:
+    - مدين: المدينين (1203) — بالمبلغ
+    - دائن: إيرادات (4100)
+    - دائن: ضريبة مخرجات (لو موجودة)
+
+عند استلام دفعة:
+  payment → ينقص من المدينين
+  posting_rule → يطلع journal_entry:
+    - مدين: البنك (1202)
+    - دائن: المدينين (1203)
+</code></pre>
+
+<h3>Finance ↔ HR (الرواتب):</h3>
+
+<pre><code class="language-">
+Payroll run → يحسب صافي الرواتب
+  posting_rule → يطلع journal_entries متعددة:
+    - مدين: مصروف رواتب (5001) — إجمالي
+    - دائن: ضريبة رواتب مستحقة (2100) — لو في
+    - دائن: خصومات (2100)
+    - دائن: البنك (1202) — صافي
+</code></pre>
+
+<h3>Finance ↔ Inventory (المخزون):</h3>
+
+<pre><code class="language-">
+عند استلام بضاعة (GRN):
+  posting_rule → يطلع journal_entry:
+    - مدين: المخزون (1300) — قيمة البضاعة
+    - دائن: حساب مؤقت (2110) — awaiting vendor bill
+
+عند إصدار vendor bill:
+  posting_rule → يطلع journal_entry:
+    - مدين: حساب مؤقت (2110)
+    - دائن: الدائنين (2100) — المبلغ المستحق
+
+عند بيع بضاعة:
+  posting_rule → يطلع journal_entry:
+    - مدين: تكلفة البضاعة المباعة (5100)
+    - دائن: المخزون (1300)
+</code></pre>
+
+<h3>Finance ↔ Projects (المشاريع):</h3>
+
+<pre><code class="language-">
+كل مشروع → cost_center_id
+كل مصروف → journal_line.cost_center_id
+التقرير: تكلفة المشروع = sum(القيود) where cost_center = project.cost_center_id
+
+مثال:
+  project_budgets:
+    - project_id: P-2026-001
+    - cost_center_id: CC-001
+    - account_id: (حساب الميزانية)
+    - budget_amount: 450,000
+  
+  لما يصير مصروف:
+    - journal_line.cost_center_id = CC-001
+    - spent_amount يتحدث
+</code></pre>
+
+<strong>هذا أقوى ربط</strong> — لأن كل مصروف ممكن ينسب لمشروع.
+
+<hr>
+
+<h2>📁 Projects ↔ HR + Procurement + Inventory</h2>
+
+<h3>Projects ↔ HR (الموارد البشرية):</h3>
+
+<pre><code class="language-">
+المشروع يحتاج عمالة:
+  resource_assignments:
+    - project_id: P-2026-001
+    - task_id: T-001
+    - resource_id: R-002 (عامل بناء)
+    - user_id: U-anas (الموظف)
+    - from: 2026-01-15
+    - to: 2026-04-30
+    - hourly_rate: 25 LYD
+
+التكلفة = actual_hours × hourly_rate
+   = 200 hours × 25 = 5,000 LYD
+</code></pre>
+
+<h3>Projects ↔ Procurement (المشتريات):</h3>
+
+<pre><code class="language-">
+المشروع يحتاج مواد:
+  1. Project → PO (purchase_order.project_id)
+  2. PO → items (purchase_order_lines)
+  3. عند الاستلام → GRN (goods_receipts.project_id)
+  4. الفاتورة → vendor_bill → قيد على cost_center
+</code></pre>
+
+<h3>Projects ↔ Inventory (المخزون):</h3>
+
+<pre><code class="language-">
+عند صرف مواد للمشروع:
+  - stock_movement: 
+    - item_id: I-cement
+    - quantity: -100 (خرج)
+    - project_id: P-2026-001
+    - cost_center_id: CC-001
+  - posting_rule: قيد تكلفة
+
+النتيجة: المخزون ينقص + المصروف يُسجّل على المشروع
+</code></pre>
+
+<hr>
+
+<h2>📬 Events (الأحداث) — العمود الفقري</h2>
+
+<pre><code class="language-">
+[موديل A] → outbox_events → [مستمعين Events] → [موديلات B, C, D]
+</code></pre>
+
+<h3>أمثلة من Finance و Projects:</h3>
+
+<pre><code class="language-">
+Finance event: &quot;journal_entry.posted&quot;
+  مستمعين:
+    - Reports: يحدث الأرقام
+    - Notifications: يبعت للمحاسب
+    - Audit: يسجل في audit_log
+    - Budget checker: يتحقق من الميزانية
+
+Projects event: &quot;project_budget_exceeded&quot;
+  مستمعين:
+    - Notifications: يبعت للمدير (alert)
+    - Audit: يسجل التجاوز
+    - Finance: يضيف ضريبة/رسوم إضافية
+
+Projects event: &quot;project_task.completed&quot;
+  مستمعين:
+    - Project: يحدث progress_percent
+    - Reports: يحدث KPIs
+    - HR: يحسب ساعات العمل الفعلية
+    - Notifications: يبعت للعميل (لو project لعميل)
+</code></pre>
+
+<hr>
+
+<h2>🗺️ الخريطة الشاملة (Visual Map)</h2>
+
+<pre><code class="language-">
+                          TENANTS
+                            │
+            ┌───────────────┼───────────────┐
+            │               │               │
+        COMPANIES         USERS          ROLES
+            │               │               │
+            │               └────user_roles─┘
+            │
+    ┌───────┼───────┬─────────────┬──────────────┐
+    │       │       │             │              │
+ ACCOUNTS VENDORS CUSTOMERS     ITEMS      EMPLOYEES
+    │       │       │             │              │
+    │       │       │             │              │
+    └───┬───┴───────┴──┐     ┌────┴────┐         │
+        │              │     │         │         │
+  JOURNAL_ENTRIES  PURCHASE_ORDERS  ITEMS  PAYROLL_RUNS
+        │              │     │         │         │
+        │              │     │         │         │
+  JOURNAL_LINES    PO_LINES  GRN_LINES  PAYSLIP_COMP
+        │              │     │         │
+        └──────cost_center_id────┘     │
+                       │                │
+                  PROJECTS ←───resource_assignments
+                       │                │
+                  PROJECT_TASKS    RESOURCES
+                       │
+                  PROJECT_BUDGETS
+                       │
+                       └─ (loop to ACCOUNTS via cost_center)
+                       
+        ALL EVENTS → outbox_events → processed_events
+                                  → notifications
+                                  → audit_log
+</code></pre>
+
+<hr>
+
+<h2>🎯 سيناريو كامل: &quot;مشروع من البداية للنهاية&quot;</h2>
+
+<pre><code class="language-">
+1️⃣ Setup (الشروع):
+   - Project: P-2026-001 (مشروع بناء فيلات)
+   - cost_center: CC-001 (auto-created)
+   - budget: 450,000 LYD
+
+2️⃣ Planning (التخطيط):
+   - Tasks: 10 tasks (الأساسات، الهيكل، التشطيبات...)
+   - Resources: عمال + معدات
+   - Assignments: مين يعمل شنو ومتى
+
+3️⃣ Execution (التنفيذ):
+   - كل يوم:
+     - العامل يدخل ساعات → resource_assignments
+     - شراء مواد → PO → GRN → stock_movement
+     - مصاريف → journal_entry → cost_center=CC-001
+   - project_budgets.spent_amount يتحدث أوتوماتيك
+
+4️⃣ Monitoring (المراقبة):
+   - 80% spent → notification &quot;تحذير&quot;
+   - 100% spent → notification &quot;تجاوز&quot; + audit
+   - progress_percent &lt; 50% عند 80% time → &quot;behind schedule&quot;
+
+5️⃣ Closing (الإغلاق):
+   - project.status = 3 (Closed)
+   - حساب الفعلي vs المخطط
+   - فاتورة العميل (لو في) → journal_entry إيراد
+   - تقرير ربحية المشروع
+</code></pre>
+
+<strong>كل هذا مترابط</strong> — ما تحتاج تدخل يدوي في كل خطوة.
+
+<hr>
+
+<h2>🛡️ Multi-Tenancy + Security</h2>
+
+<pre><code class="language-">
+كل query في الـ API يفلتر بـ tenant_id
+= Tenant A ما يشوف بيانات Tenant B
+= حتى لو في نفس الـ DB
+
+الـ Security:
+  - JWT token فيه tenant_id
+  - كل request يتحقق من token
+  - كل query يضيف WHERE tenant_id = ?
+  - لا يمكن للـ user يدخل tenant غير بتاعه
+</code></pre>
+
+<strong>هذي أقوى حماية</strong> — لا يمكن تسرب بيانات بين الشركات.
+
+<hr>
+
+<h2>🎯 ملخص العلاقات</h2>
+
+<table>
+<thead><tr>
+<th>من</th>
+<th>إلى</th>
+<th>كيف</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Tenant</td>
+<td>كل شي</td>
+<td>`tenant_id` في كل جدول</td>
+</tr>
+<tr>
+<td>User</td>
+<td>Role</td>
+<td>`user_roles` (many-to-many)</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>Cost Center</td>
+<td>`cost_center_id`</td>
+</tr>
+<tr>
+<td>Cost Center</td>
+<td>Journal Line</td>
+<td>`cost_center_id`</td>
+</tr>
+<tr>
+<td>Resource</td>
+<td>Task</td>
+<td>`resource_assignments`</td>
+</tr>
+<tr>
+<td>PO</td>
+<td>Project</td>
+<td>`project_id`</td>
+</tr>
+<tr>
+<td>GRN</td>
+<td>PO</td>
+<td>`purchase_order_id`</td>
+</tr>
+<tr>
+<td>Vendor Bill</td>
+<td>PO</td>
+<td>`purchase_order_id`</td>
+</tr>
+<tr>
+<td>كل Moudle</td>
+<td>Events</td>
+<td>`outbox_events`</td>
+</tr>
+<tr>
+<td>Event</td>
+<td>Listener</td>
+<td>`processed_events`</td>
+</tr>
+<tr>
+<td>User</td>
+<td>Notification</td>
+<td>`user_id`</td>
+</tr>
+<tr>
+<td>Entity</td>
+<td>Audit</td>
+<td>`audit_log.entity_id`</td>
+</tr>
+</tbody></table>
+
+<hr>
+
+<h2>📎 روابط مفيدة</h2>
+
+<li>📊 ERD الكامل: `/workspace/erd-portal.html` (أو https://xfe6jmg938jjh.space.minimax.io)</li>
+<li>📋 Finance شرح: `/workspace/projects/erp-system/docs/analysis/01-finance-arabic.md`</li>
+<li>📋 Projects شرح: `/workspace/projects/erp-system/docs/analysis/02-projects-arabic.md`</li>
+<li>📋 Events شرح: `/workspace/projects/erp-system/docs/analysis/03-events-arabic.md`</li>
+
+</div>
+</body>
+</html>

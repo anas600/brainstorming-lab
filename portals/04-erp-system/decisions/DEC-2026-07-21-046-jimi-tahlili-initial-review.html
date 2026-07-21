@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #046 — Jimi تحليلي · مراجعة أولية لـ 4 وثائق ERP-SYSTEM العربية</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-046-jimi-4-erp-system">📋 DECISION #046 — Jimi تحليلي · مراجعة أولية لـ 4 وثائق ERP-SYSTEM العربية</h1>
+<blockquote>
+<p><strong>DEC-046</strong> | Jimi TahliI Initial Review</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 18:25 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Status</strong>: 🟡 مكتمل مع توصيات حرجة<br />
+<strong>Type</strong>: Documentation Quality + Architectural Coherence Review<br />
+<strong>Scope</strong>: تقييم 4 وثائق عربية + بنية ERD (54 جدول، 12 موديل)</p>
+<hr />
+<h2 id="executive-summary">🎯 ملخص تنفيذي (Executive Summary)</h2>
+<p>الوثائق الأربعة <strong>ممتازة كبداية</strong> — تكتب بشكل غير تقني، مع أمثلة حقيقية من DB، وشرح للعلاقات بين الموديلات. <strong>لكن فيها 3 ثغرات حرجة</strong> لازم تنعالج قبل ما تكون "مرجع للفريق":</p>
+<ol>
+<li><strong>🔴 خطير</strong>: لا يوجد ذكر لـ <strong>سياسات الـ posting_rules</strong> (template_json غامض) — المحاسب في ليبيا لازم يفهم متى يُرحّل القيد ومتى لا</li>
+<li><strong>🟠 ناقص مهم</strong>: لا يوجد <strong>glossary عربي موحّد</strong> (نفس المفهوم يُترجم بأكثر من طريقة: "رأس مال" / "Rapatrié"، "ترحيل" / "Posting")</li>
+<li><strong>🟡 ناقص</strong>: لا يوجد <strong>glossary للأحداث الـ event types</strong> — قائمة الـ 25+ نوع حدث في <code>03-events</code> غير معرّفة رسمياً</li>
+</ol>
+<p><strong>تقييمي الإجمالي</strong>: 7.5/10 كوثائق تعريفية، 5/10 كمرجع تشغيلي. <strong>التوصية</strong>: إضافة 2-3 وثائق (Glossary، Posting Rules Detail، Operations Runbook) للوصول لـ 9/10.</p>
+<hr />
+<h2 id="inputs-reviewed">📥 المدخلات المراجعة (Inputs Reviewed)</h2>
+<table>
+<thead>
+<tr>
+<th>الوثيقة</th>
+<th>الحجم</th>
+<th>الجودة العامة</th>
+<th>ملاحظات أولية</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>01-finance-arabic.md</code></td>
+<td>10 KB</td>
+<td>⭐⭐⭐⭐</td>
+<td>ممتاز، مثال JE-2026-0012 واقعي</td>
+</tr>
+<tr>
+<td><code>02-projects-arabic.md</code></td>
+<td>11 KB</td>
+<td>⭐⭐⭐⭐</td>
+<td>ممتاز، شامل لكن ثقيل في التنقل</td>
+</tr>
+<tr>
+<td><code>03-events-arabic.md</code></td>
+<td>12 KB</td>
+<td>⭐⭐⭐</td>
+<td>قوي، لكن "outbox pattern" يحتاج توضيح أكثر</td>
+</tr>
+<tr>
+<td><code>04-relationships-arabic.md</code></td>
+<td>12 KB</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>أفضل وثيقة — الصورة الكبيرة متماسكة</td>
+</tr>
+<tr>
+<td>ERD README + 13 Mermaid</td>
+<td>—</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>نظيف ومنظم</td>
+</tr>
+</tbody>
+</table>
+<p><strong>إجمالي المحتوى</strong>: 45 KB نصوص + 12 ERD images</p>
+<hr />
+<h2 id="personas">🎭 المنهججية: أيّ Personas استخدمت؟</h2>
+<p><strong>Per Workflow Refinement 2026-07-16</strong> — اخترت <strong>4 من 5</strong> personas حسب طبيعة المهمة (مراجعة وثائق، مش تنفيذ):</p>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>استخدمتها؟</th>
+<th>السبب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>[PO سارة]</strong></td>
+<td>✅ نعم</td>
+<td>الوثائق موجّهة لغير التقنيين — UX كتابي مهم</td>
+</tr>
+<tr>
+<td><strong>[CFO أحمد]</strong></td>
+<td>✅ نعم</td>
+<td>Finance module يحتاج تدقيق IFRS + محاسبي ليبي</td>
+</tr>
+<tr>
+<td><strong>[م. عمر]</strong></td>
+<td>✅ نعم</td>
+<td>البنية المعمارية + الترابط بين الموديلات</td>
+</tr>
+<tr>
+<td><strong>[أ. سامي]</strong></td>
+<td>✅ نعم</td>
+<td>السوق الليبي، العملة (LYD)، المصطلحات</td>
+</tr>
+<tr>
+<td><strong>[CTO ليلى]</strong></td>
+<td>❌ لا</td>
+<td>الوثائق معرفية، لا بنية تحتية أو deployment</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="whats-strong">✅ شو مزبوط (What's Strong)</h2>
+<h3 id="po">من منظور <strong>[PO سارة]</strong> — تجربة المستخدم/القراءة:</h3>
+<ul>
+<li><strong>✅ الترتيب المنطقي للقراءة ممتاز</strong> — README يوصي: 04 (الصورة الكبيرة) → 01 (Finance) → 02 (Projects) → 03 (Events). هذا الترتيب بيبني الفهم تدريجياً.</li>
+<li><strong>✅ اللغة عامية ليبية مفهومة</strong> — مش فصحى معقّدة، مش عامية مبالغ فيها. "توا"، "تبون"، "شنو" — قريبة من الجمهور.</li>
+<li><strong>✅ أمثلة واقعية من DB</strong> — مثال قيد JE-2026-0012 (Payroll 35,358.75 LYD) يجعل المحاسب يفهم فوراً.</li>
+<li><strong>✅ الجداول والقوائم النقطية</strong> — لا فقرات طويلة مملّة. كل قسم قابل للمسح السريع (scannable).</li>
+<li><strong>✅ الإيموجي للتنقل البصري</strong> — بدون مبالغة، يساعد في تقسيم الأقسام.</li>
+</ul>
+<h3 id="cfo">من منظور <strong>[CFO أحمد]</strong> — الدقة المحاسبية:</h3>
+<ul>
+<li><strong>✅ شرح CoA شامل</strong> — 5 أنواع (أصول/خصوم/حقوق ملكية/إيرادات/مصروفات) + normal_balance صحيح.</li>
+<li><strong>✅ قاعدة الذهبية مزابطة</strong> — "مدين = دائن" مشروحة بشكل صحيح.</li>
+<li><strong>✅ معالجة الـ Reversing Entry</strong> — مفهوم "القيد العكسي" بدل التعديل = ممارسة IFRS صحيحة.</li>
+<li><strong>✅ التمييز بين spent vs committed</strong> — هذا مهم جداً لمدراء المشاريع اللي يبون يعرفوا الـ cash flow.</li>
+</ul>
+<h3 id="_1">من منظور <strong>[م. عمر]</strong> — التماسك المعماري:</h3>
+<ul>
+<li><strong>✅ Outbox + Idempotency</strong> — شرح الـ Transactional Outbox Pattern + <code>processed_events</code> صحيح 100%. هذا ضمان أساسي.</li>
+<li><strong>✅ Multi-tenancy</strong> — <code>tenant_id</code> في كل جدول + JWT يحتوي tenant_id = نمط آمن.</li>
+<li><strong>✅ فصل Concerns</strong> — كل موديل عنده جداوله، الربط عبر <code>cost_center_id</code> و events. لا coupling مباشر.</li>
+<li><strong>✅ البنية الشجرية للحسابات</strong> (parent_account_id) — يدعم aggregation صحيح للقوائم المالية.</li>
+</ul>
+<h3 id="_2">من منظور <strong>[أ. سامي]</strong> — السياق الليبي:</h3>
+<ul>
+<li><strong>✅ العملة LYD</strong> (دينار ليبي) مستخدمة في الأمثلة.</li>
+<li><strong>✅ المصطلحات العملية</strong> — "مصروف"، "إيراد"، "مدينين"، "دائنين" — مستخدمة بشكل صحيح في المحاسبة الليبية.</li>
+<li><strong>✅ مثال شركة إنشاءات</strong> (مشروع فيلات السُّرَّي) — السوق الليبي فيه شركات إنشاءات كثيرة، مثال قريب من الواقع.</li>
+</ul>
+<hr />
+<h2 id="whats-missing">⚠️ شو ناقص (What's Missing)</h2>
+<h3 id="missing-section-posting-rules-deep-dive">🟠 <strong>حرج — Missing Section: Posting Rules Deep Dive</strong></h3>
+<p><strong>المشكلة</strong>: الوثائق تذكر <code>posting_rules</code> و <code>template_json</code> لكن <strong>لا تشرح كيف يُكتب template أو متى يُطبَّق</strong>.</p>
+<ul>
+<li><strong>02-projects-arabic.md</strong> يقول: "لما يصرف مصروف → يطلع قيد → cost_center = project.cost_center_id"</li>
+<li><strong>لكن</strong>: ما يوضّح <strong>من</strong> يطلق الحدث، <strong>كيف</strong> يطابق event_type، <strong>ما</strong> هي شروط تطبيق القيد.</li>
+</ul>
+<p><strong>التأثير</strong>: المطور (Jimi تنفيذي) يبني posting rules عشوائياً. المحاسب ما يقدر يراجع القواعد قبل التفعيل.</p>
+<p><strong>التوصية</strong>: إضافة <code>05-posting-rules-arabic.md</code> يشرح:<br />
+- صيغة <code>template_json</code> (مع مثال كامل)<br />
+- متى يطبّق النظام القاعدة (event_type matching)<br />
+- كيف يراجع المحاسب القواعد (read-only view)</p>
+<hr />
+<h3 id="missing-glossary">🟠 <strong>مهم — Missing: Glossary عربي موحّد</strong></h3>
+<p><strong>المشكلة</strong>: مصطلح واحد له أكثر من ترجمة في الوثائق الأربع:</p>
+<table>
+<thead>
+<tr>
+<th>المصطلح الإنجليزي</th>
+<th>الترجمات في الوثائق</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Posting</td>
+<td>"ترحيل" (3 مرات)، "Posting" (مرتين)، "يُرحّل"</td>
+</tr>
+<tr>
+<td>Intercompany</td>
+<td>"بين شركات المجموعة" (1)، "Inter-company" (1)</td>
+</tr>
+<tr>
+<td>Equity</td>
+<td>"حقوق ملكية" (3)، "Rapatrié" (1، فرنسي/مغاربي)</td>
+</tr>
+<tr>
+<td>Committed</td>
+<td>"متعهد به" (1)، "ملتزم" (0)</td>
+</tr>
+<tr>
+<td>Draft</td>
+<td>"مسودة" (3) — هذا ثابت ✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>التأثير</strong>: عند البحث عن "ترحيل" قد يفقد قارئ <code>posting</code>. عند الترجمة لـ API/UI — تختلف التسمية.</p>
+<p><strong>التوصية</strong>: إضافة <code>00-glossary-arabic.md</code> يحتوي جدول موحّد: مصطلح EN ↔ AR (مفضّل) ↔ AR (بديل) ↔ تعريف.</p>
+<hr />
+<h3 id="missing-event-types-authority-list">🟡 <strong>مهم — Missing: Event Types Authority List</strong></h3>
+<p><strong>المشكلة</strong>: <code>03-events-arabic.md</code> يذكر ~25 نوع حدث (<code>sales_invoice.created</code>, <code>payment.received</code>...) لكن:<br />
+- لا يوجد <strong>قائمة رسمية كاملة</strong> (master list)<br />
+- لا يوجد <strong>من يملك تعريف كل event</strong> (event owner module)<br />
+- لا يوجد <strong>payload schema</strong> لكل event (مفاتيح، أنواع، مطلوب/اختياري)</p>
+<p><strong>التأثير</strong>: عند إضافة موديل جديد، المطور يخترع event types بدون تنسيق → تكرار أو تعارض.</p>
+<p><strong>التوصية</strong>: إضافة <code>06-event-catalog.md</code> (أو <code>events-registry.yaml</code>):<br />
+- كل event type<br />
+- مالك الحدث (أي موديل يطلقه)<br />
+- مخطط payload (JSON Schema)<br />
+- الإصدار (versioning)</p>
+<hr />
+<h3 id="missing-cross-module-data-flow-diagrams">🟡 <strong>مهم — Missing: Cross-Module Data Flow Diagrams</strong></h3>
+<p><strong>المشكلة</strong>: الوثائق تشرح العلاقات (FKs) والأحداث (events) منفصلين. لكن <strong>الـ flow الكامل</strong> (مثلاً: "فاتورة مبيعات → تحديث مخزون → قيد مالي → إشعار للعميل") مش موضّح في <strong>رسم بياني واحد</strong>.</p>
+<p><strong>التأثير</strong>: قارئ جديد ما يقدر يتصور الصورة الكاملة بدون قراءة الوثائق الأربع.</p>
+<p><strong>التوصية</strong>: إضافة رسم Sequence Diagram واحد (Mermaid) في <code>04-relationships</code> يوضح flow الفاتورة + flow المشروع.</p>
+<hr />
+<h3 id="missing-api-endpoints">🟢 <strong>تحسين — Missing: API Endpoints (لا يغطي كل الموديلات)</strong></h3>
+<p><strong>المشكلة</strong>: لا توجد قائمة API endpoints متاحة (GET /api/sales/invoices, POST /api/projects...) في أي وثيقة.</p>
+<p><strong>التأثير</strong>: المطوّر يحتاج يقرأ الكود مباشرة. لا self-service API discovery.</p>
+<p><strong>التوصية</strong>: إضافة <code>07-api-reference-arabic.md</code> (أو OpenAPI spec مع تعليقات عربية).</p>
+<hr />
+<h3 id="missing-performancesla-notes">🟢 <strong>تحسين — Missing: Performance/SLA Notes</strong></h3>
+<p><strong>المشكلة</strong>: لا يوجد ذكر لـ:<br />
+- حجم البيانات المتوقع (rows per table)<br />
+- استعلامات بطيئة محتملة<br />
+- فهارس مطلوبة (indexes)<br />
+- حدود (rate limits, max rows per page)</p>
+<p><strong>التأثير</strong>: عند دخول production بـ 100K+ invoice rows، قد تظهر بطء غير متوقع.</p>
+<p><strong>التوصية</strong>: إضافة قسم "Performance" في كل وثيقة موديل، أو <code>08-performance-notes.md</code>.</p>
+<hr />
+<h2 id="whats-dangerous">🚨 شو خطير (What's Dangerous)</h2>
+<h3 id="1-real-time-latency">🔴 <strong>خطر #1: ادعاء "Real-time" بدون توضيح Latency</strong></h3>
+<p><strong>الموقع</strong>: <code>03-events-arabic.md</code> يقول: "كل هذا في ثوانٍ معدودة — أوتوماتيكي بالكامل."</p>
+<p><strong>المشكلة</strong>: Transactional Outbox pattern هو <strong>eventual consistency</strong> — قد يتأخر ثوانٍ إلى دقائق (حسب polling interval). لا يوجد mention لـ:<br />
+- كم مرة الـ outbox processor يتفقد (<code>SELECT ... WHERE processed_at IS NULL</code>)<br />
+- ما هي latency المتوقعة<br />
+- ما يحدث لو processor توقّف</p>
+<p><strong>التأثير</strong>: مستخدم يعمل فاتورة → يتوقع المخزون ينقص "فوراً" → في الحقيقة قد يتأخر 30 ثانية. تجربة مستخدم سيئة.</p>
+<p><strong>التوصية</strong>: توضيح:<br />
+- Outbox Polling interval (مثلاً: 5 ثوانٍ)<br />
+- Mention أن النظام "near real-time" مش "real-time"<br />
+- Mention آلية backpressure لو processor عالق</p>
+<hr />
+<h3 id="2-posting_rulestemplate_json">🔴 <strong>خطر #2: <code>posting_rules.template_json</code> غير موثّق</strong></h3>
+<p><strong>الموقع</strong>: <code>01-finance-arabic.md</code> يقول: "template_json | قالب القيد (JSON فيه الحسابات والشروط)"</p>
+<p><strong>المشكلة</strong>:<br />
+- لا يوجد schema لهذا الـ JSON<br />
+- لا يوجد مثال كامل<br />
+- "الشروط" (conditions) غامضة — ما هي الشروط المتاحة؟ كيف تُكتب؟</p>
+<p><strong>التأثير</strong>: <br />
+- المطور يبني JSON خاطئ → قاعدة لا تعمل أو تعمل خطأ<br />
+- المحاسب ما يقدر ينشئ قواعد جديدة (يحتاج مطور)<br />
+- لو حدث خرق — Audit trail يقول "القاعدة X تقول Y" لكن ما نعرف من كتب Y</p>
+<p><strong>التوصية</strong>: <strong>حرج</strong> — توثيق كامل لـ:<br />
+- <code>template_json</code> schema (JSON Schema رسمي)<br />
+- مثال كامل لكل event_type<br />
+- مَن يملك صلاحية تعديل القواعد (RBAC)<br />
+- مَن يملك صلاحية تفعيل/تعطيل (audit trail)</p>
+<hr />
+<h3 id="3-disaster-recovery-backup-mention">🟠 <strong>خطر #3: لا يوجد Disaster Recovery / Backup Mention</strong></h3>
+<p><strong>المشكلة</strong>: الوثائق لا تذكر:<br />
+- ما هي استراتيجية الـ backup<br />
+- كم مرة<br />
+- RTO / RPO<br />
+- كيف يستعيد المستخدم بياناته لو فقدت</p>
+<p><strong>التأثير</strong>: لو Neon عنده حادثة (نادرة لكن واردة)، المستخدم ما يعرف ما الذي سيحصل لبياناته.</p>
+<p><strong>التوصية</strong>: إضافة قسم قصير "النسخ الاحتياطي والاستعادة" في <code>04-relationships</code> أو وثيقة منفصلة.</p>
+<hr />
+<h3 id="4-soft-delete">🟠 <strong>خطر #4: Soft Delete غير موثّق بالكامل</strong></h3>
+<p><strong>الموقع</strong>: <code>02-projects-arabic.md</code> يذكر: <code>deleted_at | تاريخ الحذف الناعم (soft delete) | null</code></p>
+<p><strong>المشكلة</strong>:<br />
+- ما هي استراتيجية soft delete للموديلات الأخرى؟ (هل في كل الجداول؟)<br />
+- كيف الفلترة؟ (Global query filter؟ Where clause يدوي؟)<br />
+- ما يحدث للـ FKs عند soft delete؟ (cascade؟ restrict؟)</p>
+<p><strong>التأثير</strong>: مطور جديد ينسى يفلتر <code>WHERE deleted_at IS NULL</code> → يعرض بيانات محذوفة.</p>
+<p><strong>التوصية</strong>: توثيق:<br />
+- قائمة الجداول التي تستخدم soft delete<br />
+- استراتيجية الفلترة (Global Filter مطلوب)<br />
+- قواعد cascade</p>
+<hr />
+<h3 id="5-cost-center">🟡 <strong>خطر #5: Cost Center إنشاء تلقائي غير مذكور</strong></h3>
+<p><strong>الموقع</strong>: <code>02-projects-arabic.md</code> يقول: "تنشئ مشروع → يولد cost_center تلقائياً"</p>
+<p><strong>المشكلة</strong>:<br />
+- ما هي خوارزمية الإنشاء (الاسم، الكود، الأب)؟<br />
+- ماذا يحدث لو فشل الإنشاء؟ (transaction rollback؟)<br />
+- هل يمكن إنشاء cost_center يدوي بدون مشروع؟</p>
+<p><strong>التأثير</strong>: لو عند 100 مشروع كل واحد له cost_center، ما نعرف كيف تُسمت أو كيف تُربط بحسابات CoA.</p>
+<p><strong>التوصية</strong>: توضيح في <code>02-projects</code> أو في وثيقة منفصلة: "Cost Center Auto-Creation Rules".</p>
+<hr />
+<h2 id="next-steps">🚀 شو الخطوة الجاية (Next Steps)</h2>
+<h3 id="1-2">للأولوية العالية — خلال 1-2 يوم:</h3>
+<ol>
+<li><strong>🟠 [CFO أحمد] + [م. عمر] معاً</strong>: اكتب <code>05-posting-rules-arabic.md</code> (Schema + 5 أمثلة كاملة). هذا يحل <strong>خطر #2</strong> (الأخطر).</li>
+<li><strong>🟠 [PO سارة]</strong>: اكتب <code>00-glossary-arabic.md</code> (50-80 مصطلح). يحل "مصطلحات متعددة لنفس المفهوم".</li>
+<li><strong>🟡 [أ. سامي]</strong>: اكتب <code>06-event-catalog.md</code> (جدول كامل بكل event types + payload schemas). يحل "event types غير رسمية".</li>
+</ol>
+<h3 id="_3">للأولوية المتوسطة — خلال أسبوع:</h3>
+<ol>
+<li><strong>🟢 [PO سارة]</strong>: أضف Sequence Diagram رئيسي (Mermaid) في <code>04-relationships</code>.</li>
+<li><strong>🟢 [م. عمر]</strong>: أضف قسم "Performance &amp; SLAs" في كل وثيقة موديل.</li>
+<li><strong>🟢 [م. عمر]</strong>: وثّق استراتيجية Soft Delete + الـ Global Filters.</li>
+</ol>
+<h3 id="mavis-root">للأسئلة المعلقة لـ Mavis Root:</h3>
+<ol>
+<li>❓ <strong>هل</strong> الفريق التقني (Jimi تنفيذي) عنده schema رسمي لـ <code>template_json</code> لمشاركته مع Lab؟</li>
+<li>❓ <strong>هل</strong> في API endpoints documentation (Swagger/OpenAPI) موجودة أصلاً؟</li>
+<li>❓ <strong>ما هي</strong> Outbox Polling interval الفعلية في الكود؟ (5s؟ 30s؟)</li>
+<li>❓ <strong>هل</strong> عن استراتيجية backup موثّقة في أي مكان (Neon docs، أو docs محلية)؟</li>
+<li>❓ <strong>هل</strong> وُثّقت RBAC بشكل كامل (من يستطيع تعديل posting_rules، من يستطيع رؤية audit_log)؟</li>
+</ol>
+<hr />
+<h2 id="overall-score">📊 تقييم شامل (Overall Score)</h2>
+<table>
+<thead>
+<tr>
+<th>المعيار</th>
+<th>الدرجة</th>
+<th>ملاحظة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>دقة تقنية</strong></td>
+<td>8/10</td>
+<td>ممتازة، ثغرة Posting Rules</td>
+</tr>
+<tr>
+<td><strong>وضوح لغوي</strong></td>
+<td>9/10</td>
+<td>عامية مفهومة، يحتاج Glossary</td>
+</tr>
+<tr>
+<td><strong>قابلية القراءة</strong></td>
+<td>9/10</td>
+<td>ممتاز لغير التقني</td>
+</tr>
+<tr>
+<td><strong>شمولية</strong></td>
+<td>6/10</td>
+<td>4 وثائق تغطي 60% — باقي 40% مفقود</td>
+</tr>
+<tr>
+<td><strong>حداثة</strong></td>
+<td>8/10</td>
+<td>يتطابق مع DB الفعلي (54 جدول)</td>
+</tr>
+<tr>
+<td><strong>قابلية الاستخدام كمرجع</strong></td>
+<td>5/10</td>
+<td>❌ لا يصلح كمرجع تشغيلي بعد</td>
+</tr>
+<tr>
+<td><strong>الإجمالي</strong></td>
+<td><strong>7.5/10</strong></td>
+<td>بداية قوية، يحتاج 3-4 وثائق إضافية</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="mavis-root_1">🎯 التوصية النهائية لـ Mavis Root</h2>
+<blockquote>
+<p><strong>الوثائق الحالية = ممتازة للـ Onboarding + Demo + Stakeholder Buy-in.</strong><br />
+<strong>الوثائق الحالية = ❌ غير كافية كمرجع تشغيلي للمطورين/المحاسبين.</strong></p>
+</blockquote>
+<p><strong>اقتراحي</strong>:<br />
+- <strong>اعتمدها كـ v1.0</strong> (Status: ✅ Released for Stakeholders)<br />
+- <strong>افتح Sprint جديد</strong> لـ Jimi تحليلي + Jimi تنفيذي معاً:<br />
+  - Jimi تحليلي يكتب 3 وثائق (Posting Rules, Glossary, Event Catalog) — <strong>3 أيام</strong><br />
+  - Jimi تنفيذي يضيف Sequence Diagrams + OpenAPI Spec — <strong>3 أيام</strong><br />
+- <strong>بعدها</strong>: v1.1 = "Ready for Production Reference"</p>
+<p><strong>Status</strong>: 🟡 <strong>Approved with Critical Gaps — Sprint Needed</strong></p>
+<hr />
+<h2 id="_4">📎 المراجع</h2>
+<ul>
+<li>الوثائق المراجعة: <code>/workspace/projects/erp-system/docs/analysis/</code></li>
+<li>ERD: <code>/workspace/projects/erp-system/docs/erd/</code></li>
+<li>آخر DECs للـ context: DEC-042, 043, 044, 045</li>
+<li>Workflow المرجعي: <code>/workspace/.mavis/WORKFLOW-REFINEMENT-2026-07-16.md</code></li>
+</ul>
+<hr />
+<p><strong>Next Action</strong>: إرسال Channel 5 message لـ Mavis Root مع هذا الـ DEC + التوصيات.</p>
+</body>
+</html>

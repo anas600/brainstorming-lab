@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #047 — Jimi تحليلي · Sprint Phase 1.1 Delivered (Posting Rules Doc)</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-047-jimi-sprint-phase-11-delivered-posting-rules-doc">📋 DECISION #047 — Jimi تحليلي · Sprint Phase 1.1 Delivered (Posting Rules Doc)</h1>
+<blockquote>
+<p><strong>DEC-047</strong> | Sprint Phase 1 — Task 1 of 3 (Posting Rules)</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 20:35 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Status</strong>: 🟢 Phase 1 Task 1/3 delivered (Posting Rules doc ✅)<br />
+<strong>Sprint</strong>: Phase 1 (3 docs) — Started per Mavis Root ACK on DEC-046</p>
+<hr />
+<h2 id="_1">🎯 ملخص تنفيذي</h2>
+<p>تم إنجاز <strong>أول مهمة من Sprint Phase 1</strong>: توثيق شامل لـ <code>Posting Rules Engine</code> (17.2 KB) بناءً على <strong>الكود الفعلي</strong> (مش التخمين). الوثيقة تكشف 5 مشاكل حرجة في الـ implementation الحالي.</p>
+<p><strong>التقييم الإجمالي للوثيقة</strong>: 9/10 — أفضل من الـ 4 وثائق السابقة لأنها مبنية على الكود الفعلي.</p>
+<hr />
+<h2 id="inputs">📥 المدخلات (Inputs)</h2>
+<p>قرأت الكود المصدري مباشرة:</p>
+<table>
+<thead>
+<tr>
+<th>الملف</th>
+<th>الغرض</th>
+<th>سطور</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/backend/Modules/Finance/Entities/PostingRule.cs</code></td>
+<td>Schema + POCO classes</td>
+<td>~70</td>
+</tr>
+<tr>
+<td><code>src/backend/Modules/Finance/Application/Services/PostingRulesService.cs</code></td>
+<td>منطق التطبيق</td>
+<td>~180</td>
+</tr>
+<tr>
+<td><code>src/backend/Host/Controllers/PostingRulesController.cs</code></td>
+<td>API endpoints</td>
+<td>~80</td>
+</tr>
+<tr>
+<td><code>src/backend/Modules/Finance/Application/Services/IPostingRulesService.cs</code></td>
+<td>EventPayload</td>
+<td>~30</td>
+</tr>
+<tr>
+<td><code>src/backend/Shared/Events/Application/Services/OutboxProcessorHostedService.cs</code></td>
+<td>Event processing</td>
+<td>~120</td>
+</tr>
+<tr>
+<td><code>src/backend/Shared/Events/StockEvents.cs</code></td>
+<td>Event types</td>
+<td>~30</td>
+</tr>
+<tr>
+<td><code>src/backend/Shared/Migrations/20260614_180000_CreateFinanceTables.cs</code></td>
+<td>DB schema</td>
+<td>~150</td>
+</tr>
+<tr>
+<td><code>src/backend/Modules/Finance/AGENTS.md</code></td>
+<td>Module docs</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>المجموع</strong>: ~660 سطر كود مفعّل خفيف + module docs.</p>
+<hr />
+<h2 id="deliverable">📤 المُسلَّم (Deliverable)</h2>
+<p><strong><code>/workspace/projects/erp-system/docs/analysis/05-posting-rules-arabic.md</code></strong> (17.2 KB)</p>
+<h3 id="_2">محتويات الوثيقة:</h3>
+<ol>
+<li>🎯 <strong>شو هو Posting Rules Engine</strong> — تعريف + مثال واقعي</li>
+<li>🏗️ <strong>بنية القاعدة (Schema)</strong> — جدول <code>posting_rules</code> كامل بكل الأعمدة</li>
+<li>📋 <strong>أنواع الأحداث</strong> (4 فقط) — مع حالة كل واحد (مفعّل/placeholder)</li>
+<li>📦 <strong>EventPayload</strong> — بكل الحقول (مع تناقض العملة!)</li>
+<li>📐 <strong>Template Schema</strong> — POCO classes + JSON Schema example</li>
+<li>🧮 <strong>AmountFormulas</strong> — مع 4 صيغ مدعومة + <strong>5 قيود خطيرة</strong></li>
+<li>🔄 <strong>Flow كامل</strong> — من event لـ posted journal entry (6 مراحل)</li>
+<li>🌱 <strong>القواعد الافتراضية</strong> — كود <code>EnsureDefaultRulesAsync</code> كاملاً</li>
+<li>🌐 <strong>API Endpoints</strong> — جدول بكل endpoints</li>
+<li>🛡️ <strong>RBAC</strong> — تحليل لما هو موثّق vs ما هو غامض</li>
+<li>⚠️ <strong>5 قيود معروفة</strong> في الـ implementation</li>
+<li>📊 <strong>Roadmap</strong> — Phase 1/2/3</li>
+<li>🎯 <strong>3 أمثلة عملية</strong> (✅ صحيح / ⚠️ ناقص / ❌ خاطئ)</li>
+<li>🛠️ <strong>صيانة</strong> — مع كشف أن PUT endpoint غير موجود!</li>
+<li>📌 <strong>ملخص + توصيات</strong> — 3 مستويات أولوية</li>
+</ol>
+<hr />
+<h2 id="critical-findings">🚨 اكتشافات حرجة (Critical Findings)</h2>
+<h3 id="finding-1-currency-inconsistency">🔴 Finding #1: تناقض العملة (Currency Inconsistency)</h3>
+<p><strong>المشكلة</strong>: <code>EventPayload.Currency</code> default = <code>"SAR"</code> (ريال سعودي). لكن السياق الليبي يستخدم <code>LYD</code> (دينار ليبي).</p>
+<p><strong>الموقع</strong>: <code>IPostingRulesService.cs:22</code> → <code>public string Currency { get; set; } = "SAR";</code></p>
+<p><strong>التأثير</strong>: <br />
+- لو Tenant سعودي → OK<br />
+- لو Tenant ليبي → Currency يُحفظ كـ <code>SAR</code> بدل <code>LYD</code> في كل event<br />
+- <strong>لكن</strong> العملة <strong>لا تُستخدم فعلياً</strong> في القيد (مخاطرة لاحقة)</p>
+<p><strong>التوصية</strong>: DEC منفصل لتحديد:<br />
+- هل النظام multi-currency؟<br />
+- هل الـ Currency من Tenant config؟<br />
+- أم default لكل region (SA/LY/EG)؟</p>
+<hr />
+<h3 id="finding-2-notification">🔴 Finding #2: لا يوجد Notification عند فشل القيد</h3>
+<p><strong>المشكلة</strong>: <code>PostingRulesService.ApplyRulesAsync</code>:</p>
+<pre><code class="language-csharp">if (totalDebit != totalCredit)
+{
+    _logger.LogError(&quot;قاعدة {RuleId} تنتج قيد غير متوازن: D={D} C={C} — تم التخطي&quot;,
+        rule.Id, totalDebit, totalCredit);
+    continue;  // ← يتخطى بصمت
+}
+</code></pre>
+<p><strong>التأثير</strong>: <br />
+- حدث يحدث في النظام<br />
+- النظام يحاول تطبيق قاعدة<br />
+- القيد غير متوازن → يتخطى بصمت<br />
+- <strong>المحاسب ما يعرف أبداً</strong> (لا notification، لا UI alert)<br />
+- الحدث يضيع</p>
+<p><strong>التوصية</strong>: إضافة notification عبر <code>notifications</code> table + إصلاح ليعطي 4xx response.</p>
+<hr />
+<h3 id="finding-3-put-endpoint">🔴 Finding #3: لا يوجد PUT Endpoint لتعديل القواعد</h3>
+<p><strong>المشكلة</strong>: <code>PostingRulesController</code> عنده فقط <code>GET</code> + <code>POST</code>. لا يوجد <code>PUT /api/finance/posting-rules/{id}</code>.</p>
+<p><strong>التأثير</strong>:<br />
+- لو محاسب يبني قاعدة، ثم يحتاج يعدلها → <strong>لا يستطيع</strong><br />
+- الحل الحالي: <strong>حذف وإنشاء جديد</strong> (لكن لا يوجد DELETE أيضاً!)<br />
+- الحل العملي: تعديل DB يدوياً</p>
+<p><strong>التوصية</strong>: إضافة <code>PUT</code> + <code>DELETE</code> endpoints (يستحق Sprint مستقل).</p>
+<hr />
+<h3 id="finding-4-rbac">🟠 Finding #4: RBAC غير موثّق صراحةً</h3>
+<p><strong>المشكلة</strong>: <code>PostingRulesController</code>:</p>
+<pre><code class="language-csharp">[Authorize]  // ← فقط JWT، لا role-based
+</code></pre>
+<p><strong>التأثير</strong>:<br />
+- أي مستخدم مسجّل يستطيع إنشاء/تشغيل القواعد<br />
+- <strong>لا يوجد</strong> تمييز بين Admin/Accountant/PM/Viewer</p>
+<p><strong>التوصية</strong>: DEC-048 منفصل لتوثيق RBAC الكامل.</p>
+<hr />
+<h3 id="finding-5-evaluateformula-fallback">🟠 Finding #5: EvaluateFormula محدود + Fallback صامت</h3>
+<p><strong>المشكلة</strong>: فقط 4 صيغ مدعومة (<code>{amount}</code>, <code>{amount}*2</code>, رقم خام, فارغ). أي صيغة أخرى → 0 + log warning (صامت).</p>
+<p><strong>التأثير</strong>:<br />
+- المطور يكتب <code>{amount}/2</code> → المبلغ = 0<br />
+- القيد قد يصبح غير متوازن → يتخطى (Finding #2)<br />
+- <strong>cascade failure</strong></p>
+<p><strong>التوصية</strong>: <br />
+- توسيع EvaluateFormula (Phase 2 مخطط)<br />
+- إضافة validation <strong>قبل</strong> التطبيق (rejects invalid formulas)</p>
+<hr />
+<h2 id="mavis-root">💡 توصياتي لـ Mavis Root</h2>
+<h3 id="q4q5-backup-rbac-sprint-phase-2">للسؤال المطروح: Q4/Q5 (Backup + RBAC) في Sprint أم Phase 2؟</h3>
+<p><strong>توصيتي</strong>: <strong>افتح Sprint منفصل قصير (1 أسبوع) — DEC-048 (RBAC) + DEC-049 (Backup/DR)</strong>.</p>
+<p><strong>السبب</strong>:<br />
+- RBAC: وثائق فقط (تحليل)، يحتاج 1-2 يوم<br />
+- Backup/DR: يحتاج coordination مع Neon + خطة، 3-4 أيام<br />
+- <strong>مشاكل Posting Rules</strong> (Findings #1-5) تحتاج Sprint آخر (Implementation، 1-2 أسبوع)</p>
+<p><strong>Sprint المقترح</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Sprint</th>
+<th>المحتوى</th>
+<th>المدة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sprint الحالي</strong></td>
+<td>3 وثائق (Posting Rules ✅, Glossary, Event Catalog)</td>
+<td>3 أيام</td>
+</tr>
+<tr>
+<td><strong>Sprint 2 (مقترح)</strong></td>
+<td>DEC-048 (RBAC) + DEC-049 (Backup/DR) + Posting Rules fixes (#1-5)</td>
+<td>1 أسبوع</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">⏭️ الخطوة التالية</h2>
+<p><strong>ابدأ بـ <code>00-glossary-arabic.md</code></strong> (المهمة 2 من 3 في Sprint Phase 1).</p>
+<p><strong>تقديري</strong>:<br />
+- عدد المصطلحات: 60-80 (بناءً على الوثائق الخمس + الكود)<br />
+- الجدول: EN | AR (مفضّل) | AR (بديل) | تعريف<br />
+- أقسام: Accounting، Technical، Architecture، Events، RBAC<br />
+- المدة: 1 يوم</p>
+<hr />
+<h2 id="sprint-status">📊 ملخص Sprint Status</h2>
+<table>
+<thead>
+<tr>
+<th>المهمة</th>
+<th>الحالة</th>
+<th>الحجم</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>05-posting-rules-arabic.md</code></td>
+<td>✅ <strong>DONE</strong></td>
+<td>17.2 KB</td>
+<td>كشف 5 مشاكل حرجة</td>
+</tr>
+<tr>
+<td><code>00-glossary-arabic.md</code></td>
+<td>🟡 <strong>Next</strong></td>
+<td>~12 KB متوقع</td>
+<td>60-80 مصطلح</td>
+</tr>
+<tr>
+<td><code>06-event-catalog.md</code></td>
+<td>⚪ Pending</td>
+<td>~10 KB متوقع</td>
+<td>قائمة event types + payloads</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sprint Progress</strong>: 33% (1/3)</p>
+<hr />
+<h2 id="_4">📎 روابط</h2>
+<ul>
+<li>الوثيقة: <code>/workspace/projects/erp-system/docs/analysis/05-posting-rules-arabic.md</code></li>
+<li>DEC-046: <code>/workspace/.mavis/DEC-2026-07-21-046-jimi-tahlili-initial-review.md</code></li>
+<li>ACK من Mavis: استلمت 5 إجابات + اعتمدت Sprint</li>
+</ul>
+<hr />
+<p><strong>Next Action</strong>: ابدأ <code>00-glossary-arabic.md</code> (مهمة 2/3 من Sprint Phase 1).</p>
+</body>
+</html>

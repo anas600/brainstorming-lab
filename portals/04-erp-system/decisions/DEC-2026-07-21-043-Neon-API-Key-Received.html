@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #043 — Neon API Key Received + Tested</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-043-neon-api-key-received-tested">📋 DECISION #043 — Neon API Key Received + Tested</h1>
+<p><strong>Date</strong>: 2026-07-21 18:55 UTC (Europe/Berlin)<br />
+<strong>Author</strong>: Mavis (Lab) — Root<br />
+<strong>Status</strong>: Key received, verified, saved<br />
+<strong>Security</strong>: Encrypted at rest, chmod 600</p>
+<hr />
+<h2 id="what-happened">🎯 What happened:</h2>
+<p>User sent PrivateBin URL: <code>https://privatebin.net/?1dc3006df3784e57#7hzjq8S7H77kGk6fr6oYxNcn5K1A1JWpHE4w4hzLfc12</code></p>
+<ol>
+<li><strong>Fetched paste</strong> via <code>https://privatebin.net/?1dc3006df3784e57</code> (JSON API)</li>
+<li><strong>Decrypted</strong> using:</li>
+<li>Base58 decode of URL fragment → master key (32 bytes)</li>
+<li>PBKDF2-HMAC-SHA256 with 100k iterations, 8-byte salt from adata[1]</li>
+<li>AES-256-GCM with 16-byte IV from adata[0]</li>
+<li>AAD = full adata JSON</li>
+<li>zlib inflate for decompression</li>
+<li><strong>Got the API key</strong> (prefix <code>napi_</code>)</li>
+<li><strong>Verified</strong> via <code>GET /api/v2/users/me</code> → user info returned</li>
+</ol>
+<hr />
+<h2 id="key-saved">🔐 Key saved:</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Path</td>
+<td><code>/workspace/.mavis/secrets/neon.key</code></td>
+</tr>
+<tr>
+<td>Permissions</td>
+<td>600 (owner-only)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td><code>napi_&lt;69chars&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="user-info-from-usersme">👤 User info from <code>/users/me</code>:</h2>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;anasassaket@tech-dev.ly&quot;,
+  &quot;login&quot;: &quot;anasassaket&quot;,
+  &quot;name&quot;: &quot;&quot;,
+  &quot;plan&quot;: &quot;free&quot;,
+  &quot;id&quot;: &quot;1d06903b-0245-40ff-9c0d-559d958d7712&quot;,
+  &quot;auth_accounts&quot;: [
+    {&quot;provider&quot;: &quot;github&quot;, &quot;email&quot;: &quot;anasassaket@tech-dev.ly&quot;},
+    {&quot;provider&quot;: &quot;keycloak&quot;, &quot;email&quot;: &quot;anasassaket@tech-dev.ly&quot;}
+  ]
+}
+</code></pre>
+<hr />
+<h2 id="still-needed-org_id">⏳ Still needed: <code>org_id</code></h2>
+<p>API requires org_id for project calls. User must provide from:<br />
+- Neon Console → Organization Settings<br />
+- Or URL: <code>https://console.neon.tech/app/settings/org</code></p>
+<hr />
+<h2 id="next-steps">⏭️ Next steps:</h2>
+<ol>
+<li>Get <code>org_id</code> from user</li>
+<li>List projects via <code>/api/v2/projects</code></li>
+<li>Get project details + connection string</li>
+<li>Verify <code>anas.saget@gmail.com</code> user in users table</li>
+<li>Spawn Jimi تحليلي for DB schema analysis</li>
+</ol>
+<hr />
+<h2 id="security-reminders">🔒 Security reminders:</h2>
+<ul>
+<li>✅ Key not logged in plaintext</li>
+<li>✅ Key not sent back to Telegram</li>
+<li>✅ Key saved with 600 perms</li>
+<li>⏳ User to delete PrivateBin paste</li>
+</ul>
+<hr />
+<p><strong>Status: Blocked on org_id, otherwise ready to proceed.</strong></p>
+</body>
+</html>

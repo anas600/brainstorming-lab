@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DECISION #051 — Backup & Disaster Recovery Strategy (Neon DB)</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="decision-051-backup-disaster-recovery-strategy-neon-db">📋 DECISION #051 — Backup &amp; Disaster Recovery Strategy (Neon DB)</h1>
+<blockquote>
+<p><strong>DEC-051</strong> | 🟡 <strong>MEDIUM-HIGH PRIORITY</strong> — Strategic, not yet Critical<br />
+<strong>Status</strong>: 🟢 Sprint 2 Task 2/3 — In Progress</p>
+</blockquote>
+<p><strong>Date</strong>: 2026-07-21 21:25 UTC<br />
+<strong>Author</strong>: Jimi تحليلي (Analytical Team Leader) — Session <code>422317715140767</code><br />
+<strong>Coordinator</strong>: Mavis Root (Lab) — Session <code>406067545768199</code><br />
+<strong>Project</strong>: 1671 — ERP-SYSTEM<br />
+<strong>Severity</strong>: 🟡 <strong>Medium-High</strong> (not Critical like DEC-053, but needed)<br />
+<strong>Related</strong>: DEC-053 (Permission Matrix) — must work together<br />
+<strong>Estimated Effort</strong>: 3-4 days (analysis + setup) + ongoing</p>
+<hr />
+<h2 id="executive-summary-1-minute-read">🎯 Executive Summary (1 minute read)</h2>
+<h3 id="_1">الوضع الحالي:</h3>
+<blockquote>
+<p><strong>النظام على Neon Free Plan</strong> — ما عنده أي backup strategy موثّقة.</p>
+<ul>
+<li>❌ <strong>0 scripts</strong> لـ <code>pg_dump</code>/<code>pg_restore</code> في الـ repo</li>
+<li>❌ <strong>0 backup jobs</strong> في CI/CD</li>
+<li>❌ <strong>0 RTO/RPO targets</strong> محددة</li>
+<li>❌ <strong>0 PITR strategy</strong> موثّقة</li>
+<li>❌ <strong>0 DR drills</strong> (لم نختبر restore أبداً!)</li>
+<li>✅ Neon عنده built-in <strong>6 hours PITR</strong> (Free plan)</li>
+<li>✅ Neon عنده <strong>1 manual snapshot</strong> (Free plan)</li>
+<li>✅ Multi-tenant data في <strong>DB واحد</strong> (4 tenants)</li>
+</ul>
+</blockquote>
+<h3 id="_2">ما يحتاج يصير:</h3>
+<ol>
+<li><strong>استراتيجية 3 طبقات</strong> (PITR + Snapshots + External pg_dump)</li>
+<li><strong>RTO/RPO targets</strong> محددة</li>
+<li><strong>CI/CD backup job</strong> تلقائي</li>
+<li><strong>DR drill</strong> كل ربع سنة</li>
+<li><strong>Multi-tenant restore</strong> playbook</li>
+</ol>
+<h3 id="_3">الأثر:</h3>
+<ul>
+<li>حماية بيانات حقيقية (Al-Burj + AlFajr Holding)</li>
+<li>Compliance (IFRS يتطلب backup trail)</li>
+<li>Risk mitigation لـ 4 سيناريوهات (region failure, corruption, accidental delete, malicious delete)</li>
+<li>Foundation للـ DEC-053 hotfix rollback (لو hotfix يكسر شي، نرجع)</li>
+</ul>
+<hr />
+<h2 id="part-1-current-state">📊 PART 1: Current State (ما عندنا الآن)</h2>
+<h3 id="11-production-environment">1.1 الـ Production Environment</h3>
+<p>من <code>projects/erp-system/docs/erd/README.md</code>:</p>
+<pre><code>- Project: lingering-feather-01780772
+- Region: aws-eu-central-1
+- PG Version: 16
+- Org: tech-dev.ly (org-late-boat-93361206)
+- Branch: production (br-steep-hat-as3ux01y)
+</code></pre>
+<h3 id="12-neon-plan">1.2 Neon Plan</h3>
+<p>من الـ API call (DEC-043): <code>plan = "free"</code></p>
+<p><strong>Free Plan Limits</strong> (من Neon docs):<br />
+| Resource | Limit |<br />
+|---|---|<br />
+| Projects | 100 |<br />
+| Storage per project | 0.5 GB |<br />
+| Compute (CU-hours/month) | 100 |<br />
+| Network egress | 5 GB |<br />
+| <strong>PITR window</strong> | <strong>6 hours</strong> (1 GB cap) |<br />
+| <strong>Manual snapshots</strong> | <strong>1</strong> |<br />
+| Scheduled snapshots | ❌ (paid plans only) |<br />
+| Branches per project | 10 |<br />
+| Compute (autoscaling) | up to 2 CU |<br />
+| Scale-to-zero | Always on (5 min idle) |</p>
+<h3 id="13-current-backup-mechanisms">1.3 Current Backup Mechanisms (مُفعّلة تلقائياً)</h3>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>مُفعّل؟</th>
+<th>المدة</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Neon PITR (Free)</strong></td>
+<td>✅ نعم (built-in)</td>
+<td>6 hours</td>
+<td>لاستعادة نقاط زمنية</td>
+</tr>
+<tr>
+<td><strong>Neon Manual Snapshot</strong></td>
+<td>❓ غير مستخدم</td>
+<td>1 max</td>
+<td>لا يوجد trigger آلي</td>
+</tr>
+<tr>
+<td><strong>Neon Scheduled Snapshots</strong></td>
+<td>❌ لا (Free plan)</td>
+<td>—</td>
+<td>يحتاج Launch/Scale</td>
+</tr>
+<tr>
+<td><strong><code>pg_dump</code> scripts</strong></td>
+<td>❌ <strong>لا يوجد</strong></td>
+<td>—</td>
+<td>0 matches في الـ repo</td>
+</tr>
+<tr>
+<td><strong><code>pg_dump</code> to S3</strong></td>
+<td>❌ <strong>لا يوجد</strong></td>
+<td>—</td>
+<td>0 CI jobs</td>
+</tr>
+<tr>
+<td><strong>External backups (R2/S3)</strong></td>
+<td>❌ <strong>لا يوجد</strong></td>
+<td>—</td>
+<td>0 references</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-code-analysis-repo">1.4 Code Analysis (ما في الـ repo)</h3>
+<pre><code class="language-bash">grep -rn &quot;pg_dump\|pg_restore\|backup\|PITR&quot; src/
+# Result: 0 matches
+</code></pre>
+<p><strong>النتيجة</strong>: النظام يعتمد <strong>100% على Neon built-in PITR</strong> + لا external backups.</p>
+<h3 id="15-multi-tenant-data">1.5 Multi-Tenant Data</h3>
+<p>من <code>04-relationships-arabic.md</code>:<br />
+- 4 tenants: AlFajr Trading, Al-Burj Construction, AlFajr Holding, الفجر (جديد)<br />
+- كل tenants في <strong>نفس DB</strong> (<code>lingering-feather-01780772</code>)<br />
+- <code>tenant_id</code> في كل جدول<br />
+- لا يوجد per-tenant database</p>
+<p><strong>التأثير على Backup</strong>: Backup = <strong>DB كامل</strong> (مش per-tenant). Restore = إما DB كامل، أو manual extraction بعد restore.</p>
+<h3 id="16-automigrate-behavior">1.6 AutoMigrate Behavior</h3>
+<p>من <code>appsettings.json</code>:</p>
+<pre><code class="language-json">&quot;Database&quot;: {
+  &quot;AutoMigrate&quot;: true
+}
+</code></pre>
+<p><strong>السلوك الحالي</strong>:<br />
+- عند start: <code>MigrationRunnerHostedService</code> يطبّق كل migrations تلقائياً<br />
+- لو migration يفشل: التطبيق <strong>يفشل في البدء</strong> (crash)<br />
+- لو migration ناجح: البيانات تتغير بدون manual approval</p>
+<p><strong>المخاطر</strong>:<br />
+- 🔴 Migration خاطئ = downtime (لكن لا data loss إذا الـ migration قابل للعكس)<br />
+- 🟠 في Free Plan، لا يمكن rollback لـ "قبل migration" (PITR window قد انتهى)</p>
+<h3 id="17-secrets-env-vars">1.7 Secrets &amp; Env Vars</h3>
+<p>من <code>Program.cs</code>:</p>
+<pre><code class="language-csharp">opts.OltpConnectionString = builder.Configuration.GetConnectionString(&quot;Postgres&quot;)
+    ?? throw new InvalidOperationException(&quot;ConnectionStrings:Postgres غير معرّف.&quot;);
+</code></pre>
+<p><strong>السلوك</strong>: لو env var مش موجود → التطبيق يفشل في البدء (جيد).<br />
+<strong>الـ connection string</strong>: في env var (HF Space secrets — لا نعرفها نحن، أنس يديرها).</p>
+<hr />
+<h2 id="part-2-neon-db-capabilities">📋 PART 2: Neon DB Capabilities (مقارنة الخطط)</h2>
+<h3 id="21-free-plan">2.1 Free Plan (الحالي)</h3>
+<table>
+<thead>
+<tr>
+<th>الميزة</th>
+<th>متاحة؟</th>
+<th>الحد</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PITR</td>
+<td>✅</td>
+<td>6 hours, 1 GB cap</td>
+</tr>
+<tr>
+<td>Manual Snapshots</td>
+<td>✅</td>
+<td>1 max</td>
+</tr>
+<tr>
+<td>Scheduled Snapshots</td>
+<td>❌</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Project Recovery (after delete)</td>
+<td>✅</td>
+<td>7 days</td>
+</tr>
+<tr>
+<td>Branching</td>
+<td>✅</td>
+<td>10 per project</td>
+</tr>
+<tr>
+<td>API</td>
+<td>✅</td>
+<td>full</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>✅</td>
+<td>0.5 GB</td>
+</tr>
+<tr>
+<td><strong>Best for</strong></td>
+<td>prototypes, dev</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>المميزات</strong>:<br />
+- مجاني<br />
+- PITR فوري (in seconds)<br />
+- 1 snapshot ثابت</p>
+<p><strong>القيود</strong>:<br />
+- 6 hours PITR فقط (لا يصلح لـ "accidental delete بعد يومين")<br />
+- لا scheduled snapshots<br />
+- 1 manual snapshot فقط<br />
+- لا يصلح لـ compliance (&gt; 1 year retention)</p>
+<h3 id="22-launch-plan-production">2.2 Launch Plan (مقترح للـ Production)</h3>
+<table>
+<thead>
+<tr>
+<th>الميزة</th>
+<th>متاحة؟</th>
+<th>الحد</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PITR</td>
+<td>✅</td>
+<td>Up to 7 days</td>
+</tr>
+<tr>
+<td>Manual Snapshots</td>
+<td>✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>Scheduled Snapshots</td>
+<td>✅</td>
+<td>daily/weekly/monthly</td>
+</tr>
+<tr>
+<td>Project Recovery</td>
+<td>✅</td>
+<td>7 days</td>
+</tr>
+<tr>
+<td><strong>Pricing</strong></td>
+<td>$0.106/CU-hour, $0.35/GB-month</td>
+<td>usage-based</td>
+</tr>
+</tbody>
+</table>
+<p><strong>التكلفة التقريبية</strong> (للـ ERP-SYSTEM، 0.5 GB data):<br />
+- Compute: 100 CU-hours × $0.106 = ~$10.6/month<br />
+- Storage: 0.5 GB × $0.35 = ~$0.18/month<br />
+- PITR history: ~$0.10/month<br />
+- <strong>Total</strong>: ~$11/month (~$130/year)</p>
+<h3 id="23-scale-plan-multi-tenant-saas">2.3 Scale Plan (مستقبلي — Multi-tenant SaaS)</h3>
+<table>
+<thead>
+<tr>
+<th>الميزة</th>
+<th>متاحة؟</th>
+<th>الحد</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PITR</td>
+<td>✅</td>
+<td>Up to 30 days</td>
+</tr>
+<tr>
+<td>Manual Snapshots</td>
+<td>✅</td>
+<td>100</td>
+</tr>
+<tr>
+<td>Scheduled Snapshots</td>
+<td>✅</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><strong>Pricing</strong></td>
+<td>$0.106/CU-hour, $0.35/GB-month</td>
+<td>usage-based</td>
+</tr>
+</tbody>
+</table>
+<p><strong>التكلفة التقريبية</strong> (5 GB data + 30 days PITR):<br />
+- Compute: ~$50/month<br />
+- Storage: 5 GB × $0.35 = $1.75/month<br />
+- PITR: 5 GB × 30 days × $0.20/GB-month = ~$30/month<br />
+- <strong>Total</strong>: ~$80/month (~$960/year)</p>
+<p><strong>Recommended for</strong>: 10+ tenants, compliance requirements, business critical.</p>
+<hr />
+<h2 id="part-3-dr-scenarios-4">🎲 PART 3: DR Scenarios (4 سيناريوهات حرجة)</h2>
+<h3 id="1-accidental-data-modification">السيناريو 1: Accidental Data Modification (السيناريو الأكثر احتمالاً)</h3>
+<p><strong>الوصف</strong>: مستخدم يحدّث/يحذف بيانات بالغلط (مثلاً: <code>DELETE FROM accounts WHERE code LIKE '5%'</code>).</p>
+<p><strong>التكرار المتوقع</strong>: 1-2 مرات/شهر (شائع في ERP).</p>
+<p><strong>الحجم</strong>: 1-100 row affected.</p>
+<p><strong>Recovery Strategy</strong>:<br />
+1. <strong>PITR</strong>: استعادة DB لـ "قبل الحذف" (5 دقائق)<br />
+2. <strong>Manual extraction</strong>: نسخ الـ rows المفقودة فقط من snapshot</p>
+<p><strong>RTO</strong>: &lt; 1 hour<br />
+<strong>RPO</strong>: &lt; 6 hours (Free) / &lt; 7 days (Launch)</p>
+<p><strong>السيناريو الحالي</strong>: ✅ <strong>PITR كافي</strong> (Free plan) — لكن لازم المستخدم يلاحظ خلال 6 ساعات.</p>
+<hr />
+<h3 id="2-bad-migration">السيناريو 2: Bad Migration (خطر متوسط)</h3>
+<p><strong>الوصف</strong>: migration يُطبَّق تلقائياً (AutoMigrate=true) ويكسر schema أو يحذف بيانات.</p>
+<p><strong>التكرار المتوقع</strong>: 1-2 مرات/ربع سنة.</p>
+<p><strong>الحجم</strong>: قد يكون كارثي (drop column, drop table).</p>
+<p><strong>Recovery Strategy</strong>:<br />
+1. <strong>Pre-migration snapshot</strong> (manual) قبل كل release<br />
+2. <strong>PITR</strong> لو الـ snapshot قديم</p>
+<p><strong>RTO</strong>: 1-4 hours (depends on data size)<br />
+<strong>RPO</strong>: depends on last snapshot</p>
+<p><strong>السيناريو الحالي</strong>: 🟠 <strong>خطر</strong> — لا manual snapshots قبل migrations! AutoMigrate=true يطبّق بدون snapshot.</p>
+<p><strong>التوصية</strong>: DEC-051 Phase 1 يحل هذا (Pre-migration Snapshot Playbook).</p>
+<hr />
+<h3 id="3-region-failure-neon-outage">السيناريو 3: Region Failure (Neon Outage)</h3>
+<p><strong>الوصف</strong>: Neon AWS region (<code>aws-eu-central-1</code>) يفشل أو عنده downtime طويل.</p>
+<p><strong>التكرار المتوقع</strong>: نادر (Neon SLA 99.95%).</p>
+<p><strong>الحجم</strong>: كارثي (لا وصول للـ DB).</p>
+<p><strong>Recovery Strategy</strong>:<br />
+1. <strong>External backup in different region</strong> (S3 R2 / Cloudflare R2)<br />
+2. <strong>Restore in new Neon project</strong> (region مختلف)<br />
+3. <strong>DNS switch</strong> للـ new endpoint</p>
+<p><strong>RTO</strong>: 4-24 hours (depends on backup size)<br />
+<strong>RPO</strong>: depends on last external backup</p>
+<p><strong>السيناريو الحالي</strong>: 🔴 <strong>خطر</strong> — لا external backups. كل البيانات على Neon فقط.</p>
+<p><strong>التوصية</strong>: DEC-051 Phase 2 يحل هذا (External <code>pg_dump</code> to S3/R2).</p>
+<hr />
+<h3 id="4-malicious-deletion-account-compromise">السيناريو 4: Malicious Deletion / Account Compromise (خطر أمني)</h3>
+<p><strong>الوصف</strong>: مستخدم خبيث (أو compromised account) يحذف كل البيانات عمداً.</p>
+<p><strong>التكرار المتوقع</strong>: نادر لكن عالي الأثر.</p>
+<p><strong>الحجم</strong>: كارثي (truncate, drop).</p>
+<p><strong>Recovery Strategy</strong>:<br />
+1. <strong>PITR</strong> لو لاحظنا خلال 6 hours<br />
+2. <strong>External backup</strong> لو بعد 6 hours</p>
+<p><strong>RTO</strong>: 1-24 hours<br />
+<strong>RPO</strong>: depends on detection time</p>
+<p><strong>السيناريو الحالي</strong>: 🔴 <strong>خطر</strong> — يعتمد كلياً على PITR + سرعة الاكتشاف.</p>
+<p><strong>العلاقة بـ DEC-053</strong>: تطبيق RBAC (Admin-only for DELETE) + audit log يحدّ من هذا السيناريو. لكن <strong>لا يستبدل</strong> backup.</p>
+<hr />
+<h2 id="part-4-rtorpo-targets">🎯 PART 4: RTO/RPO Targets (المقترح)</h2>
+<h3 id="41">4.1 التعريفات</h3>
+<ul>
+<li><strong>RTO</strong> (Recovery Time Objective): كم وقت للوصول لـ "running again" بعد outage؟</li>
+<li><strong>RPO</strong> (Recovery Point Objective): كم data loss مقبول (يعني: restore من متى)؟</li>
+</ul>
+<h3 id="42">4.2 المستهدفات (مُقترحة)</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>RTO Target</th>
+<th>RPO Target</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accidental modification (small)</td>
+<td>&lt; 1 hour</td>
+<td>&lt; 6 hours</td>
+<td>Neon PITR (Free)</td>
+</tr>
+<tr>
+<td>Bad migration (single table)</td>
+<td>&lt; 4 hours</td>
+<td>Last manual snapshot</td>
+<td>Pre-migration snapshot + PITR</td>
+</tr>
+<tr>
+<td>Region failure (full outage)</td>
+<td>&lt; 24 hours</td>
+<td>&lt; 24 hours</td>
+<td>External <code>pg_dump</code> to S3/R2 (Phase 2)</td>
+</tr>
+<tr>
+<td>Malicious deletion (catastrophic)</td>
+<td>&lt; 24 hours</td>
+<td>&lt; 7 days</td>
+<td>Weekly external backup (Phase 2)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43">4.3 مقارنة بالخطة الحالية</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Current RTO</th>
+<th>Current RPO</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accidental modification</td>
+<td>&lt; 1 hour ✅</td>
+<td>&lt; 6 hours ✅</td>
+<td>OK (Free plan كافي)</td>
+</tr>
+<tr>
+<td>Bad migration</td>
+<td>&lt; 1 hour ✅</td>
+<td>⚠️ depends (no snapshot)</td>
+<td><strong>خطر</strong></td>
+</tr>
+<tr>
+<td>Region failure</td>
+<td>⚠️ depends (no external)</td>
+<td>⚠️ depends</td>
+<td><strong>خطر كبير</strong></td>
+</tr>
+<tr>
+<td>Malicious deletion</td>
+<td>&lt; 1 hour (if noticed)</td>
+<td>⚠️ &lt; 6 hours</td>
+<td><strong>خطر</strong> (depends on speed)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-5-backup-strategy-3-layers">🛡️ PART 5: Backup Strategy (3 Layers)</h2>
+<h3 id="layer-1-neon-pitr-free-plan-built-in">Layer 1: Neon PITR (Free Plan — built-in)</h3>
+<p><strong>Always on</strong>. لا setup.</p>
+<ul>
+<li>Window: 6 hours</li>
+<li>Granularity: LSN (log sequence number)</li>
+<li>Restore time: seconds</li>
+<li>Cost: $0</li>
+</ul>
+<p><strong>الاستخدام</strong>: Accidental edits + bad migrations (last resort).</p>
+<h3 id="layer-2-manual-snapshots-free-plan-1-max">Layer 2: Manual Snapshots (Free Plan — 1 max)</h3>
+<p><strong>Trigger</strong>:<br />
+- ✅ قبل كل release (sprint deploy)<br />
+- ✅ قبل كل migration خطير<br />
+- ✅ قبل أي data fix كبير</p>
+<p><strong>Process</strong>:</p>
+<pre><code class="language-bash"># Via Neon Console
+1. Open project: lingering-feather-01780772
+2. Backup &amp; restore → Create snapshot
+3. Name: &quot;pre-sprint-3-release-2026-07-21&quot;
+4. Wait for completion (~1 minute)
+
+# Via Neon API
+POST /api/v2/projects/{project_id}/branches/{branch_id}/snapshot
+{
+  &quot;name&quot;: &quot;pre-sprint-3-release-2026-07-21&quot;
+}
+</code></pre>
+<p><strong>القيود</strong>: 1 snapshot max في Free. لازم نحذف القديم قبل إنشاء جديد.</p>
+<h3 id="layer-3-external-pg_dump-to-s3r2-phase-2">Layer 3: External <code>pg_dump</code> to S3/R2 (Phase 2 — مُقترح)</h3>
+<p><strong>Frequency</strong>:<br />
+- ✅ Daily (عبر CI/CD)<br />
+- ✅ Retain 30 days<br />
+- ✅ Monthly (retain 1 year) — للأرشيف</p>
+<p><strong>Process</strong>:</p>
+<pre><code class="language-yaml"># .github/workflows/backup.yml
+name: Daily Backup
+on:
+  schedule: { cron: '0 2 * * *' }  # 2 AM UTC daily
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pg_dump to S3
+        run: |
+          pg_dump &quot;$NEON_PROD_URL&quot; -F c -b -v \
+            | gzip &gt; backup-$(date +%Y%m%d).dump.gz
+          aws s3 cp backup-*.dump.gz \
+            s3://erp-backups-prod/$(date +%Y/%m/)/
+</code></pre>
+<p><strong>التكلفة</strong> (Launch plan):<br />
+- S3 storage: ~$0.023/GB/month × 0.5 GB × 30 backups = $0.35/month<br />
+- CI minutes: ~3 min/day × 30 = 90 min/month (free for public repos)</p>
+<p><strong>الفايدة</strong>:<br />
+- Region-independent (لو Neon down، البيانات في S3)<br />
+- Compliance (1 year retention)<br />
+- Pre-migration snapshots (متعددة، مش 1)</p>
+<hr />
+<h2 id="part-6-implementation-plan-3-phases">🏗️ PART 6: Implementation Plan (3 Phases)</h2>
+<h3 id="phase-1-immediate-1-2-migration">Phase 1: IMMEDIATE (1-2 أيام) — قبل أي migration خطير</h3>
+<h4 id="task-11-pre-migration-snapshot-playbook-05">Task 1.1: Pre-migration Snapshot Playbook (0.5 يوم)</h4>
+<p><strong>Deliverable</strong>: Documented procedure + CI check</p>
+<pre><code class="language-markdown">## Pre-Migration Snapshot Procedure
+
+### When:
+- قبل أي release فيه migration
+- قبل أي schema change يدوي
+- قبل أي production data fix
+
+### How:
+1. Open Neon Console → Project lingering-feather-01780772
+2. Backup &amp; restore → Create snapshot
+3. Name: &quot;pre-&lt;context&gt;-&lt;date&gt;&quot;
+   Example: &quot;pre-sprint3-rbac-2026-07-22&quot;
+4. Wait for completion
+5. Verify snapshot exists
+
+### Verify:
+```bash
+# Via API
+GET /api/v2/projects/{id}/snapshots
+</code></pre>
+<pre><code>
+**Integration**: تعديل `MigrationRunnerHostedService` ليأخذ snapshot قبل تطبيق migration خطير (warning قبل).
+
+#### Task 1.2: Manual Snapshot Cron (1 يوم)
+
+**Deliverable**: Script + CI hook
+
+```yaml
+# .github/workflows/weekly-snapshot.yml
+name: Weekly Pre-Snapshot
+on:
+  schedule: { cron: '0 1 * * 0' }  # Sunday 1 AM UTC
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Pre-Week Snapshot
+        run: |
+          curl -X POST \
+            -H &quot;Authorization: Bearer ${{ secrets.NEON_API_KEY }}&quot; \
+            -H &quot;Content-Type: application/json&quot; \
+            -d '{&quot;name&quot;: &quot;weekly-$(date +%Y%m%d)&quot;}' \
+            &quot;https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${{ secrets.NEON_BRANCH_ID }}/snapshot&quot;
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+          NEON_BRANCH_ID: ${{ secrets.NEON_BRANCH_ID }}
+</code></pre>
+<p><strong>Why weekly</strong>: 1 manual snapshot max، فلازم نحذف القديم كل أسبوع.</p>
+<p><strong>Trade-off</strong>: manual snapshots only. 6 hours PITR for daily changes.</p>
+<h3 id="phase-2-near-term-3-5-launch-plan-external-backup">Phase 2: NEAR-TERM (3-5 أيام) — Launch Plan + External Backup</h3>
+<h4 id="task-21-upgrade-to-launch-plan-05">Task 2.1: Upgrade to Launch Plan (0.5 يوم)</h4>
+<p><strong>Action</strong>:<br />
+1. Open Neon Console → Settings → Plan<br />
+2. Upgrade Free → Launch<br />
+3. Configure:<br />
+   - History window: 7 days<br />
+   - Default branch: production<br />
+4. Add payment method</p>
+<p><strong>Cost</strong>: ~$11/month (~$130/year).</p>
+<p><strong>Benefits</strong>:<br />
+- 7 days PITR (vs 6 hours)<br />
+- Scheduled snapshots (vs manual only)<br />
+- 100 manual snapshots (vs 1)<br />
+- 7 days project recovery (built-in)</p>
+<h4 id="task-22-configure-scheduled-snapshots-05">Task 2.2: Configure Scheduled Snapshots (0.5 يوم)</h4>
+<p><strong>In Neon Console</strong>:<br />
+- Daily snapshot at 02:00 UTC, retain 7 days<br />
+- Weekly snapshot (Sunday 03:00 UTC), retain 30 days<br />
+- Monthly snapshot (1st of month, 04:00 UTC), retain 365 days</p>
+<p><strong>Result</strong>: بدون manual intervention، 90+ snapshots في أي وقت.</p>
+<h4 id="task-23-external-pg_dump-to-cloudflare-r2-2-3">Task 2.3: External <code>pg_dump</code> to Cloudflare R2 (2-3 أيام)</h4>
+<p><strong>Why R2</strong> (not S3):<br />
+- $0 egress (S3 = $0.09/GB egress)<br />
+- S3-compatible API<br />
+- Same SDK</p>
+<p><strong>Setup</strong>:<br />
+1. Create R2 bucket: <code>erp-backups-prod</code><br />
+2. Generate R2 access key<br />
+3. GitHub Actions secret: <code>R2_ACCESS_KEY</code>, <code>R2_SECRET_KEY</code>, <code>R2_BUCKET</code><br />
+4. Add GitHub Actions workflow: <code>daily-pg-dump.yml</code></p>
+<pre><code class="language-yaml">name: Daily pg_dump to R2
+on:
+  schedule: { cron: '0 3 * * *' }  # 3 AM UTC daily
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install postgresql client + aws-cli
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          pip install awscli
+
+      - name: pg_dump
+        env:
+          DATABASE_URL: ${{ secrets.NEON_PROD_URL }}
+        run: |
+          pg_dump &quot;$DATABASE_URL&quot; -F c -b -v \
+            | gzip &gt; backup-$(date +%Y%m%d).dump.gz
+
+      - name: Upload to R2
+        env:
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+          AWS_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          aws s3 cp backup-*.dump.gz \
+            s3://erp-backups-prod/daily/$(date +%Y/%m/)/
+
+      - name: Verify upload
+        run: aws s3 ls s3://erp-backups-prod/daily/$(date +%Y/%m/)/
+
+      - name: Cleanup
+        run: rm -f backup-*.dump.gz
+</code></pre>
+<p><strong>Schedule</strong>:<br />
+- Daily: 30 days retention<br />
+- Weekly: 90 days retention<br />
+- Monthly: 365 days retention<br />
+- Yearly: indefinite (للـ compliance)</p>
+<p><strong>Cost</strong> (R2): $0.015/GB-month storage. 0.5 GB × 30 backups = $0.22/month.</p>
+<h4 id="task-24-restore-test-script-1">Task 2.4: Restore Test Script (1 يوم)</h4>
+<p><strong>Deliverable</strong>: Script يختبر restore بدون تأثير على production.</p>
+<pre><code class="language-bash">#!/bin/bash
+# scripts/test-restore.sh
+# Usage: ./test-restore.sh &lt;backup-file&gt;
+
+set -e
+
+BACKUP_FILE=$1
+TEST_DB_NAME=&quot;erp_restore_test_$(date +%s)&quot;
+
+# 1. Create new Neon branch (copy-on-write, instant)
+echo &quot;Creating restore branch...&quot;
+BRANCH_ID=$(neon branches create \
+  --project-id &quot;$NEON_PROJECT_ID&quot; \
+  --name &quot;restore-test-$(date +%s)&quot; \
+  --parent &quot;$NEON_BRANCH_ID&quot; | jq -r '.id')
+
+# 2. Get branch connection string
+CONN_STRING=$(neon connection-string &quot;$BRANCH_ID&quot;)
+
+# 3. Create test database
+echo &quot;Creating test database...&quot;
+psql &quot;$CONN_STRING&quot; -c &quot;CREATE DATABASE $TEST_DB_NAME&quot;
+
+# 4. Restore
+echo &quot;Restoring backup...&quot;
+pg_restore -d &quot;postgresql://.../$TEST_DB_NAME?sslmode=require&quot; &quot;$BACKUP_FILE&quot;
+
+# 5. Run smoke tests
+echo &quot;Running smoke tests...&quot;
+TEST_CONN=&quot;postgresql://.../$TEST_DB_NAME?sslmode=require&quot;
+psql &quot;$TEST_CONN&quot; -c &quot;SELECT COUNT(*) FROM users;&quot;  # Should match
+psql &quot;$TEST_CONN&quot; -c &quot;SELECT COUNT(*) FROM accounts;&quot;
+psql &quot;$TEST_CONN&quot; -c &quot;SELECT COUNT(*) FROM journal_entries;&quot;
+psql &quot;$TEST_CONN&quot; -c &quot;SELECT COUNT(*) FROM projects;&quot;
+
+# 6. Cleanup
+echo &quot;Cleaning up...&quot;
+neon branches delete &quot;$BRANCH_ID&quot;
+
+echo &quot;Restore test PASSED ✅&quot;
+</code></pre>
+<p><strong>Schedule</strong>: Manual (1x per quarter, في DR drill).</p>
+<h3 id="phase-3-long-term-1-2-multi-region-monitoring">Phase 3: LONG-TERM (1-2 أسبوع) — Multi-Region + Monitoring</h3>
+<h4 id="task-31-multi-region-replication">Task 3.1: Multi-Region Replication (مُستقبلي)</h4>
+<p><strong>Trigger</strong>: Multi-tenant SaaS, 5+ tenants, critical data.</p>
+<p><strong>Options</strong>:<br />
+- a) <strong>Neon read replicas</strong> (newer feature, pay extra)<br />
+- b) <strong>Cross-region S3</strong> (R2 has multi-region)<br />
+- c) <strong>PostgreSQL logical replication</strong> (read replica in different region)</p>
+<p><strong>Trade-off</strong>: $$$. Not needed now.</p>
+<h4 id="task-32-backup-monitoring-alerting-3-5">Task 3.2: Backup Monitoring + Alerting (3-5 أيام)</h4>
+<p><strong>Tool</strong>: Prometheus + Grafana (أو Neon API + Uptime monitoring).</p>
+<p><strong>Metrics</strong>:<br />
+- Last backup age (alert if &gt; 26 hours)<br />
+- Last successful restore test (alert if &gt; 90 days)<br />
+- Storage usage (alert if &gt; 80% of 0.5 GB limit)<br />
+- PITR history size (alert if &gt; 80% of 1 GB cap)</p>
+<p><strong>Alerts</strong>:<br />
+- Email + Telegram to Anas</p>
+<h4 id="task-33-disaster-recovery-runbook-2-3">Task 3.3: Disaster Recovery Runbook (2-3 أيام)</h4>
+<p><strong>Deliverable</strong>: <code>docs/disaster-recovery.md</code> — playbook كامل.</p>
+<p><strong>Contents</strong>:<br />
+- 4 DR scenarios × step-by-step procedure<br />
+- Decision tree: أي backup layer أستخدم؟<br />
+- Contact list (أنس + أرقام الطوارئ)<br />
+- Post-mortem template</p>
+<hr />
+<h2 id="part-7-cost-analysis">💰 PART 7: Cost Analysis (شامل)</h2>
+<h3 id="71-phase-1-0">7.1 Phase 1 (الحالي — 0 تكلفة)</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neon PITR (Free)</td>
+<td>$0</td>
+<td>✅ Active</td>
+</tr>
+<tr>
+<td>Manual snapshots (1 max)</td>
+<td>$0</td>
+<td>⏳ Not used</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>$0</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-phase-2-launch-external">7.2 Phase 2 (Launch + External) — مقترح</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neon Launch Plan</td>
+<td>~$11/month</td>
+<td>7 days PITR + scheduled snapshots</td>
+</tr>
+<tr>
+<td>Cloudflare R2 storage</td>
+<td>~$0.22/month</td>
+<td>0.5 GB × 30 daily backups</td>
+</tr>
+<tr>
+<td>R2 operations (writes)</td>
+<td>~$0.05/month</td>
+<td>30 PUT/day</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$11.27/month</strong></td>
+<td><strong>~$135/year</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-phase-3-multi-region-monitoring">7.3 Phase 3 (Multi-Region + Monitoring) — مُستقبلي</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Cost (estimated)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read replica (Neon)</td>
+<td>~$15-30/month</td>
+<td>1 read replica in us-east-1</td>
+</tr>
+<tr>
+<td>Monitoring (Grafana Cloud)</td>
+<td>$0-29/month</td>
+<td>Free tier OK for now</td>
+</tr>
+<tr>
+<td><strong>Total Phase 3</strong></td>
+<td><strong>~$15-30/month</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-trade-offs">7.4 Trade-offs</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Cost/yr</th>
+<th>RPO</th>
+<th>Multi-region?</th>
+<th>Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Status Quo (Free)</strong></td>
+<td>$0</td>
+<td>6 hours</td>
+<td>❌</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>Phase 2 (Launch + R2)</strong></td>
+<td>$135</td>
+<td>1 day</td>
+<td>✅ (R2)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Phase 3 (Multi-region)</strong></td>
+<td>$300+</td>
+<td>1 day</td>
+<td>✅✅</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p><strong>التوصية</strong>: Phase 2 فقط. Phase 3 = بعد 10+ tenants.</p>
+<hr />
+<h2 id="part-8-testing-strategy-dr-drills">🧪 PART 8: Testing Strategy (DR Drills)</h2>
+<h3 id="81-frequency">8.1 Frequency</h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Frequency</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Restore smoke test</strong> (من R2 backup)</td>
+<td>ربع سنوي</td>
+<td>Jimi تنفيذي</td>
+</tr>
+<tr>
+<td><strong>PITR test</strong> (من Neon console)</td>
+<td>شهري</td>
+<td>Mavis (Lab)</td>
+</tr>
+<tr>
+<td><strong>Snapshot verify</strong> (list snapshots)</td>
+<td>أسبوعي</td>
+<td>CI cron</td>
+</tr>
+<tr>
+<td><strong>Full DR drill</strong> (region failover simulation)</td>
+<td>سنوي</td>
+<td>(post-Phase 3)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-dr-drill-template">8.2 DR Drill Template</h3>
+<pre><code class="language-markdown"># DR Drill — Q3 2026
+
+**Date**: 2026-09-15
+**Owner**: Jimi تنفيذي
+**Scenario**: Bad migration on production
+
+## Steps:
+1. [ ] Create pre-drill snapshot
+2. [ ] Document current state (counts)
+3. [ ] Simulate bad migration (on test branch)
+4. [ ] Try restore via PITR (target: 5 min)
+5. [ ] Try restore via external backup (target: 30 min)
+6. [ ] Compare restored state vs current
+7. [ ] Document RTO achieved
+8. [ ] Cleanup test branch
+9. [ ] Update runbook with findings
+
+## Result:
+- RTO: __ minutes (target: 1 hour)
+- RPO: __ hours (target: 24 hours)
+- Issues found: __
+- Action items: __
+</code></pre>
+<h3 id="83-first-dr-drill-sprint-3-phase-1">8.3 First DR Drill (Sprint 3 — بعد Phase 1)</h3>
+<p><strong>Pre-conditions</strong>:<br />
+- Phase 1 done (manual snapshot procedure documented)<br />
+- Test data موجود (AlFajr Holding — عنده بيانات واقعية)</p>
+<p><strong>Scenario</strong>:<br />
+- (في staging branch) simulate <code>DELETE FROM accounts</code><br />
+- Try restore via snapshot<br />
+- Verify counts match</p>
+<p><strong>Expected RTO</strong>: 30-60 minutes (manual process).</p>
+<hr />
+<h2 id="part-9-risk-assessment">🚨 PART 9: Risk Assessment</h2>
+<h3 id="91-status-quo-risks">9.1 Status Quo Risks (لو ما طبقنا)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bad migration → data loss</td>
+<td>Medium</td>
+<td>Critical</td>
+<td>🔴 <strong>High</strong></td>
+</tr>
+<tr>
+<td>Accidental delete &gt; 6 hours ago</td>
+<td>Medium</td>
+<td>High</td>
+<td>🟠 Medium-High</td>
+</tr>
+<tr>
+<td>Neon region outage</td>
+<td>Low</td>
+<td>Critical</td>
+<td>🟡 Medium</td>
+</tr>
+<tr>
+<td>Malicious deletion</td>
+<td>Low</td>
+<td>Critical</td>
+<td>🟡 Medium</td>
+</tr>
+<tr>
+<td>Compliance failure (no audit trail)</td>
+<td>High</td>
+<td>Medium</td>
+<td>🟠 Medium-High</td>
+</tr>
+</tbody>
+</table>
+<p><strong>حكمي</strong>: Status Quo = <strong>غير آمن لـ production بـ data حقيقي</strong>.</p>
+<h3 id="92-phase-1-only-manual-snapshots">9.2 Phase 1 Only (Manual snapshots)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bad migration → data loss</td>
+<td>Low ✅</td>
+<td>Critical</td>
+<td>🟡 Medium</td>
+</tr>
+<tr>
+<td>Accidental delete &gt; 6 hours ago</td>
+<td>Medium</td>
+<td>High</td>
+<td>🟠 Medium-High</td>
+</tr>
+<tr>
+<td>Neon region outage</td>
+<td>Low</td>
+<td>Critical</td>
+<td>🟡 Medium</td>
+</tr>
+<tr>
+<td>Malicious deletion</td>
+<td>Low</td>
+<td>Critical</td>
+<td>🟡 Medium</td>
+</tr>
+</tbody>
+</table>
+<p><strong>حكمي</strong>: Phase 1 يحل Bad migration، لكن باقي المخاطر باقية.</p>
+<h3 id="93-phase-2-launch-r2">9.3 Phase 2 (Launch + R2)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Combined</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bad migration → data loss</td>
+<td>Low ✅</td>
+<td>Critical</td>
+<td>🟢 Low-Medium</td>
+</tr>
+<tr>
+<td>Accidental delete &gt; 6 hours ago</td>
+<td>Low ✅ (7 days now)</td>
+<td>High</td>
+<td>🟢 Low</td>
+</tr>
+<tr>
+<td>Neon region outage</td>
+<td>Low</td>
+<td>Medium ✅ (R2 = backup)</td>
+<td>🟢 Low</td>
+</tr>
+<tr>
+<td>Malicious deletion</td>
+<td>Low</td>
+<td>Medium ✅ (R2 = backup)</td>
+<td>🟢 Low</td>
+</tr>
+</tbody>
+</table>
+<p><strong>حكمي</strong>: Phase 2 = <strong>آمن لـ production</strong>.</p>
+<hr />
+<h2 id="part-10-multi-tenant-considerations">🤝 PART 10: Multi-Tenant Considerations</h2>
+<h3 id="101-backup-strategy-per-tenant">10.1 Backup Strategy Per-Tenant</h3>
+<p><strong>السؤال</strong>: هل كل tenant عنده backup منفصل؟</p>
+<p><strong>الإجابة</strong>: ❌ <strong>لا</strong> — كل tenants في نفس DB، فالـ backup = DB كامل.</p>
+<p><strong>الاستعادة Per-Tenant</strong> (لو tenant واحد فقط تالف):</p>
+<ol>
+<li><strong>Restore DB كامل</strong> على branch جديد</li>
+<li><strong>Export rows</strong> للـ tenant المتضرر:<br />
+<code>sql
+   -- Extract one tenant
+   pg_dump --table='accounts' --where='tenant_id = X' ...</code></li>
+<li><strong>Import</strong> للـ rows في production</li>
+</ol>
+<p><strong>التعقيد</strong>: Medium (manual SQL work).</p>
+<h3 id="102-per-tenant-snapshot">10.2 Per-Tenant Snapshot (مستقبلي)</h3>
+<p><strong>خيار</strong>: إنشاء Neon branch per-tenant (10 branches = $0.20/month extra).<br />
+- كل branch = snapshot للـ tenant data فقط<br />
+- PITR per-tenant</p>
+<p><strong>Trade-off</strong>: $0.20/month × 4 tenants = $0.80/month. <strong>يستحق؟</strong> ❌ حالياً (4 tenants فقط).</p>
+<h3 id="103-tenant-data-sensitivity">10.3 Tenant Data Sensitivity</h3>
+<table>
+<thead>
+<tr>
+<th>Tenant</th>
+<th>Data Sensitivity</th>
+<th>Backup Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AlFajr Trading</td>
+<td>عالي (real data)</td>
+<td>🟠 High</td>
+</tr>
+<tr>
+<td>Al-Burj Construction</td>
+<td>عالي (real data)</td>
+<td>🟠 High</td>
+</tr>
+<tr>
+<td>AlFajr Holding</td>
+<td>عالي (consolidated)</td>
+<td>🔴 Critical</td>
+</tr>
+<tr>
+<td>الفجر (جديد)</td>
+<td>منخفض (test)</td>
+<td>🟢 Low</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: كل tenants في نفس الـ backup (لا يوجد segregation). RTO/RPO = نفسه للكل.</p>
+<hr />
+<h2 id="part-11-open-questions-for-anas-user">❓ PART 11: Open Questions for Anas (User)</h2>
+<h3 id="q1-phase-1-phase-2-launch-r2">Q1: Phase 1 فقط (مجاني) ولا Phase 2 (Launch + R2)؟</h3>
+<p><strong>توصيتي</strong>: 🔴 <strong>Phase 2</strong> (~$11/month) — production data deserves proper backup.</p>
+<p><strong>Trade-off</strong>:<br />
+- Phase 1: $0، يحل Bad migration، باقي المخاطر باقية<br />
+- Phase 2: $11/month، يحل كل المخاطر</p>
+<p><strong>الـ $11/month</strong> = ~$0.37/يوم = سعر قهوة واحدة لـ <strong>راحة بال</strong> كاملة.</p>
+<h3 id="q2-phase-2">Q2: متى نطبق Phase 2؟</h3>
+<p><strong>خيارات</strong>:<br />
+- a) <strong>الآن</strong> (بعد DEC-053 hotfix) — قبل أي deployment جديد<br />
+- b) <strong>خلال شهر</strong> — يعطينا وقت للتجربة<br />
+- c) <strong>بعد 5+ tenants</strong> — أكبر customers</p>
+<p><strong>توصيتي</strong>: (a) <strong>الآن</strong> — لا ننتظر لحد ما يحدث loss.</p>
+<h3 id="q3-dr-drill">Q3: DR Drill متى؟</h3>
+<p><strong>خيارات</strong>:<br />
+- a) <strong>بعد Phase 1</strong> (1-2 أسبوع)<br />
+- b) <strong>بعد Phase 2</strong> (1 شهر)<br />
+- c) <strong>ربع سنوي</strong> standard cadence</p>
+<p><strong>توصيتي</strong>: (a) — DR drill يجبرنا نختبر إجراءاتنا.</p>
+<h3 id="q4-disaster">Q4: لو حصل disaster <strong>الآن</strong>، شو نعمل؟</h3>
+<p><strong>الإجابة المُقترحة</strong>:<br />
+1. افتح Neon Console<br />
+2. Backup &amp; restore → اختر timestamp قبل الكارثة (إذا &lt; 6 hours)<br />
+3. Restore → branch جديد<br />
+4. Verify counts (users, accounts, journal_entries)<br />
+5. Promote branch → new production<br />
+6. Update DNS / env vars (أنس)</p>
+<p><strong>RTO المُتوقع</strong>: 1-2 ساعة (manual process).</p>
+<h3 id="q5-backup-process">Q5: من يدير الـ backup process؟</h3>
+<p><strong>توصيتي</strong>:<br />
+- <strong>CI/CD backup jobs</strong> = automated (CI يُدير)<br />
+- <strong>Manual snapshots</strong> = أنس (Admin) + Mavis (Lab)<br />
+- <strong>Restore</strong> = Jimi تنفيذي (technical)<br />
+- <strong>DR drills</strong> = ربع سنوي، Jimi تنفيذي + Mavis (Lab)</p>
+<hr />
+<h2 id="part-12-coordination-with-408773242015948">🤝 PART 12: Coordination with خطة-النظام (408773242015948)</h2>
+<h3 id="dec-053">أسئلة (بعد ردها على DEC-053، ممكن نضيف هذه):</h3>
+<ol>
+<li><strong>هل عندها visibility على RTO/RPO targets المطلوبة لـ Al-Burj / AlFajr Holding؟</strong></li>
+<li><strong>هل في compliance requirements</strong> (مثلاً: Libyan audit law, IFRS, GDPR)؟ يفرض retention policy مختلفة؟</li>
+<li><strong>هل عملت DR drill من قبل</strong> على أنظمة مشابهة؟</li>
+<li><strong>توصيتها</strong>: Free plan + manual + حذر؟ ولا Launch + R2؟</li>
+</ol>
+<hr />
+<h2 id="part-13-sprint-coordination">📊 PART 13: Sprint Coordination</h2>
+<h3 id="dec-053-permission-matrix-dec-051-backupdr">DEC-053 (Permission Matrix) + DEC-051 (Backup/DR) — كيف يعملون معاً؟</h3>
+<p><strong>السيناريو</strong>: DEC-053 Phase 1 hotfix يطبَّق على production. شو لو hotfix يكسر شي؟</p>
+<p><strong>الـ Plan</strong>:</p>
+<ol>
+<li><strong>قبل hotfix</strong> (الـ 7 gaps):</li>
+<li>✅ Manual snapshot في Neon (Phase 1 Task 1.1)</li>
+<li>
+<p>✅ External <code>pg_dump</code> backup (Phase 2 Task 2.3) — أفضل</p>
+</li>
+<li>
+<p><strong>بعد hotfix</strong>:</p>
+</li>
+<li>✅ Smoke tests (admin can do everything، viewer cannot)</li>
+<li>✅ Count checks (users, accounts لم تتغير)</li>
+<li>
+<p>✅ لو فشل → restore من snapshot (1-2 hours RTO)</p>
+</li>
+<li>
+<p><strong>لو hotfix succeeded</strong>:</p>
+</li>
+<li>✅ 24h monitoring</li>
+<li>✅ لو ظهرت issues → restore from snapshot</li>
+</ol>
+<p><strong>الـ Backup هو الـ "Safety Net" للـ hotfix</strong>.</p>
+<hr />
+<h2 id="part-14-success-criteria">📈 PART 14: Success Criteria</h2>
+<h3 id="phase-1-done">Phase 1 DONE يعني:</h3>
+<ul>
+<li>[ ] Pre-migration snapshot procedure documented</li>
+<li>[ ] CI hook للـ weekly snapshot (cron)</li>
+<li>[ ] أول manual snapshot taken (pre-Sprint 3 hotfix)</li>
+<li>[ ] DR drill template created</li>
+</ul>
+<h3 id="phase-2-done">Phase 2 DONE يعني:</h3>
+<ul>
+<li>[ ] Upgrade to Launch Plan</li>
+<li>[ ] Scheduled snapshots: daily + weekly + monthly</li>
+<li>[ ] External <code>pg_dump</code> to R2 (daily)</li>
+<li>[ ] Restore test script (<code>test-restore.sh</code>)</li>
+<li>[ ] First restore test passed</li>
+<li>[ ] DR drill Q3 2026 completed</li>
+</ul>
+<h3 id="phase-3-done">Phase 3 DONE يعني:</h3>
+<ul>
+<li>[ ] Backup monitoring + alerts</li>
+<li>[ ] Multi-region replication (if needed)</li>
+<li>[ ] Disaster recovery runbook</li>
+<li>[ ] Annual DR drill (Q4 2026)</li>
+</ul>
+<hr />
+<h2 id="part-15-immediate-action-items-this-week">📋 PART 15: Immediate Action Items (This Week)</h2>
+<h3 id="hotfix-dec-053-phase-1">قبل أي hotfix (DEC-053 Phase 1):</h3>
+<ol>
+<li><strong>TODAY</strong>: Manual snapshot — <code>pre-sprint3-rbac-2026-07-21</code></li>
+<li><strong>TODAY</strong>: Verify Neon Console access (أنس)</li>
+<li><strong>TODAY</strong>: Document snapshot procedure in <code>infra/AGENTS.md</code></li>
+</ol>
+<h3 id="sprint-2-next-dec-052-dec-051-phase-1">Sprint 2 next (DEC-052 + DEC-051 Phase 1):</h3>
+<ol>
+<li><strong>DEC-052</strong> (Data Retention) — 1-2 يوم</li>
+<li><strong>DEC-051 Phase 1</strong> (Snapshot Playbook + CI) — 1-2 يوم</li>
+<li><strong>First DR drill</strong> (smoke test restore) — 1 يوم</li>
+</ol>
+<h3 id="after-dec-053-approved">After DEC-053 approved:</h3>
+<ol>
+<li><strong>DEC-051 Phase 2</strong> (Launch + R2) — 3-5 يوم</li>
+<li><strong>First quarterly DR drill</strong> — 1 يوم</li>
+</ol>
+<hr />
+<h2 id="_4">📎 روابط</h2>
+<ul>
+<li>Neon Free Plan docs: https://neon.com/docs/introduction/plans</li>
+<li>Neon PITR: https://neon.com/docs/manage/backups</li>
+<li>Neon Backup &amp; Restore: https://neon.com/docs/guides/backup-restore</li>
+<li>ADR 051 (reference): https://robbiepalmer.me/projects/recipe-site/adrs/051-neon-database-snapshots-and-backups</li>
+<li>appsettings.json: <code>/workspace/ERP-SYSTEM/src/backend/Host/appsettings.json</code></li>
+<li>ERD README: <code>/workspace/projects/erp-system/docs/erd/README.md</code></li>
+<li>DEC-053: <code>/workspace/.mavis/DEC-2026-07-21-053-permission-matrix.md</code></li>
+</ul>
+<hr />
+<p><strong>Status</strong>: 🟢 <strong>Sprint 2 Task 2/3 — Drafted</strong></p>
+<p><strong>Next Action</strong>: Mavis Root review + Anas decisions on Q1-Q5.</p>
+<p><strong>Critical</strong>: <strong>الـ $11/month للـ Phase 2 تستحق.</strong> هذا "راحة بال" لـ data حقيقي.</p>
+</body>
+</html>

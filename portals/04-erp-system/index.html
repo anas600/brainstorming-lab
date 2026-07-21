@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP-SYSTEM Portal · Sprint 2 Decisions</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #818cf8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+header { 
+    background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+h1 { font-size: 2.4em; color: var(--accent); margin-bottom: 10px; }
+.subtitle { color: var(--text-soft); font-size: 1.1em; }
+.stats { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+    gap: 12px; 
+    margin-top: 20px; 
+}
+.stat-card { 
+    background: rgba(15, 23, 42, 0.6);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+.stat-number { font-size: 1.8em; font-weight: bold; color: var(--accent); }
+.stat-label { color: var(--text-soft); font-size: 0.85em; }
+.tabs { 
+    display: flex; 
+    gap: 5px; 
+    margin: 25px 0 15px;
+    border-bottom: 2px solid var(--border);
+    flex-wrap: wrap;
+}
+.tab { 
+    background: transparent;
+    color: var(--text-soft);
+    padding: 10px 18px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+.tab.active { 
+    color: var(--accent); 
+    border-bottom-color: var(--accent);
+}
+.tab:hover { color: var(--text); }
+.content { display: none; }
+.content.active { display: block; }
+.doc-list { 
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.doc-item { 
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.2s;
+}
+.doc-item:last-child { border-bottom: none; }
+.doc-item:hover { background: rgba(56, 189, 248, 0.05); }
+.doc-icon { font-size: 2em; width: 50px; text-align: center; }
+.doc-info { flex: 1; }
+.doc-title { color: var(--accent); font-size: 1.1em; font-weight: bold; }
+.doc-desc { color: var(--text-soft); font-size: 0.9em; margin-top: 2px; }
+.doc-meta { color: var(--text-soft); font-size: 0.8em; margin-top: 2px; }
+.badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-right: 3px;
+}
+.badge-critical { background: var(--danger); color: white; }
+.badge-strategic { background: var(--warning); color: var(--bg); }
+.badge-decision { background: var(--success); color: var(--bg); }
+.alert {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid var(--danger);
+    border-left: 4px solid var(--danger);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+.alert h3 { color: var(--danger); margin-bottom: 6px; font-size: 1em; }
+.erd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+.erd-card { 
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+.erd-card img { width: 100%; display: block; }
+.erd-card .name { padding: 8px; color: #14171e; font-size: 0.85em; text-align: center; }
+footer { text-align: center; color: var(--text-soft); margin-top: 40px; padding: 20px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+    <h1>🏢 ERP-SYSTEM Portal</h1>
+    <p class="subtitle">Sprint 2 Decision Package · Lab + Analytical Team</p>
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">10</div>
+            <div class="stat-label">DECs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">8</div>
+            <div class="stat-label">Analysis</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">12</div>
+            <div class="stat-label">ERDs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">14</div>
+            <div class="stat-label">Q's</div>
+        </div>
+    </div>
+</header>
+
+<div class="alert">
+    <h3>🚨 Sprint 2 — 14 أسئلة في انتظار قرار Anas</h3>
+    <p><strong>DEC-054</strong> = 1-click approval (10 default decisions).</p>
+    <p>أو افتح DEC-053 (CRITICAL security) مباشرة.</p>
+</div>
+
+<div class="tabs">
+    <button class="tab active" data-tab="decisions">📋 Decisions (10)</button>
+    <button class="tab" data-tab="erd">📊 ERD (12)</button>
+    <button class="tab" data-tab="analysis">📚 Analysis (8)</button>
+</div>
+
+<div class="content active" id="decisions">
+    <div class="doc-list">
+        <a class="doc-item" href="decisions/DEC-2026-07-21-054-sprint2-summary.html">
+            <div class="doc-icon">🎯</div>
+            <div class="doc-info">
+                <div class="doc-title">DEC-054 <span class="badge badge-decision">DECISION</span></div>
+                <div class="doc-desc">Sprint 2 Summary — 1-click approval (10 defaults)</div>
+                <div class="doc-meta">11 KB · 9/10</div>
+            </div>
+        </a>
+        <a class="doc-item" href="decisions/DEC-2026-07-21-053-permission-matrix.html">
+            <div class="doc-icon">🔴</div>
+            <div class="doc-info">
+                <div class="doc-title">DEC-053 <span class="badge badge-critical">CRITICAL</span></div>
+                <div class="doc-desc">Permission Matrix + 3-Phase Implementation</div>
+                <div class="doc-meta">30 KB · 9.5/10</div>
+            </div>
+        </a>
+        <a class="doc-item" href="decisions/DEC-2026-07-21-051-backup-dr-strategy.html">
+            <div class="doc-icon">💾</div>
+            <div class="doc-info">
+                <div class="doc-title">DEC-051 <span class="badge badge-strategic">STRATEGIC</span></div>
+                <div class="doc-desc">Backup/DR Strategy · 3 layers</div>
+                <div class="doc-meta">30 KB · 9/10</div>
+            </div>
+        </a>
+        <a class="doc-item" href="decisions/DEC-2026-07-21-052-data-retention-policy.html">
+            <div class="doc-icon">🗄️</div>
+            <div class="doc-info">
+                <div class="doc-title">DEC-052 <span class="badge badge-strategic">STRATEGIC</span></div>
+                <div class="doc-desc">Data Retention Policy · 7y IFRS</div>
+                <div class="doc-meta">30 KB · 9/10</div>
+            </div>
+        </a>
+        <a class="doc-item" href="decisions/DEC-2026-07-21-050-rbac-analysis-delivered.html">
+            <div class="doc-icon">🔍</div>
+            <div class="doc-info">
+                <div class="doc-title">DEC-050 · RBAC Analysis</div>
+                <div class="doc-desc">7 gaps · 21 controllers, 0 role checks</div>
+                <div class="doc-meta">13 KB · 9.5/10</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="content" id="erd">
+    <div class="erd-grid">
+        <a class="erd-card" href="erd/identity.png" target="_blank">
+            <img src="erd/identity.png" alt="Identity">
+            <div class="name">Identity & Tenants</div>
+        </a>
+        <a class="erd-card" href="erd/finance.png" target="_blank">
+            <img src="erd/finance.png" alt="Finance">
+            <div class="name">Finance</div>
+        </a>
+        <a class="erd-card" href="erd/procurement.png" target="_blank">
+            <img src="erd/procurement.png" alt="Procurement">
+            <div class="name">Procurement</div>
+        </a>
+        <a class="erd-card" href="erd/inventory.png" target="_blank">
+            <img src="erd/inventory.png" alt="Inventory">
+            <div class="name">Inventory</div>
+        </a>
+        <a class="erd-card" href="erd/sales.png" target="_blank">
+            <img src="erd/sales.png" alt="Sales">
+            <div class="name">Sales</div>
+        </a>
+        <a class="erd-card" href="erd/bills.png" target="_blank">
+            <img src="erd/bills.png" alt="Bills">
+            <div class="name">Vendor Bills</div>
+        </a>
+        <a class="erd-card" href="erd/payments.png" target="_blank">
+            <img src="erd/payments.png" alt="Payments">
+            <div class="name">Payments</div>
+        </a>
+        <a class="erd-card" href="erd/hr.png" target="_blank">
+            <img src="erd/hr.png" alt="HR">
+            <div class="name">HR & Payroll</div>
+        </a>
+        <a class="erd-card" href="erd/projects.png" target="_blank">
+            <img src="erd/projects.png" alt="Projects">
+            <div class="name">Projects</div>
+        </a>
+        <a class="erd-card" href="erd/grns.png" target="_blank">
+            <img src="erd/grns.png" alt="GRNs">
+            <div class="name">Goods Receipts</div>
+        </a>
+        <a class="erd-card" href="erd/notifications_events.png" target="_blank">
+            <img src="erd/notifications_events.png" alt="Events">
+            <div class="name">Notifications & Events</div>
+        </a>
+        <a class="erd-card" href="erd/companies.png" target="_blank">
+            <img src="erd/companies.png" alt="Companies">
+            <div class="name">Companies</div>
+        </a>
+    </div>
+</div>
+
+<div class="content" id="analysis">
+    <div class="doc-list">
+        <a class="doc-item" href="analysis/00-glossary-arabic.html">
+            <div class="doc-icon">📖</div>
+            <div class="doc-info">
+                <div class="doc-title">00 — Glossary (75 terms)</div>
+                <div class="doc-desc">9.5/10 · 6 categories</div>
+                <div class="doc-meta">21 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/01-finance-arabic.html">
+            <div class="doc-icon">💰</div>
+            <div class="doc-info">
+                <div class="doc-title">01 — Finance Module</div>
+                <div class="doc-desc">CoA, Journal Entries, Posting Rules</div>
+                <div class="doc-meta">10 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/02-projects-arabic.html">
+            <div class="doc-icon">📁</div>
+            <div class="doc-info">
+                <div class="doc-title">02 — Projects Module</div>
+                <div class="doc-desc">Tasks, Resources, Budgets</div>
+                <div class="doc-meta">11 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/03-events-arabic.html">
+            <div class="doc-icon">🔔</div>
+            <div class="doc-info">
+                <div class="doc-title">03 — Events Module</div>
+                <div class="doc-desc">Outbox, Notifications, Audit</div>
+                <div class="doc-meta">12 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/04-relationships-arabic.html">
+            <div class="doc-icon">🔗</div>
+            <div class="doc-info">
+                <div class="doc-title">04 — Master Relationships</div>
+                <div class="doc-desc">الصورة الكبيرة للـ 12 module</div>
+                <div class="doc-meta">12 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/05-posting-rules-arabic.html">
+            <div class="doc-icon">📋</div>
+            <div class="doc-info">
+                <div class="doc-title">05 — Posting Rules (from code)</div>
+                <div class="doc-desc">5 bugs مكتشفة في الكود</div>
+                <div class="doc-meta">17 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/06-event-catalog.html">
+            <div class="doc-icon">📡</div>
+            <div class="doc-info">
+                <div class="doc-title">06 — Event Catalog</div>
+                <div class="doc-desc">5 events + 15 backlog</div>
+                <div class="doc-meta">20 KB</div>
+            </div>
+        </a>
+        <a class="doc-item" href="analysis/07-rbac-arabic.html">
+            <div class="doc-icon">🔒</div>
+            <div class="doc-info">
+                <div class="doc-title">07 — RBAC Analysis (CRITICAL)</div>
+                <div class="doc-desc">7 gaps مكتشفة</div>
+                <div class="doc-meta">21 KB</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<footer>
+    <p>📊 Updated: <span id="last-update"></span> · Mavis (Lab) auto-curated</p>
+    <p>🗄️ Source: /workspace/portal/source-md/ · Rendered: /workspace/portal/rendered-html/</p>
+    <p>🚀 Next deploy: On Anas request ("render" then "deploy")</p>
+</footer>
+</div>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const contents = document.querySelectorAll('.content');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        tabs.forEach(t => t.classList.toggle('active', t === tab));
+        contents.forEach(c => c.classList.toggle('active', c.id === target));
+    });
+});
+document.getElementById('last-update').textContent = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
