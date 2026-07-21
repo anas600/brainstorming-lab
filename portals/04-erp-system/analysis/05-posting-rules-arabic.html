@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📐 محرّك القواعد (Posting Rules Engine) — شرح بالعربي</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="posting-rules-engine">📐 محرّك القواعد (Posting Rules Engine) — شرح بالعربي</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: Jimi تحليلي (Analytical Team Leader)<br />
+<strong>الجمهور</strong>: محاسبين، مدراء، مطوّرين<br />
+<strong>المصدر</strong>: <code>src/backend/Modules/Finance/Entities/PostingRule.cs</code> + <code>PostingRulesService.cs</code> + <code>PostingRulesController.cs</code> (live source)<br />
+<strong>الإصدار</strong>: v1.0 — يكشف الحقيقة من الكود (مش من التخمين)</p>
+</blockquote>
+<hr />
+<h2 id="posting-rules-engine_1">🎯 شو هو Posting Rules Engine؟</h2>
+<p>هو <strong>الدماغ اللي يربط الأحداث بقيود اليومية</strong>. كل مرة يصير حدث في النظام (استلام بضاعة، إصدار فاتورة، استلام دفعة...)، المحرّك يفحص: "في قاعدة تنطبق على هذا الحدث؟" → لو نعم → <strong>يُنشئ قيد يومية تلقائياً</strong>.</p>
+<p><strong>مثال واقعي</strong>:</p>
+<pre><code>1. مستخدم يستلم 100 كيس اسمنت (قيمة 5,000 LYD)
+2. النظام ينشئ stock_movement + يطلق event: StockReceived
+3. Outbox Processor يلتقط الحدث (كل 5 ثوان)
+4. PostingRulesService يبحث: &quot;في قاعدة StockReceived مفعلة؟&quot;
+5. يجد القاعدة الافتراضية: &quot;1300 → debit, 2100 → credit, {amount}&quot;
+6. ينشئ journal_entry + lines
+7. يُرحّل القيد تلقائياً (Draft → Posted)
+8. ينشر event جديد: JournalEntryPosted (للمستهلكين الآخرين)
+
+النتيجة: في ثوانٍ، قيد محاسبي مُرحّل في الدفاتر ✅
+</code></pre>
+<p><strong>بدون المحرّك</strong>: المحاسب يكتب كل قيد يدوياً. مع 100+ عملية/يوم = بطيء + أخطاء.</p>
+<hr />
+<h2 id="postingrule-schema">🏗️ بنية القاعدة (PostingRule Schema)</h2>
+<h3 id="db-posting_rules">الجدول في DB (<code>posting_rules</code>):</h3>
+<table>
+<thead>
+<tr>
+<th>العمود</th>
+<th>النوع</th>
+<th>المعنى</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID (PK)</td>
+<td>معرّف فريد</td>
+<td>generated</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID (FK)</td>
+<td>المستأجر (multi-tenant)</td>
+<td>إجباري</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>VARCHAR(200)</td>
+<td>اسم وصفي للقاعدة</td>
+<td>مثلاً: "استلام بضاعة"</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>VARCHAR(500)</td>
+<td>وصف تفصيلي</td>
+<td>اختياري</td>
+</tr>
+<tr>
+<td><code>event_type</code></td>
+<td>INT</td>
+<td>نوع الحدث (enum)</td>
+<td>قيم: 1-4 (انظر أدناه)</td>
+</tr>
+<tr>
+<td><code>is_active</code></td>
+<td>BOOL</td>
+<td>هل القاعدة مفعّلة؟</td>
+<td>Default: true</td>
+</tr>
+<tr>
+<td><code>template_json</code></td>
+<td>TEXT</td>
+<td>قالب القيد (JSON)</td>
+<td>الإجباري الأهم</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMP</td>
+<td>تاريخ الإنشاء</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>TIMESTAMP</td>
+<td>آخر تحديث</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Index</strong>: <code>ix_posting_rules_tenant_event</code> على <code>(tenant_id, event_type, is_active)</code> — للبحث السريع عن القواعد النشطة لحدث معيّن.</p>
+<hr />
+<h2 id="triggeringevent-enum">📋 أنواع الأحداث المدعومة (TriggeringEvent enum)</h2>
+<p>الكود يعرّف 4 أنواع فقط حالياً (Phase 1):</p>
+<pre><code class="language-csharp">public enum TriggeringEvent
+{
+    StockReceived = 1,      // استلام بضاعة (من مورد أو تحويل)
+    StockIssued = 2,        // صرف بضاعة (للبيع أو مشروع)
+    InvoiceCreated = 3,     // إنشاء فاتورة (غير مفعّل بعد)
+    PaymentReceived = 4,    // استلام دفعة (غير مفعّل بعد)
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>متى يطلق؟</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>StockReceived</strong></td>
+<td>عند تسجيل استلام بضاعة في المخزون</td>
+<td>✅ مفعّل (مع قاعدة افتراضية)</td>
+</tr>
+<tr>
+<td><strong>StockIssued</strong></td>
+<td>عند تسجيل صرف بضاعة</td>
+<td>✅ مفعّل (مع قاعدة افتراضية)</td>
+</tr>
+<tr>
+<td><strong>InvoiceCreated</strong></td>
+<td>عند إنشاء فاتورة مبيعات/مشتريات</td>
+<td>🟡 Placeholder (لا handler بعد)</td>
+</tr>
+<tr>
+<td><strong>PaymentReceived</strong></td>
+<td>عند استلام دفعة</td>
+<td>🟡 Placeholder (لا handler بعد)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ملاحظة من AGENTS.md</strong>:</p>
+<blockquote>
+<p>التكامل الفعلي (Inventory module) يأتي في <strong>Phase 2</strong>. حالياً الـ <code>POST /api/finance/posting-rules/trigger/{eventType}</code> يتيح المحاكاة.</p>
+</blockquote>
+<hr />
+<h2 id="payload-eventpayload">📦 بنية الـ Payload (EventPayload)</h2>
+<p>كل حدث يحمل <code>EventPayload</code> فيه البيانات اللي القواعد تحتاجها:</p>
+<pre><code class="language-csharp">public sealed class EventPayload
+{
+    public decimal Amount { get; set; }        // المبلغ الأساسي
+    public string Currency { get; set; } = &quot;SAR&quot;;  // العملة (⚠️ default SAR، مش LYD)
+    public string Description { get; set; }    // وصف القيد
+    public string? Reference { get; set; }     // مرجع خارجي (رقم PO/Invoice)
+    public DateTime EntryDate { get; set; }    // تاريخ الحركة
+}
+</code></pre>
+<p><strong>⚠️ ملاحظة مهمة حول العملة</strong>:<br />
+- <code>EventPayload.Currency</code> default = <code>"SAR"</code> (ريال سعودي)<br />
+- لكن في Docs العربية نتعامل مع <strong>LYD</strong> (دينار ليبي)<br />
+- <strong>هذا تناقض</strong> — يستحق DEC منفصل:<br />
+  - هل النظام مصمم للسعودية أولاً؟ (AGENTS.md يقول السوق السعودي ضمنياً)<br />
+  - هل لازم نغيّر الـ default لـ <code>LYD</code> للمستخدم الليبي؟<br />
+  - أم أن الـ Currency يتحدد من Tenant config؟</p>
+<hr />
+<h2 id="template-postingruletemplate">📐 بنية Template (PostingRuleTemplate)</h2>
+<p>هذا هو <strong>الجزء الأهم</strong> — قالب القيد بصيغة JSON. مصمّم كـ POCO (Plain Old CLR Object) ليسهل deserialization.</p>
+<h3 id="poco-classes-postingrulecs">POCO Classes (من <code>PostingRule.cs</code>):</h3>
+<pre><code class="language-csharp">public class PostingRuleTemplate
+{
+    public string Description { get; set; } = string.Empty;
+    public string? Reference { get; set; }
+    public List&lt;PostingRuleLineTemplate&gt; Lines { get; set; } = new();
+}
+
+public class PostingRuleLineTemplate
+{
+    public string AccountCode { get; set; } = string.Empty;  // &quot;1300&quot; (يحلّ لـ ID وقت التشغيل)
+    public string Side { get; set; } = &quot;debit&quot;;              // &quot;debit&quot; أو &quot;credit&quot;
+    public string AmountFormula { get; set; } = &quot;0&quot;;         // صيغة المبلغ
+}
+</code></pre>
+<h3 id="json-schema">مثال كامل (JSON Schema):</h3>
+<pre><code class="language-json">{
+  &quot;Description&quot;: &quot;استلام بضاعة من مورد&quot;,
+  &quot;Reference&quot;: null,
+  &quot;Lines&quot;: [
+    {
+      &quot;AccountCode&quot;: &quot;1300&quot;,
+      &quot;Side&quot;: &quot;debit&quot;,
+      &quot;AmountFormula&quot;: &quot;{amount}&quot;
+    },
+    {
+      &quot;AccountCode&quot;: &quot;2100&quot;,
+      &quot;Side&quot;: &quot;credit&quot;,
+      &quot;AmountFormula&quot;: &quot;{amount}&quot;
+    }
+  ]
+}
+</code></pre>
+<p><strong>القواعد الإجبارية للتحقق (من <code>PostingRulesService.CreateAsync</code>)</strong>:</p>
+<ol>
+<li>✅ كل <code>AccountCode</code> يجب أن يكون موجود في CoA (دليل الحسابات) للـ tenant</li>
+<li>✅ كل حساب يجب أن يكون <code>IsPostable = true</code> (مش حساب تجميعي)</li>
+<li>✅ عدد السطور ≥ 2 (لا قاعدة من سطر واحد)</li>
+<li>✅ Σ(debit) = Σ(credit) — <strong>وإلا يتخطى النظام القاعدة ويكتب error في الـ log</strong></li>
+</ol>
+<hr />
+<h2 id="amountformula">🧮 صيغ المبالغ المدعومة (AmountFormula)</h2>
+<p>من <code>PostingRulesService.EvaluateFormula</code> — الدالة بسيطة <strong>جداً</strong>:</p>
+<pre><code class="language-csharp">private decimal EvaluateFormula(string formula, EventPayload payload)
+{
+    if (string.IsNullOrWhiteSpace(formula)) return 0;
+    var trimmed = formula.Trim();
+
+    if (trimmed == &quot;{amount}&quot;) return payload.Amount;          // المبلغ الكامل
+    if (trimmed == &quot;{amount}*2&quot;) return payload.Amount * 2;    // الضعف (حالة خاصة)
+    if (decimal.TryParse(trimmed, out var n)) return n;        // رقم خام
+
+    _logger.LogWarning(&quot;صيغة مبلغ غير معروفة: {Formula}&quot;, formula);
+    return 0;  // ⚠️ صامت — لا يرمي exception، فقط log
+}
+</code></pre>
+<h3 id="_1">الصيغ المدعومة:</h3>
+<table>
+<thead>
+<tr>
+<th>الصيغة</th>
+<th>المعنى</th>
+<th>مثال</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{amount}</code></td>
+<td>المبلغ الكامل من الـ payload</td>
+<td>5,000.00</td>
+</tr>
+<tr>
+<td><code>{amount}*2</code></td>
+<td>ضعف المبلغ (حالة خاصة فقط)</td>
+<td>10,000.00</td>
+</tr>
+<tr>
+<td><code>123.45</code></td>
+<td>رقم خام (decimal literal)</td>
+<td>123.45</td>
+</tr>
+<tr>
+<td><code>0</code></td>
+<td>صفر (لحالات نادرة)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>أي صيغة أخرى</td>
+<td><strong>0 + log warning</strong> ⚠️</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_2">⚠️ قيود خطيرة (خلل في التصميم؟):</h3>
+<ol>
+<li><strong>لا يوجد تقسيم</strong>: <code>{amount}/2</code> مش مدعوم</li>
+<li><strong>لا يوجد جمع</strong>: <code>{amount}+100</code> مش مدعوم</li>
+<li><strong>لا يوجد شرط/حسابات</strong>: لا if/case</li>
+<li><strong>fallback صامت</strong>: لو الصيغة غلط → المبلغ = 0 → القيد <strong>قد يكون غير متوازن</strong> → النظام يتخطاه بصمت</li>
+</ol>
+<p><strong>التوصية</strong>: توسيع <code>EvaluateFormula</code> لدعم:<br />
+- العمليات الحسابية الأساسية (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>)<br />
+- متغيرات متعددة (<code>{amount}</code>, <code>{tax}</code>, <code>{quantity}</code>)<br />
+- صيغة <code>percentage</code> (مثلاً: <code>{amount}*0.15</code> للضريبة 15%)</p>
+<hr />
+<h2 id="flow">🔄 Flow كامل: من حدث إلى قيد مُرحّل</h2>
+<pre><code>[1] مصدر الحدث (مثلاً: Inventory Service)
+   ↓
+   ينشئ stock_movement row
+   ينشر event في outbox_events (نفس الـ transaction)
+   ↓
+[2] OutboxProcessorHostedService (Background Service)
+   ↓
+   كل 5 ثوان: يجيب events غير معالجة (batch = 50)
+   يفحص idempotency (processed_events)
+   ↓
+[3] DispatchAsync (في OutboxProcessor)
+   ↓
+   يفك event payload (Deserialize)
+   يجد الـ IIntegrationEventHandler المناسب
+   ↓
+[4] EventHandler (مثلاً: StockReceivedEventHandler)
+   ↓
+   يستدعي IPostingRulesService.ApplyRulesAsync(
+       tenantId, userId, StockReceived, payload)
+   ↓
+[5] PostingRulesService.ApplyRulesAsync
+   ↓
+   يجيب القواعد النشطة: ListActiveByEventAsync
+   لكل قاعدة:
+     - Deserialize TemplateJson
+     - لكل سطر: GetByCodeAsync(AccountCode)
+     - EvaluateFormula لكل AmountFormula
+     - يحسب Σ(debit) و Σ(credit)
+     - لو غير متوازن → skip + log error
+     - ينشئ journal_entry (Draft)
+     - يرحّله (Post)
+   ↓
+[6] ينشر event جديد: JournalEntryPosted
+   ↓
+   في outbox_events → يدخل cycle جديدة (للمستهلكين: Notifications, Reports, ...)
+</code></pre>
+<p><strong>زمن التنفيذ</strong>: في <strong>أفضل حالة 5 ثوان</strong> (Polling interval). في أسوأ حالة قد يتأخر لو backlog كبير.</p>
+<hr />
+<h2 id="ensuredefaultrulesasync">🌱 القواعد الافتراضية (EnsureDefaultRulesAsync)</h2>
+<p>عند إنشاء <strong>tenant جديد</strong>، النظام يضيف <strong>قاعدة افتراضية لكل event type</strong> تلقائياً.</p>
+<h3 id="stockreceived-postingrulesserviceensuredefaultrulesasync">مثال: StockReceived (من <code>PostingRulesService.EnsureDefaultRulesAsync</code>):</h3>
+<pre><code class="language-csharp">TemplateJson = JsonSerializer.Serialize(new PostingRuleTemplate
+{
+    Description = &quot;استلام بضاعة&quot;,
+    Lines = new()
+    {
+        new() { AccountCode = &quot;1300&quot;, Side = &quot;debit&quot;,  AmountFormula = &quot;{amount}&quot; },
+        new() { AccountCode = &quot;2100&quot;, Side = &quot;credit&quot;, AmountFormula = &quot;{amount}&quot; }
+    }
+});
+</code></pre>
+<p><strong>القيد المحاسبي</strong>:<br />
+| السطر | الحساب | الكود | الجانب | المبلغ |<br />
+|---|---|---|---|---|<br />
+| 1 | المخزون (أصل متداول) | 1300 | مدين | {amount} |<br />
+| 2 | الدائنون (خصم متداول) | 2100 | دائن | {amount} |</p>
+<p><strong>المنطق المحاسبي</strong>: لما تستلم بضاعة، تزيد أصولك (المخزون) ويزيد ما عليك للمورد (الدائنون).</p>
+<h3 id="stockissued-ensuredefaultrulesasync">StockIssued (المتوقع، لم يُضف في <code>EnsureDefaultRulesAsync</code> بعد):</h3>
+<pre><code class="language-csharp">// TODO: متوقع إضافة قاعدة StockIssued
+Lines = new()
+{
+    new() { AccountCode = &quot;5100&quot;, Side = &quot;debit&quot;,  AmountFormula = &quot;{amount}&quot; }, // COGS
+    new() { AccountCode = &quot;1300&quot;, Side = &quot;credit&quot;, AmountFormula = &quot;{amount}&quot; }  // Inventory
+}
+</code></pre>
+<p>⚠️ <strong>ملاحظة</strong>: في <code>EnsureDefaultRulesAsync</code> الحالي، <strong>فقط StockReceived يضاف افتراضياً</strong>. StockIssued يجب إنشاؤه يدوياً.</p>
+<hr />
+<h2 id="api-endpoints-postingrulescontroller">🌐 API Endpoints (من <code>PostingRulesController</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>الوصف</th>
+<th>Auth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/finance/posting-rules</code></td>
+<td>قائمة كل القواعد للـ tenant</td>
+<td>✅ JWT</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/finance/posting-rules</code></td>
+<td>إنشاء قاعدة جديدة</td>
+<td>✅ JWT</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/finance/posting-rules/trigger/{eventType}</code></td>
+<td>محاكاة/تشغيل حدث</td>
+<td>✅ JWT</td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-apifinanceposting-rules">مثال: إنشاء قاعدة (<code>POST /api/finance/posting-rules</code>)</h3>
+<p><strong>Request body</strong>:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;استلام بضاعة مع ضريبة&quot;,
+  &quot;description&quot;: &quot;قيد استلام يشمل ضريبة قيمة مضافة 15%&quot;,
+  &quot;eventType&quot;: 1,
+  &quot;template&quot;: {
+    &quot;description&quot;: &quot;استلام بضاعة + VAT&quot;,
+    &quot;reference&quot;: &quot;PO-2026-0042&quot;,
+    &quot;lines&quot;: [
+      { &quot;accountCode&quot;: &quot;1300&quot;, &quot;side&quot;: &quot;debit&quot;,  &quot;amountFormula&quot;: &quot;{amount}&quot; },
+      { &quot;accountCode&quot;: &quot;2105&quot;, &quot;side&quot;: &quot;debit&quot;,  &quot;amountFormula&quot;: &quot;{amount}*2&quot; },  // ⚠️ ضعف فقط مدعوم
+      { &quot;accountCode&quot;: &quot;2100&quot;, &quot;side&quot;: &quot;credit&quot;, &quot;amountFormula&quot;: &quot;{amount}&quot; }    // ❌ مجموع = debit 2x, credit 1x = غير متوازن
+    ]
+  }
+}
+</code></pre>
+<p>⚠️ <strong>المثال فيه خطأ متعمد</strong>: لو المطور نسي يحسب التوازن، النظام <strong>يتخطى القاعدة</strong> (لا يرمي خطأ صريح للمستخدم). لذلك <strong>يجب</strong> على المحاسب/المطوّر حساب التوازن قبل الإرسال.</p>
+<p><strong>Response (نجاح)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;name&quot;: &quot;استلام بضاعة مع ضريبة&quot;,
+  &quot;eventType&quot;: 1,
+  &quot;isActive&quot;: true,
+  &quot;templateJson&quot;: &quot;{...}&quot;,
+  &quot;createdAt&quot;: &quot;2026-07-21T20:30:00Z&quot;,
+  &quot;updatedAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<hr />
+<h2 id="rbac">🛡️ مَن يستطيع إنشاء/تعديل القواعد؟ (RBAC)</h2>
+<p><strong>⚠️ نقطة ضعف في التوثيق الحالي</strong>:</p>
+<p>من <code>PostingRulesController</code>:</p>
+<pre><code class="language-csharp">[ApiController]
+[Route(&quot;api/finance/posting-rules&quot;)]
+[Authorize]   // ← فقط JWT، لا role-based
+</code></pre>
+<p><strong>ما نعرفه</strong>:<br />
+- ✅ لازم يكون مسجّل دخول (JWT)<br />
+- ❓ لا يوجد <code>[Authorize(Roles = "Admin")]</code> صريح<br />
+- ❓ لا يوجد تمييز بين محاسب ومطوّر ومستخدم عادي</p>
+<p><strong>الافتراض</strong> (لم يُتحقق بعد):<br />
+- حسب نظام RBAC العام، المفترض <code>Admin</code> أو <code>Accountant</code> فقط<br />
+- لكن هذا <strong>غير موثّق</strong> في الكود</p>
+<p><strong>التوصية</strong>: فتح DEC منفصل لتوثيق RBAC الكامل (DEC-048 مقترح).</p>
+<hr />
+<h2 id="limitations">⚠️ قيود معروفة (Limitations)</h2>
+<h3 id="1-validation-user-input">1. <strong>لا يوجد Validation للـ User Input قبل الترحيل</strong></h3>
+<p>في <code>ApplyRulesAsync</code>:</p>
+<pre><code class="language-csharp">// معادلة الـ double-entry
+if (totalDebit != totalCredit)
+{
+    _logger.LogError(&quot;قاعدة {RuleId} تنتج قيد غير متوازن: D={D} C={C} — تم التخطي&quot;,
+        rule.Id, totalDebit, totalCredit);
+    continue;  // ← يتخطى بصمت
+}
+</code></pre>
+<p><strong>المشكلة</strong>: لو القاعدة تنتج قيد غير متوازن، <strong>ما يرمي exception</strong> → فقط log error. النتيجة: الحدث يضيع، والقيد ما يُنشأ، والمحاسب ما يعرف.</p>
+<p><strong>التوصية</strong>: إضافة alert عبر <code>notifications</code> table: "فشل تطبيق القاعدة X للقيد Y — القيد غير متوازن".</p>
+<h3 id="2-eventpayloadcurrency">2. <strong>EventPayload.currency لا يُستخدم في القيد</strong></h3>
+<p>الـ <code>template_json</code> يستخدم <code>AccountCode</code> فقط. <strong>لا يوجد ربط بين العملة والحساب</strong>. لو المبلغ بالـ USD وحساب 1300 بالـ LYD → <strong>مشكلة محاسبية</strong> (مخاطرة سعر صرف).</p>
+<p><strong>التوصية</strong>: إضافة <code>currency</code> إلى <code>journal_lines</code> + تحقق تطابق العملة في القاعدة.</p>
+<h3 id="3-audit-trail">3. <strong>لا يوجد Audit Trail لتعديلات القواعد</strong></h3>
+<p><code>PostingRuleRepository.UpdateAsync</code> موجود لكن <strong>لا يُسجّل في <code>audit_log</code></strong> من رأى التعديل. مخالف لتوصيات SOC2/IFRS.</p>
+<h3 id="4-dry-run-mode">4. <strong>لا يوجد Dry-Run Mode</strong></h3>
+<p>لو محاسب يبني قاعدة معقدة، ما يقدر "يجرّب" بدون تطبيق فعلي. الـ <code>trigger/{eventType}</code> يطبق فعلاً (ينشئ قيد).</p>
+<p><strong>التوصية</strong>: إضافة <code>?dryRun=true</code> query param.</p>
+<h3 id="5-eventtype">5. <strong>تكرار القواعد لنفس EventType ممكن</strong></h3>
+<p>في <code>ApplyRulesAsync</code>، كل القواعد النشطة تُطبّق. لو في قاعدتين لـ StockReceived → <strong>قيدان يومياً</strong> لكل استلام. هذا قد يكون مقصود (مثلاً: عادي + ضريبة) لكن خطير لو بالغلط.</p>
+<p><strong>التوصية</strong>: تحذير في UI لو في &gt;1 قاعدة نشطة لنفس event.</p>
+<hr />
+<h2 id="roadmap">📊 خارطة الطريق (Roadmap)</h2>
+<table>
+<thead>
+<tr>
+<th>الإصدار</th>
+<th>الميزة</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Phase 1</strong> (الحالي)</td>
+<td>Rules Engine MVP — <code>{amount}</code> فقط، 4 event types</td>
+<td>✅ مكتمل</td>
+</tr>
+<tr>
+<td><strong>Phase 2</strong></td>
+<td>صيغ حسابية: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, متغيرات متعددة</td>
+<td>📋 مخطط</td>
+</tr>
+<tr>
+<td><strong>Phase 2</strong></td>
+<td>InvoiceCreated + PaymentReceived handlers</td>
+<td>📋 مخطط</td>
+</tr>
+<tr>
+<td><strong>Phase 2.4</strong></td>
+<td>Postgres LISTEN/NOTIFY (بدل polling)</td>
+<td>📋 مذكور في Outbox comment</td>
+</tr>
+<tr>
+<td><strong>Phase 3</strong></td>
+<td>Audit log لتعديلات القواعد</td>
+<td>📋 مخطط</td>
+</tr>
+<tr>
+<td><strong>Phase 3</strong></td>
+<td>Dry-Run mode</td>
+<td>📋 مخطط</td>
+</tr>
+<tr>
+<td><strong>Phase 3</strong></td>
+<td>Currency-aware templates</td>
+<td>📋 مخطط</td>
+</tr>
+<tr>
+<td><strong>مستقبلي</strong></td>
+<td>شروط متقدمة (if/case/loops)</td>
+<td>🔮 بحث</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="practical-examples">🎯 أمثلة عملية (Practical Examples)</h2>
+<h3 id="1">مثال 1: ✅ قاعدة صحيحة — استلام بضاعة (افتراضية)</h3>
+<pre><code class="language-json">{
+  &quot;description&quot;: &quot;استلام بضاعة&quot;,
+  &quot;lines&quot;: [
+    { &quot;accountCode&quot;: &quot;1300&quot;, &quot;side&quot;: &quot;debit&quot;,  &quot;amountFormula&quot;: &quot;{amount}&quot; },
+    { &quot;accountCode&quot;: &quot;2100&quot;, &quot;side&quot;: &quot;credit&quot;, &quot;amountFormula&quot;: &quot;{amount}&quot; }
+  ]
+}
+</code></pre>
+<p><strong>الحدث</strong>: <code>StockReceived</code> بـ <code>amount = 5000</code><br />
+<strong>القيد</strong>:<br />
+- Dr 1300 (المخزون) 5,000<br />
+- Cr 2100 (الدائنون) 5,000<br />
+- ✅ متوازن</p>
+<hr />
+<h3 id="2-defaults">مثال 2: ⚠️ قاعدة بشغالة ناقصة — صرف بضاعة (مفقودة في defaults)</h3>
+<pre><code class="language-json">{
+  &quot;description&quot;: &quot;صرف بضاعة للبيع&quot;,
+  &quot;lines&quot;: [
+    { &quot;accountCode&quot;: &quot;5100&quot;, &quot;side&quot;: &quot;debit&quot;,  &quot;amountFormula&quot;: &quot;{amount}&quot; },
+    { &quot;accountCode&quot;: &quot;1300&quot;, &quot;side&quot;: &quot;credit&quot;, &quot;amountFormula&quot;: &quot;{amount}&quot; }
+  ]
+}
+</code></pre>
+<p><strong>الحدث</strong>: <code>StockIssued</code> بـ <code>amount = 3000</code><br />
+<strong>القيد المتوقع</strong>:<br />
+- Dr 5100 (تكلفة البضاعة المباعة - COGS) 3,000<br />
+- Cr 1300 (المخزون) 3,000</p>
+<p>⚠️ <strong>القاعدة غير موجودة افتراضياً</strong> — المحاسب لازم ينشئها يدوياً.</p>
+<hr />
+<h3 id="3">مثال 3: ❌ قاعدة خاطئة — قيد غير متوازن</h3>
+<pre><code class="language-json">{
+  &quot;description&quot;: &quot;استلام بضاعة (خطأ)&quot;,
+  &quot;lines&quot;: [
+    { &quot;accountCode&quot;: &quot;1300&quot;, &quot;side&quot;: &quot;debit&quot;,  &quot;amountFormula&quot;: &quot;{amount}&quot; },
+    { &quot;accountCode&quot;: &quot;2100&quot;, &quot;side&quot;: &quot;credit&quot;, &quot;amountFormula&quot;: &quot;{amount}/2&quot; }
+  ]
+}
+</code></pre>
+<p><strong>الحدث</strong>: <code>StockReceived</code> بـ <code>amount = 5000</code><br />
+<strong>المحاولة</strong>:<br />
+- Dr 1300 = 5,000<br />
+- Cr 2100 = 2,500<br />
+- ❌ <strong>غير متوازن</strong></p>
+<p><strong>النتيجة في النظام</strong>:</p>
+<pre><code>[ERROR] قاعدة {RuleId} تنتج قيد غير متوازن: D=5000 C=2500 — تم التخطي
+</code></pre>
+<p>⚠️ <strong>الحدث يضيع بصمت</strong> — لا notification للمستخدم.</p>
+<hr />
+<h2 id="maintenance">🛠️ صيانة القواعد (Maintenance)</h2>
+<h3 id="_3">إضافة قاعدة جديدة:</h3>
+<ol>
+<li>حدد <code>EventType</code> (1-4)</li>
+<li>اكتب Template JSON (مدين = دائن)</li>
+<li>اختبر بـ <code>/trigger/{eventType}</code> (في staging أولاً)</li>
+<li>فعّل <code>IsActive = true</code></li>
+</ol>
+<h3 id="_4">تعديل قاعدة موجودة:</h3>
+<ol>
+<li>GET القاعدة</li>
+<li>عدّل Template JSON</li>
+<li>أرسل POST (لكن هذا ينشئ قاعدة <strong>جديدة</strong>، لا يعدل!)</li>
+</ol>
+<p>⚠️ <strong>مشكلة</strong>: لا يوجد <code>PUT /api/finance/posting-rules/{id}</code> لتعديل قاعدة موجودة. <strong>يجب</strong> حذف وإنشاء جديد. هذا يخسر الـ <code>id</code> + يخسر الـ audit trail.</p>
+<p><strong>التوصية</strong>: إضافة <code>PUT</code> endpoint (يستحق DEC منفصل).</p>
+<h3 id="_5">تعطيل قاعدة (بدون حذف):</h3>
+<ul>
+<li><strong>لا يوجد endpoint لذلك أيضاً!</strong></li>
+<li>يجب تعديل DB مباشرة (UPDATE posting_rules SET is_active = false)</li>
+</ul>
+<hr />
+<h2 id="_6">📌 ملخص سريع</h2>
+<table>
+<thead>
+<tr>
+<th>المفهوم</th>
+<th>الحقيقة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>الغرض</strong></td>
+<td>أتمتة القيود المحاسبية من الأحداث</td>
+</tr>
+<tr>
+<td><strong>Schema</strong></td>
+<td><code>PostingRule { id, tenant_id, name, event_type, is_active, template_json }</code></td>
+</tr>
+<tr>
+<td><strong>Template</strong></td>
+<td><code>PostingRuleTemplate { description, reference, lines[] }</code></td>
+</tr>
+<tr>
+<td><strong>Line</strong></td>
+<td><code>{ accountCode, side, amountFormula }</code></td>
+</tr>
+<tr>
+<td><strong>Event Types</strong></td>
+<td>4 فقط حالياً (StockReceived, StockIssued, InvoiceCreated, PaymentReceived)</td>
+</tr>
+<tr>
+<td><strong>Formulas</strong></td>
+<td><code>{amount}</code>, <code>{amount}*2</code>, رقم خام — <strong>فقط</strong></td>
+</tr>
+<tr>
+<td><strong>Polling</strong></td>
+<td>كل 5 ثوان (batch=50)</td>
+</tr>
+<tr>
+<td><strong>Default Rule</strong></td>
+<td>StockReceived → 1300/2100 فقط</td>
+</tr>
+<tr>
+<td><strong>Validation</strong></td>
+<td>يتخطى بصمت لو غير متوازن ⚠️</td>
+</tr>
+<tr>
+<td><strong>Currency</strong></td>
+<td>EventPayload.currency لا يُستخدم في القيد ⚠️</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="jimi">🎯 توصيات Jimi تحليلي</h2>
+<h3 id="production">أولوية عالية (يجب إصلاحها قبل Production):</h3>
+<ol>
+<li><strong>إضافة Notification عند فشل القيد</strong> (بدل log فقط)</li>
+<li><strong>توثيق RBAC صراحةً</strong> — مَن ينشئ/يعدّل القواعد</li>
+<li><strong>حل تناقض العملة</strong> — <code>SAR</code> default vs <code>LYD</code> context</li>
+<li><strong>إضافة <code>PUT</code> endpoint</strong> لتعديل القواعد</li>
+</ol>
+<h3 id="_7">أولوية متوسطة:</h3>
+<ol>
+<li>توسيع <code>EvaluateFormula</code> (عمليات حسابية + متغيرات متعددة)</li>
+<li>Audit log لتعديلات القواعد</li>
+<li>Dry-run mode</li>
+</ol>
+<h3 id="phase-2">أولوية منخفضة (Phase 2+):</h3>
+<ol>
+<li>شروط متقدمة (if/case)</li>
+<li>Currency-aware templates</li>
+<li>LISTEN/NOTIFY بدل polling</li>
+</ol>
+<hr />
+<h2 id="_8">📎 روابط مفيدة</h2>
+<ul>
+<li>📋 الكود المصدري: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Finance/Entities/PostingRule.cs</code></li>
+<li>📋 الخدمة: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Finance/Application/Services/PostingRulesService.cs</code></li>
+<li>📋 Controller: <code>/workspace/ERP-SYSTEM/src/backend/Host/Controllers/PostingRulesController.cs</code></li>
+<li>📋 Outbox Processor: <code>/workspace/ERP-SYSTEM/src/backend/Shared/Events/Application/Services/OutboxProcessorHostedService.cs</code></li>
+<li>📋 AGENTS.md: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Finance/AGENTS.md</code></li>
+<li>🌐 Portal: https://rwaxbl9ycfo1l.space.minimax.io (سيتم تحديثه)</li>
+</ul>
+<hr />
+<p><strong>Built with 🎯 Jimi تحليلي + Mavis Root — يكشف الحقيقة من الكود، مش من التخمين.</strong></p>
+</body>
+</html>

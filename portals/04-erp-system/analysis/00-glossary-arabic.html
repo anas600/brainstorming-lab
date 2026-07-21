@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 المعجم الموحّد (Unified Glossary) — عربي / English</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="unified-glossary-english">📖 المعجم الموحّد (Unified Glossary) — عربي / English</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: Jimi تحليلي (Analytical Team Leader)<br />
+<strong>الإصدار</strong>: v1.0<br />
+<strong>المصطلحات</strong>: ~75 مصطلح<br />
+<strong>المصادر</strong>: 5 وثائق تحليلية + كود مصدري (8 ملفات) + IFRS / Libyan context</p>
+</blockquote>
+<hr />
+<h2 id="_1">🎯 الغرض من هذا المعجم</h2>
+<p>في الوثائق الأربع الأولى (Finance/Projects/Events/Relationships) لاحظنا أن <strong>نفس المفهوم يُترجم بأكثر من طريقة</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>المصطلح الإنجليزي</th>
+<th>الترجمة 1</th>
+<th>الترجمة 2</th>
+<th>الترجمة 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Posting</td>
+<td>ترحيل</td>
+<td>Posting</td>
+<td>يُرحّل</td>
+</tr>
+<tr>
+<td>Equity</td>
+<td>حقوق ملكية</td>
+<td>Rapatrié</td>
+<td>رأس مال</td>
+</tr>
+<tr>
+<td>Committed</td>
+<td>متعهد به</td>
+<td>Committed</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Soft Delete</td>
+<td>حذف ناعم</td>
+<td>Soft Delete</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>النتيجة</strong>: قارئ يبحث عن "ترحيل" قد لا يجد قسم "Posting". مطوّر يبني UI بأسماء مختلفة عن API.</p>
+<p><strong>هذا المعجم</strong> يوحّد الترجمة:<br />
+- <strong>AR (مفضّل)</strong> = الترجمة الرسمية في كل وثائقنا + UI<br />
+- <strong>AR (بديل)</strong> = مقبول لكن غير مفضّل<br />
+- <strong>EN</strong> = المصطلح في الكود + API</p>
+<hr />
+<h2 id="categories">📂 الفئات (Categories)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>الفئة</th>
+<th>عدد المصطلحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1️⃣</td>
+<td><a href="#1-محاسبة-accounting">محاسبة (Accounting)</a></td>
+<td>22</td>
+</tr>
+<tr>
+<td>2️⃣</td>
+<td><a href="#2-تعدد-المستأجرين-multi-tenancy">تعدد المستأجرين (Multi-Tenancy)</a></td>
+<td>8</td>
+</tr>
+<tr>
+<td>3️⃣</td>
+<td><a href="#3-إدارة-مشاريع-projects">إدارة مشاريع (Projects)</a></td>
+<td>13</td>
+</tr>
+<tr>
+<td>4️⃣</td>
+<td><a href="#4-أحداث-ومعمارية-events--architecture">أحداث ومعمارية (Events &amp; Architecture)</a></td>
+<td>14</td>
+</tr>
+<tr>
+<td>5️⃣</td>
+<td><a href="#5-تقني-technical">تقني (Technical)</a></td>
+<td>12</td>
+</tr>
+<tr>
+<td>6️⃣</td>
+<td><a href="#6-سياق-ليبي-libyan-context">سياق ليبي (Libyan Context)</a></td>
+<td>6</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>الإجمالي</strong></td>
+<td><strong>75</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-accounting">1) محاسبة (Accounting)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Account</strong></td>
+<td>حساب</td>
+<td>—</td>
+<td>سجل في دليل الحسابات يمثل بند مالي (أصل/خصم/حقوق ملكية/إيراد/مصروف)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Chart of Accounts (CoA)</strong></td>
+<td>دليل الحسابات</td>
+<td>شجرة الحسابات</td>
+<td>قائمة كاملة بكل الحسابات + العلاقات الشجرية بينها (parent_account_id)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Debit</strong></td>
+<td>مدين</td>
+<td>—</td>
+<td>الجانب الأيسر من القيد. يزيد الأصول والمصروفات، ينقص الخصوم وحقوق الملكية والإيرادات</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Credit</strong></td>
+<td>دائن</td>
+<td>—</td>
+<td>الجانب الأيمن من القيد. عكس المدين</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Double-Entry Bookkeeping</strong></td>
+<td>القيد المزدوج</td>
+<td>محاسبة مزدوجة</td>
+<td>مبدأ محاسبي: <strong>Σ(مدين) = Σ(دائن)</strong> في كل قيد</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Journal Entry (JE)</strong></td>
+<td>قيد يومية</td>
+<td>قيد محاسبي</td>
+<td>عملية مالية واحدة = قيد واحد. له رأس (entry) + سطور (lines)</td>
+<td><code>01-finance</code>, <code>05-posting-rules</code></td>
+</tr>
+<tr>
+<td><strong>Journal Line</strong></td>
+<td>سطر القيد</td>
+<td>—</td>
+<td>سطر واحد داخل القيد. يربط حساب بمبلغ (مدين أو دائن)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Posting / Post</strong></td>
+<td>ترحيل</td>
+<td>ترحيل القيد</td>
+<td>نقل القيد من <strong>مسودة (Draft)</strong> إلى <strong>مُرحّل (Posted)</strong> = نهائي، لا يُعدَّل</td>
+<td><code>01-finance</code>, <code>05-posting-rules</code></td>
+</tr>
+<tr>
+<td><strong>Draft</strong></td>
+<td>مسودة</td>
+<td>—</td>
+<td>حالة القيد قبل الترحيل. قابل للتعديل أو الحذف</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Posted</strong></td>
+<td>مُرحّل</td>
+<td>مُرحَّل</td>
+<td>حالة القيد بعد الترحيل. <strong>لا يُعدَّل أبداً</strong> (audit trail)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Reversing Entry</strong></td>
+<td>قيد عكسي</td>
+<td>—</td>
+<td>قيد جديد يُنشأ <strong>لعكس</strong> قيد مُرحّل (بدلاً من تعديله)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Entry Number</strong></td>
+<td>رقم القيد</td>
+<td>—</td>
+<td>رقم تسلسلي فريد (مثلاً <code>JE-2026-0012</code>)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Account Type</strong></td>
+<td>نوع الحساب</td>
+<td>—</td>
+<td>5 أنواع: أصل/خصم/حقوق ملكية/إيراد/مصروف (انظر أدناه)</td>
+<td><code>01-finance</code>, code</td>
+</tr>
+<tr>
+<td><strong>Asset</strong></td>
+<td>أصل</td>
+<td>أصول</td>
+<td>ما تملكه الشركة (<code>type=1</code>)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Liability</strong></td>
+<td>خصم</td>
+<td>خصوم/التزامات</td>
+<td>ما على الشركة (<code>type=2</code>)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Equity</strong></td>
+<td>حقوق ملكية</td>
+<td>رأس المال</td>
+<td>حقوق الشركاء/المساهمين (<code>type=3</code>). "Rapatrié" = فرنسي/مغاربي (متجنب)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Revenue</strong></td>
+<td>إيراد</td>
+<td>إيرادات</td>
+<td>ما تكسبه الشركة (<code>type=4</code>)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Expense</strong></td>
+<td>مصروف</td>
+<td>مصروفات</td>
+<td>ما تنفقه الشركة (<code>type=5</code>)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Normal Balance</strong></td>
+<td>الرصيد الطبيعي</td>
+<td>—</td>
+<td>الجانب الطبيعي للحساب: <code>1=مدين</code> (أصول/مصروفات)، <code>2=دائن</code> (الباقي)</td>
+<td><code>01-finance</code>, code</td>
+</tr>
+<tr>
+<td><strong>Postable Account</strong></td>
+<td>حساب قابل للترحيل</td>
+<td>حساب فعّال</td>
+<td>حساب يقبل قيود مباشرة. <code>IsPostable=true</code>. الحسابات التجميعية لا</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Parent Account</strong></td>
+<td>حساب أب</td>
+<td>—</td>
+<td>الحساب الأعلى في الشجرة. <code>parent_account_id</code> يشير له</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Trial Balance</strong></td>
+<td>ميزان المراجعة</td>
+<td>—</td>
+<td>تقرير: كل حساب + رصيده (مدين - دائن)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Balance Sheet</strong></td>
+<td>الميزانية (العمومية)</td>
+<td>—</td>
+<td>تقرير: الأصول = الخصوم + حقوق الملكية (في تاريخ معيّن)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>P&amp;L (Profit &amp; Loss)</strong></td>
+<td>قائمة الدخل</td>
+<td>—</td>
+<td>تقرير: الإيرادات - المصروفات = الربح (لفترة معيّنة)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Cash Flow</strong></td>
+<td>التدفقات النقدية</td>
+<td>—</td>
+<td>تقرير: من وين جاء الفلوس، وين راح</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>A/R Aging</strong></td>
+<td>أعمار الديون</td>
+<td>أعمار المدينين</td>
+<td>تقرير: كم لك وكم تأخر (30/60/90 يوم)</td>
+<td><code>01-finance</code></td>
+</tr>
+<tr>
+<td><strong>Intercompany Transaction</strong></td>
+<td>عملية بين شركات المجموعة</td>
+<td>—</td>
+<td>معاملة بين شركتين داخل نفس الـ tenant</td>
+<td><code>01-finance</code>, <code>04-relationships</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-multi-tenancy">2) تعدد المستأجرين (Multi-Tenancy)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tenant</strong></td>
+<td>مستأجر</td>
+<td>شركة قابضة</td>
+<td>الجذر الأعلى. كل بياناته معزولة عن باقي الـ tenants. عنده <code>tenant_id</code></td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Multi-Tenant</strong></td>
+<td>متعدد المستأجرين</td>
+<td>—</td>
+<td>بنية معمارية: مستأجرين متعددين في DB واحد، معزولين بـ <code>tenant_id</code></td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Multi-Company</strong></td>
+<td>متعدد الشركات</td>
+<td>—</td>
+<td>داخل نفس الـ tenant، يمكن أن يكون عنده عدة شركات (subsidiaries)</td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Holding Company</strong></td>
+<td>شركة قابضة</td>
+<td>—</td>
+<td>الشركة الأم التي تملك شركات أخرى. tenant = holding</td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Subsidiary</strong></td>
+<td>شركة تابعة</td>
+<td>—</td>
+<td>شركة مملوكة لشركة أخرى. داخل نفس tenant</td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Tenant Isolation</strong></td>
+<td>عزل المستأجرين</td>
+<td>—</td>
+<td>ضمان: مستأجر A لا يرى بيانات مستأجر B (عبر <code>WHERE tenant_id=?</code> في كل query)</td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Default CoA</strong></td>
+<td>دليل الحسابات الافتراضي</td>
+<td>—</td>
+<td>عند إنشاء tenant جديد، يُضاف CoA افتراضي (17 حساب: 1100، 1300، 4100...)</td>
+<td>code, AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Default Rules</strong></td>
+<td>القواعد الافتراضية</td>
+<td>—</td>
+<td>عند إنشاء tenant جديد، تُضاف قواعد posting افتراضية (مثل StockReceived → 1300/2100)</td>
+<td>code, <code>05-posting-rules</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-projects">3) إدارة مشاريع (Projects)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project</strong></td>
+<td>مشروع</td>
+<td>—</td>
+<td>وحدة عمل كبيرة. لها كود (P-2026-001)، ميزانية، تواريخ</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Project Task</strong></td>
+<td>مهمة</td>
+<td>—</td>
+<td>خطوة فرعية داخل المشروع. لها ساعات مقدرة + فعلية</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Project Budget</strong></td>
+<td>ميزانية المشروع</td>
+<td>—</td>
+<td>المبلغ المرصود لمشروع. يربط المشروع بـ cost center + حساب</td>
+<td><code>02-projects</code>, <code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Budget Amount</strong></td>
+<td>المبلغ المرصود</td>
+<td>—</td>
+<td><code>budget_amount</code>: المخطط</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Spent Amount</strong></td>
+<td>المبلغ المصروف</td>
+<td>—</td>
+<td><code>spent_amount</code>: الفعلي (من القيود على cost center)</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Committed Amount</strong></td>
+<td>المبلغ المتعهد به</td>
+<td>الملتزم به</td>
+<td><code>committed_amount</code>: اللي اتفق على صرفه (POs مفتوحة، لم تُدفع بعد)</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Resource</strong></td>
+<td>مورد</td>
+<td>—</td>
+<td>كل ما يمكن أن يشتغل على مشروع: عامل، معدة، أداة</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Resource Assignment</strong></td>
+<td>تعيين مورد</td>
+<td>—</td>
+<td>ربط مورد بمهمة/مشروع لفترة محددة + سعر ساعة</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Hourly Rate</strong></td>
+<td>سعر الساعة</td>
+<td>—</td>
+<td>التكلفة بالساعة لمورد. قد يختلف عن السعر الأصلي (مثلاً: معدات مع خصم)</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Estimated Hours</strong></td>
+<td>الساعات المقدرة</td>
+<td>—</td>
+<td><code>estimated_hours</code>: المخطط</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Actual Hours</strong></td>
+<td>الساعات الفعلية</td>
+<td>—</td>
+<td><code>actual_hours</code>: اللي اتسجلت</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Progress Percent</strong></td>
+<td>نسبة الإنجاز</td>
+<td>—</td>
+<td><code>progress_percent</code>: 0-100</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Behind Schedule</strong></td>
+<td>متأخر عن الجدول</td>
+<td>—</td>
+<td>الفعلي أقل من المتوقع عند نقطة زمنية</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Over Budget</strong></td>
+<td>تجاوز الميزانية</td>
+<td>—</td>
+<td><code>committed + spent &gt; budget</code></td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Soft Delete</strong></td>
+<td>حذف ناعم</td>
+<td>—</td>
+<td><code>deleted_at</code>: حذف منطقي (الصف يبقى، لكن يُستبعد من الـ queries)</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>Cost Center</strong></td>
+<td>مركز تكلفة</td>
+<td>—</td>
+<td>محور مشترك بين Projects و Finance. كل مصروف يُسند لمركز تكلفة</td>
+<td><code>01-finance</code>, <code>02-projects</code>, <code>04-relationships</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-events-architecture">4) أحداث ومعمارية (Events &amp; Architecture)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Outbox</strong></td>
+<td>صندوق الصادر</td>
+<td>نمط Outbox</td>
+<td>نمط معماري: الـ event يُحفظ في نفس الـ transaction مع الـ data</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Outbox Event</strong></td>
+<td>حدث في الصندوق</td>
+<td>—</td>
+<td>صف في <code>outbox_events</code> ينتظر المعالجة</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Idempotency</strong></td>
+<td>عدم التكرار</td>
+<td>—</td>
+<td>ضمان: كل event يُعالج <strong>مرة واحدة فقط</strong> (حتى لو تكرر) عبر <code>processed_events</code></td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Eventual Consistency</strong></td>
+<td>الاتساق النهائي</td>
+<td>—</td>
+<td>الضمان: الـ events تصل، لكن قد تتأخر. ليست real-time</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Transactional Outbox</strong></td>
+<td>Outbox داخل Transaction</td>
+<td>—</td>
+<td>الـ event والـ data يُحفظان معاً (atomic)</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Event Payload</strong></td>
+<td>حمولة الحدث</td>
+<td>—</td>
+<td>محتوى الحدث (JSON) — البيانات المُرسلة للمستهلكين</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Polling</strong></td>
+<td>استطلاع دوري</td>
+<td>—</td>
+<td>الـ Outbox Processor يفحص <code>outbox_events</code> كل <strong>5 ثوان</strong> (batch=50)</td>
+<td>code, OutboxProcessor</td>
+</tr>
+<tr>
+<td><strong>LISTEN/NOTIFY</strong></td>
+<td>استماع/إشعار Postgres</td>
+<td>—</td>
+<td>نمط Postgres للدفع الفوري (بديل polling). <strong>مستقبلي</strong>، مش مفعّل</td>
+<td>code comment</td>
+</tr>
+<tr>
+<td><strong>FOR UPDATE SKIP LOCKED</strong></td>
+<td>تخطي المقفل</td>
+<td>—</td>
+<td>نمط DB: يقرأ الصفوف غير المقفلة فقط. <strong>مستقبلي</strong></td>
+<td>code comment</td>
+</tr>
+<tr>
+<td><strong>Processed Event</strong></td>
+<td>حدث معالج</td>
+<td>—</td>
+<td>صف في <code>processed_events</code> — للـ idempotency dedup</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Aggregate</strong></td>
+<td>الكيان الجذري</td>
+<td>—</td>
+<td>الكيان اللي أطلق الحدث (مثلاً: sales_invoice، payment)</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Aggregate ID</strong></td>
+<td>معرّف الكيان</td>
+<td>—</td>
+<td>ID الكيان الجذري (مثلاً: <code>INV-2026-0042</code>)</td>
+<td><code>03-events</code></td>
+</tr>
+<tr>
+<td><strong>Retry Count</strong></td>
+<td>عدد المحاولات</td>
+<td>—</td>
+<td>كم مرة فشلت معالجة الحدث قبل ما ينجح</td>
+<td><code>03-events</code>, code</td>
+</tr>
+<tr>
+<td><strong>Max Retries</strong></td>
+<td>الحد الأقصى للمحاولات</td>
+<td>—</td>
+<td>عادةً 3-5. بعدها يُعلّم "معالج" + error logged</td>
+<td>code, <code>03-events</code></td>
+</tr>
+<tr>
+<td><strong>Dead Letter</strong></td>
+<td>حدث ميّت</td>
+<td>—</td>
+<td>حدث وصل MaxRetries وما اتعالج. يحتاج تدخل يدوي</td>
+<td>code</td>
+</tr>
+<tr>
+<td><strong>Background Service (Hosted Service)</strong></td>
+<td>خدمة في الخلفية</td>
+<td>—</td>
+<td>خدمة .NET تشتغل طول عمر التطبيق. الـ OutboxProcessor واحد منها</td>
+<td>code, AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Integration Event</strong></td>
+<td>حدث تكاملي</td>
+<td>—</td>
+<td>contract مشترك: <code>EventId, TenantId, OccurredAt</code> (لـ dedup + routing)</td>
+<td>code, StockEvents.cs</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-technical">5) تقني (Technical)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>API (Application Programming Interface)</strong></td>
+<td>واجهة برمجة</td>
+<td>—</td>
+<td>نقاط الوصول للـ backend (REST، JSON)</td>
+<td>code, AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>JWT (JSON Web Token)</strong></td>
+<td>رمز JWT</td>
+<td>—</td>
+<td>Token للـ authentication. يحتوي <code>tenant_id</code> + claims</td>
+<td><code>04-relationships</code>, AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>RBAC (Role-Based Access Control)</strong></td>
+<td>التحكم بالصلاحيات حسب الدور</td>
+<td>—</td>
+<td>مَن يستطيع عمل شنو (Admin/Accountant/PM/Viewer)</td>
+<td><code>04-relationships</code>, <code>05-posting-rules</code></td>
+</tr>
+<tr>
+<td><strong>Audit Log</strong></td>
+<td>سجل التدقيق</td>
+<td>—</td>
+<td>مين عمل شنو ومتى. مطلوب compliance</td>
+<td><code>03-events</code>, <code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Audit Trail</strong></td>
+<td>مسار التدقيق</td>
+<td>—</td>
+<td>نفس مفهوم Audit Log</td>
+<td><code>03-events</code></td>
+</tr>
+<tr>
+<td><strong>Swagger / OpenAPI</strong></td>
+<td>Swagger</td>
+<td>OpenAPI</td>
+<td>توثيق API تلقائي. <code>/swagger/v1/swagger.json</code> متاح</td>
+<td>code, Mavis Root</td>
+</tr>
+<tr>
+<td><strong>Migration</strong></td>
+<td>ترحيل DB</td>
+<td>—</td>
+<td>FluentMigrator: كل تغيير على الـ schema له version + timestamp</td>
+<td>code, AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Dapper</strong></td>
+<td>Dapper</td>
+<td>—</td>
+<td>ORM خفيف لـ .NET. SQL خام + mapping</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>FluentMigrator</strong></td>
+<td>FluentMigrator</td>
+<td>—</td>
+<td>أداة migrations لـ .NET (مثل Rails migrations)</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>MartenDB</strong></td>
+<td>MartenDB</td>
+<td>—</td>
+<td>Event Store + Document DB على Postgres</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>BCrypt</strong></td>
+<td>BCrypt</td>
+<td>—</td>
+<td>خوارزمية hash لكلمات المرور</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Multi-Tenancy Pattern</strong></td>
+<td>نمط تعدد المستأجرين</td>
+<td>—</td>
+<td>معماري: عزل بيانات عبر <code>tenant_id</code> + middleware</td>
+<td>AGENTS.md, <code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>DTO (Data Transfer Object)</strong></td>
+<td>كائن نقل البيانات</td>
+<td>—</td>
+<td>POCO لنقل البيانات بين الطبقات (لا يحتوي business logic)</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>POCO (Plain Old CLR Object)</strong></td>
+<td>كائن بسيط</td>
+<td>—</td>
+<td>Class بـ properties فقط (لا inheritance، لا logic)</td>
+<td>code, <code>05-posting-rules</code></td>
+</tr>
+<tr>
+<td><strong>Validator (FluentValidation)</strong></td>
+<td>مدقق</td>
+<td>—</td>
+<td>قواعد التحقق منفصلة عن الـ service. ASP.NET pattern</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Result\&lt;T&gt; Pattern</strong></td>
+<td>نمط النتيجة</td>
+<td>—</td>
+<td>بدلاً من throw exceptions: <code>Result.Ok(value)</code> / <code>Result.Fail(error)</code></td>
+<td>code</td>
+</tr>
+<tr>
+<td><strong>DI (Dependency Injection)</strong></td>
+<td>حقن التبعيات</td>
+<td>—</td>
+<td>نمط: dependencies تُحقن عبر constructor</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>Middleware</strong></td>
+<td>وسيط</td>
+<td>—</td>
+<td>كود يعمل قبل/بعد كل request (مثل <code>TenantMiddleware</code>)</td>
+<td>AGENTS.md</td>
+</tr>
+<tr>
+<td><strong>tenant_id Claim</strong></td>
+<td>ادعاء tenant في JWT</td>
+<td>—</td>
+<td>claim في JWT يحدد أي tenant</td>
+<td>AGENTS.md</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-libyan-context">6) سياق ليبي (Libyan Context)</h2>
+<table>
+<thead>
+<tr>
+<th>EN</th>
+<th>AR (مفضّل)</th>
+<th>AR (بديل)</th>
+<th>التعريف</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LYD (Libyan Dinar)</strong></td>
+<td>دينار ليبي</td>
+<td>ل.د</td>
+<td>العملة الرسمية لليبيا. <strong>3 أرقام بعد الفاصلة</strong> (1000 فلس = 1 دينار)</td>
+<td><code>02-projects</code>, <code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>SAR (Saudi Riyal)</strong></td>
+<td>ريال سعودي</td>
+<td>ر.س</td>
+<td>العملة الرسمية للسعودية. <strong>2 أرقام بعد الفاصلة</strong> (100 هللة = 1 ريال)</td>
+<td>code, <code>05-posting-rules</code> ⚠️</td>
+</tr>
+<tr>
+<td><strong>Default Currency</strong></td>
+<td>العملة الافتراضية</td>
+<td>—</td>
+<td>حالياً <code>SAR</code> في الكود. <strong>متناقض</strong> مع السياق الليبي</td>
+<td><code>05-posting-rules</code> Finding #1</td>
+</tr>
+<tr>
+<td><strong>Libyan Companies Sample</strong></td>
+<td>نموذج شركات ليبية</td>
+<td>—</td>
+<td>AlFajr Trading, Al-Burj Construction, AlFajr Holding (4 tenants في seed)</td>
+<td><code>04-relationships</code></td>
+</tr>
+<tr>
+<td><strong>Construction Industry</strong></td>
+<td>صناعة التشييد</td>
+<td>قطاع المقاولات</td>
+<td>السياق الرئيسي للمشاريع في Libya (مشاريع فيلات، طرق، مباني)</td>
+<td><code>02-projects</code></td>
+</tr>
+<tr>
+<td><strong>SAR/LYD Mismatch</strong></td>
+<td>تناقض SAR/LYD</td>
+<td>—</td>
+<td>⚠️ تناقض في الكود: <code>EventPayload.Currency</code> default = <code>SAR</code> لكن السياق ليبـي</td>
+<td><code>05-posting-rules</code> Finding #1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="translation-methodology">📐 منهجية الترجمة (Translation Methodology)</h2>
+<h3 id="_2">القواعد المعتمدة:</h3>
+<ol>
+<li><strong>الأولوية للعربية الفصحى المبسّطة</strong> — لا عامية صعبة، لا فصحى معقّدة</li>
+<li><strong>مصطلحات محاسبية معتمدة من IFRS</strong> — مثل "ميزان المراجعة"، "حقوق الملكية"</li>
+<li><strong>مصطلحات تقنية = EN بين قوسين</strong> في أول ذكر (مثل: "نمط Outbox (Outbox Pattern)")</li>
+<li><strong>أسماء الحسابات (1100، 1300...) تبقى كأرقام</strong> — لا تُترجم</li>
+<li><strong>API endpoints تبقى EN</strong> — <code>/api/finance/posting-rules</code> لا تُترجم</li>
+<li><strong>Event types تبقى EN</strong> — <code>StockReceived</code>, <code>PaymentReceived</code> — لأن الكود يستخدمها</li>
+<li><strong>للمتناقضات</strong>: نضع تنبيه ⚠️ ونقترح الحل (مثل SAR/LYD)</li>
+</ol>
+<h3 id="vs">متى نستخدم "مفضّل" vs "بديل"؟</h3>
+<table>
+<thead>
+<tr>
+<th>المفضّل</th>
+<th>البديل</th>
+<th>السبب</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ترحيل</td>
+<td>Posting</td>
+<td>العربي أوضح للقارئ غير التقني</td>
+</tr>
+<tr>
+<td>حذف ناعم</td>
+<td>Soft Delete</td>
+<td>الأكثر استخداماً في التوثيق العربي</td>
+</tr>
+<tr>
+<td>حقوق ملكية</td>
+<td>Rapatrié</td>
+<td>الأول فصحى، الثاني فرنسي (نادر)</td>
+</tr>
+<tr>
+<td>متعهد به</td>
+<td>Committed</td>
+<td>الأول مترجم، الثاني شائع في الندوات</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">🔄 كيف يُحدَّث هذا المعجم؟</h2>
+<h3 id="_4">عند إضافة مصطلح جديد:</h3>
+<ol>
+<li>حدد الفئة (من 6)</li>
+<li>اكتب EN + AR (مفضّل) + AR (بديل) + تعريف + مصدر</li>
+<li>أضف للجدول المناسب (أبجدياً)</li>
+<li>إن كان متناقض مع مصطلح آخر → ضع ملاحظة ⚠️</li>
+</ol>
+<h3 id="_5">عند تغيير ترجمة معتمدة:</h3>
+<ol>
+<li><strong>لا تغيّر</strong> بدون DEC رسمي</li>
+<li>افتح DEC-XXX (Glossary Update) → حدّث هنا</li>
+<li><strong>حدّث</strong> كل الوثائق الـ 5 لتستخدم الترجمة الجديدة</li>
+<li><strong>حدّث</strong> الكود/UI (comments، labels)</li>
+</ol>
+<hr />
+<h2 id="_6">📊 إحصائيات المعجم</h2>
+<table>
+<thead>
+<tr>
+<th>المقياس</th>
+<th>القيمة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>عدد المصطلحات</td>
+<td><strong>75</strong></td>
+</tr>
+<tr>
+<td>عدد الفئات</td>
+<td><strong>6</strong></td>
+</tr>
+<tr>
+<td>عدد المصادر</td>
+<td>6 (5 docs + code)</td>
+</tr>
+<tr>
+<td>متوسط طول التعريف</td>
+<td>~12 كلمة</td>
+</tr>
+<tr>
+<td>المصطلحات ذات البديل</td>
+<td>~20%</td>
+</tr>
+<tr>
+<td>المصطلحات ذات ⚠️ تنبيه</td>
+<td>2 (Rapatrié، SAR/LYD)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_7">🎯 ملاحظات ختامية</h2>
+<h3 id="jimi">للمطوّر (Jimi تنفيذي):</h3>
+<ul>
+<li>استخدم AR (مفضّل) في UI labels (عربي)</li>
+<li>استخدم EN في code, API, logs</li>
+<li>عند إضافة event type جديد: أضف للمعجم + event catalog</li>
+<li>عند conflict: الأهم هو المعجم (هذا الملف)</li>
+</ul>
+<h3 id="jimi_1">للمحلل (Jimi تحليلي):</h3>
+<ul>
+<li>استخدم AR (مفضّل) في كل وثيقة جديدة</li>
+<li>إن وجدت تناقض: ضع ملاحظة + اقترح حل</li>
+<li>حدّث README.md للترتيب ليدرج المعجم</li>
+</ul>
+<h3 id="_8">للمحاسب / مدير المشروع:</h3>
+<ul>
+<li>ابحث في AR (مفضّل) أولاً، ثم EN إن لم تجده</li>
+<li>المصطلحات المحاسبية IFRS = "معيار عالمي"، لا تترجمها محلياً</li>
+</ul>
+<h3 id="mavis-root">لـ Mavis Root:</h3>
+<ul>
+<li><strong>هذا المعجم = المرجع الرسمي</strong> في حال أي خلاف ترجمة</li>
+<li>ينشر في الـ Portal (سيتم تحديث rwaxbl9ycfo1l.space.minimax.io)</li>
+</ul>
+<hr />
+<h2 id="_9">📎 روابط مفيدة</h2>
+<ul>
+<li>📚 الوثائق: <code>/workspace/projects/erp-system/docs/analysis/</code></li>
+<li>📊 ERD: <code>/workspace/projects/erp-system/docs/erd/</code></li>
+<li>🌐 Portal: https://rwaxbl9ycfo1l.space.minimax.io</li>
+<li>🛠️ AGENTS.md: <code>/workspace/ERP-SYSTEM/AGENTS.md</code></li>
+<li>🛠️ Finance Module: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Finance/AGENTS.md</code></li>
+</ul>
+<hr />
+<p><strong>Built with 🎯 Jimi تحليلي — لتوحيد اللغة بين 5+ وثائق، 8 ملفات كود، وفريق عمل متعدد.</strong></p>
+</body>
+</html>

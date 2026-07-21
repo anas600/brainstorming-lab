@@ -1,270 +1,197 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📁 موديل إدارة المشاريع (Projects Module) — شرح بالعربي</title>
 <style>
-:root {
-    --bg: #0f172a;
-    --bg-card: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --text-soft: #94a3b8;
-    --accent: #38bdf8;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
-    font-family: 'Segoe UI', Tahoma, sans-serif; 
-    background: var(--bg); 
-    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
     line-height: 1.7;
-    padding: 20px;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
 }
-.container { max-width: 900px; margin: 0 auto; }
-.back-link { 
-    display: inline-block;
-    color: var(--accent);
-    text-decoration: none;
-    margin-bottom: 20px;
-    font-size: 0.9em;
-}
-h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
-h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
-h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
-p { margin: 8px 0; color: var(--text); }
-blockquote {
-    background: var(--bg-card);
-    border-right: 4px solid var(--accent);
-    padding: 10px 15px;
-    margin: 10px 0;
-    color: var(--text-soft);
-}
-code {
-    background: var(--bg-card);
-    color: #f472b6;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-}
-pre {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 15px;
-    overflow-x: auto;
-    margin: 10px 0;
-}
-pre code {
-    background: transparent;
-    color: var(--text);
-    padding: 0;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    background: var(--bg-card);
-    border-radius: 6px;
-    overflow: hidden;
-}
-th {
-    background: var(--border);
-    color: var(--accent);
-    padding: 10px;
-    text-align: right;
-}
-td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-}
-tr:hover { background: rgba(56, 189, 248, 0.05); }
-ul, ol { padding-right: 30px; margin: 10px 0; }
-li { margin: 5px 0; }
-hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-strong { color: var(--accent); }
-em { color: var(--text-soft); }
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
 </style>
 </head>
 <body>
-<div class="container">
-<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
-<h1>📁 موديل إدارة المشاريع (Projects Module) — شرح بالعربي</h1>
-
-<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
-<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
-<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
-<p>&gt; <strong>المصدر</strong>: live DB via Neon MCP</p>
-
-<hr>
-
-<h2>🎯 شو هو موديل المشاريع؟</h2>
-
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="projects-module">📁 موديل إدارة المشاريع (Projects Module) — شرح بالعربي</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)<br />
+<strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)<br />
+<strong>المصدر</strong>: live DB via Neon MCP</p>
+</blockquote>
+<hr />
+<h2 id="_1">🎯 شو هو موديل المشاريع؟</h2>
 <p>موديل إدارة المشاريع مسؤول عن:</p>
-
+<ul>
 <li>🏗️ تعريف المشاريع (كود، اسم، ميزانية، تواريخ)</li>
 <li>📋 تقسيم المشاريع لمهام (tasks)</li>
 <li>👥 تعيين موارد (عمال، معدات) للمهام</li>
 <li>💰 تتبع الميزانية (مخطط vs فعلي)</li>
 <li>📊 حساب الربحية (لو المشروع لعميل)</li>
 <li>🔗 الربط مع Finance (المحاسبة) و HR (الموظفين)</li>
-
-<strong>بدون هذا الموديل:</strong>
-<li>ما نعرف كم مشروع شغّال</li>
-<li>ما نعرف إذا الميزانية منفذة</li>
-<li>ما نعرف مين يشتغل على شنو</li>
-<li>ما نقدر نحسب تكلفة المشروع بدقة</li>
-
-<hr>
-
-<h2>🏗️ الطاولة المركزية: projects</h2>
-
-<h3>شو هي؟</h3>
-
+</ul>
+<p><strong>بدون هذا الموديل:</strong><br />
+- ما نعرف كم مشروع شغّال<br />
+- ما نعرف إذا الميزانية منفذة<br />
+- ما نعرف مين يشتغل على شنو<br />
+- ما نقدر نحسب تكلفة المشروع بدقة</p>
+<hr />
+<h2 id="projects">🏗️ الطاولة المركزية: projects</h2>
+<h3 id="_2">شو هي؟</h3>
 <p>سجل المشاريع — كل مشروع = صف واحد فيه كل التفاصيل.</p>
-
-<h3>مثال حقيقي من DB:</h3>
-
+<h3 id="db">مثال حقيقي من DB:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الكود</th>
 <th>الاسم</th>
 <th>الميزانية</th>
 <th>الحالة</th>
 <th>الفترة</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`P-2026-001`</td>
+<td><code>P-2026-001</code></td>
 <td>مشروع بناء فيلات السُّرَّي</td>
 <td>450,000.00 LYD</td>
 <td>2 (جاري)</td>
 <td>2026-01-10 → 2026-12-31</td>
 </tr>
 <tr>
-<td>`P-2026-002`</td>
+<td><code>P-2026-002</code></td>
 <td>تجديد مبنى municipal</td>
 <td>180,000.00 LYD</td>
 <td>2 (جاري)</td>
 <td>2026-03-01 → 2026-10-31</td>
 </tr>
 <tr>
-<td>`P-2026-003`</td>
+<td><code>P-2026-003</code></td>
 <td>مشروع صيانة طرق</td>
 <td>95,000.00 LYD</td>
 <td>1 (مخطط)</td>
 <td>2026-06-01 → 2026-12-31</td>
 </tr>
 <tr>
-<td>`P-2024-001`</td>
+<td><code>P-2024-001</code></td>
 <td>مشروع طريق المطار</td>
 <td>50,000.00 LYD</td>
 <td>0 (مكتمل)</td>
 <td>2025-07-01 → 2025-11-01</td>
 </tr>
 <tr>
-<td>`P-2025-007`</td>
+<td><code>P-2025-007</code></td>
 <td>مجمع تجاري الشط</td>
 <td>200,000.00 LYD</td>
 <td>3 (مغلق)</td>
 <td>2025-04-01 → 2025-09-01</td>
 </tr>
-</tbody></table>
-
-<h3>الحقول المهمة:</h3>
-
+</tbody>
+</table>
+<h3 id="_3">الحقول المهمة:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
 <th>مثال</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`code`</td>
+<td><code>code</code></td>
 <td>كود فريد للمشروع</td>
-<td>&quot;P-2026-001&quot;</td>
+<td>"P-2026-001"</td>
 </tr>
 <tr>
-<td>`name`</td>
+<td><code>name</code></td>
 <td>اسم المشروع (عربي)</td>
-<td>&quot;مشروع بناء فيلات السُّرَّي&quot;</td>
+<td>"مشروع بناء فيلات السُّرَّي"</td>
 </tr>
 <tr>
-<td>`description`</td>
+<td><code>description</code></td>
 <td>وصف تفصيلي</td>
 <td>(text طويل)</td>
 </tr>
 <tr>
-<td>`status`</td>
+<td><code>status</code></td>
 <td>الحالة (0-3)</td>
 <td>2 (جاري)</td>
 </tr>
 <tr>
-<td>`budget`</td>
+<td><code>budget</code></td>
 <td>الميزانية المرصودة</td>
 <td>450,000.00</td>
 </tr>
 <tr>
-<td>`start_date`</td>
+<td><code>start_date</code></td>
 <td>تاريخ البداية</td>
 <td>2026-01-10</td>
 </tr>
 <tr>
-<td>`end_date`</td>
+<td><code>end_date</code></td>
 <td>تاريخ النهاية المتوقع</td>
 <td>2026-12-31</td>
 </tr>
 <tr>
-<td>`company_id`</td>
+<td><code>company_id</code></td>
 <td>الشركة المنفذة (multi-company)</td>
-<td>&quot;uuid&quot;</td>
+<td>"uuid"</td>
 </tr>
 <tr>
-<td>`cost_center_id`</td>
+<td><code>cost_center_id</code></td>
 <td>مركز التكلفة (للربط مع Finance)</td>
-<td>&quot;uuid&quot;</td>
+<td>"uuid"</td>
 </tr>
 <tr>
-<td>`customer_id`</td>
+<td><code>customer_id</code></td>
 <td>العميل (لو المشروع لعميل)</td>
-<td>&quot;uuid&quot; أو null</td>
+<td>"uuid" أو null</td>
 </tr>
 <tr>
-<td>`is_active`</td>
+<td><code>is_active</code></td>
 <td>هل نشط؟</td>
 <td>true</td>
 </tr>
 <tr>
-<td>`deleted_at`</td>
+<td><code>deleted_at</code></td>
 <td>تاريخ الحذف الناعم (soft delete)</td>
 <td>null</td>
 </tr>
-</tbody></table>
-
-<h3>الحالات (status):</h3>
-
-<pre><code class="language-">
-status=0 → مكتمل (Completed)
+</tbody>
+</table>
+<h3 id="status">الحالات (status):</h3>
+<pre><code>status=0 → مكتمل (Completed)
 status=1 → مخطط (Planned)
 status=2 → جاري (In Progress)
 status=3 → مغلق (Closed/Cancelled)
 </code></pre>
-
-<hr>
-
-<h2>📋 المهام (project_tasks)</h2>
-
-<h3>شو هي؟</h3>
-
+<hr />
+<h2 id="project_tasks">📋 المهام (project_tasks)</h2>
+<h3 id="_4">شو هي؟</h3>
 <p>كل مشروع ينقسم لـ <strong>مهام</strong> (tasks) — كل مهمة = خطوة واحدة في المشروع.</p>
-
-<h3>مثال:</h3>
-
-<pre><code class="language-">
-المشروع: P-2026-001 (مشروع بناء فيلات السُّرَّي)
+<h3 id="_5">مثال:</h3>
+<pre><code>المشروع: P-2026-001 (مشروع بناء فيلات السُّرَّي)
 
 ├── task 1: حفر الأساسات
 │   ├── status: 2 (جاري)
@@ -287,162 +214,151 @@ status=3 → مغلق (Closed/Cancelled)
     ├── start_date: 2026-08-01
     └── end_date: 2026-12-31
 </code></pre>
-
-<h3>الحقول:</h3>
-
+<h3 id="_6">الحقول:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`project_id`</td>
+<td><code>project_id</code></td>
 <td>ربط بالمشروع الأب</td>
 </tr>
 <tr>
-<td>`name`</td>
+<td><code>name</code></td>
 <td>اسم المهمة</td>
 </tr>
 <tr>
-<td>`description`</td>
+<td><code>description</code></td>
 <td>وصف المهمة</td>
 </tr>
 <tr>
-<td>`status`</td>
+<td><code>status</code></td>
 <td>0=مكتمل، 1=مخطط، 2=جاري، 3=مغلق</td>
 </tr>
 <tr>
-<td>`estimated_hours`</td>
+<td><code>estimated_hours</code></td>
 <td>الساعات المقدرة</td>
 </tr>
 <tr>
-<td>`actual_hours`</td>
+<td><code>actual_hours</code></td>
 <td>الساعات الفعلية</td>
 </tr>
 <tr>
-<td>`start_date`</td>
+<td><code>start_date</code></td>
 <td>تاريخ البداية</td>
 </tr>
 <tr>
-<td>`end_date`</td>
+<td><code>end_date</code></td>
 <td>تاريخ النهاية</td>
 </tr>
 <tr>
-<td>`progress_percent`</td>
+<td><code>progress_percent</code></td>
 <td>نسبة الإنجاز (0-100)</td>
 </tr>
-</tbody></table>
-
-<strong>الفايدة</strong>: تقدر تشوف إذا المشروع في الوقت المحدد:
-<li>actual_hours &gt; estimated_hours → **OVER BUDGET** ⚠️</li>
-<li>progress_percent &lt; expected → **BEHIND SCHEDULE** ⚠️</li>
-
-<hr>
-
-<h2>👥 الموارد والتعيينات (resources + resource_assignments)</h2>
-
-<h3>شو هو المورد (resource)؟</h3>
-
-<p>كل &quot;شي&quot; ممكن يشتغل على مشروع:</p>
-<li>👤 موظف (Human Resource)</li>
-<li>🚜 معدة (Equipment) — حفار، رافعة</li>
-<li>🔧 أداة (Tool) — خلاطة، مولد</li>
-
-<h3>مثال على resources:</h3>
-
+</tbody>
+</table>
+<p><strong>الفايدة</strong>: تقدر تشوف إذا المشروع في الوقت المحدد:<br />
+- actual_hours &gt; estimated_hours → <strong>OVER BUDGET</strong> ⚠️<br />
+- progress_percent &lt; expected → <strong>BEHIND SCHEDULE</strong> ⚠️</p>
+<hr />
+<h2 id="resources-resource_assignments">👥 الموارد والتعيينات (resources + resource_assignments)</h2>
+<h3 id="resource">شو هو المورد (resource)؟</h3>
+<p>كل "شي" ممكن يشتغل على مشروع:<br />
+- 👤 موظف (Human Resource)<br />
+- 🚜 معدة (Equipment) — حفار، رافعة<br />
+- 🔧 أداة (Tool) — خلاطة، مولد</p>
+<h3 id="resources">مثال على resources:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الكود</th>
 <th>الاسم</th>
 <th>النوع</th>
 <th>السعر/ساعة</th>
 <th>نشط؟</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`R-001`</td>
+<td><code>R-001</code></td>
 <td>حفار كاتربيلر</td>
 <td>1 (معدة)</td>
 <td>150.00 LYD</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>`R-002`</td>
+<td><code>R-002</code></td>
 <td>عامل بناء خبرة</td>
 <td>2 (إنسان)</td>
 <td>25.00 LYD</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>`R-003`</td>
+<td><code>R-003</code></td>
 <td>رافعة 30 طن</td>
 <td>1 (معدة)</td>
 <td>200.00 LYD</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>`R-004`</td>
+<td><code>R-004</code></td>
 <td>مولد كهرباء 100kW</td>
 <td>1 (معدة)</td>
 <td>100.00 LYD</td>
 <td>✅</td>
 </tr>
-</tbody></table>
-
-<h3>resource_assignments (التعيينات):</h3>
-
+</tbody>
+</table>
+<h3 id="resource_assignments">resource_assignments (التعيينات):</h3>
 <p>ربط بين الموارد والمهام/المشاريع.</p>
-
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`project_id`</td>
+<td><code>project_id</code></td>
 <td>المشروع</td>
 </tr>
 <tr>
-<td>`task_id`</td>
+<td><code>task_id</code></td>
 <td>المهمة (لو محدد)</td>
 </tr>
 <tr>
-<td>`resource_id`</td>
+<td><code>resource_id</code></td>
 <td>المورد (الحفار مثلاً)</td>
 </tr>
 <tr>
-<td>`user_id`</td>
+<td><code>user_id</code></td>
 <td>المستخدم (لو المورد إنسان)</td>
 </tr>
 <tr>
-<td>`from` / `to`</td>
+<td><code>from</code> / <code>to</code></td>
 <td>فترة التعيين</td>
 </tr>
 <tr>
-<td>`hourly_rate`</td>
+<td><code>hourly_rate</code></td>
 <td>سعر الساعة (ممكن يختلف عن سعر المورد الأصلي)</td>
 </tr>
-</tbody></table>
-
-<strong>الفايدة</strong>:
-<li>حساب تكلفة المورد = hours × hourly_rate</li>
-<li>تتبع استخدام المعدات</li>
-<li>منع التعارضات (نفس المعدة في مشروعين بنفس الوقت)</li>
-
-<hr>
-
-<h2>💰 تتبع الميزانية (project_budgets)</h2>
-
-<h3>شو هو؟</h3>
-
+</tbody>
+</table>
+<p><strong>الفايدة</strong>:<br />
+- حساب تكلفة المورد = hours × hourly_rate<br />
+- تتبع استخدام المعدات<br />
+- منع التعارضات (نفس المعدة في مشروعين بنفس الوقت)</p>
+<hr />
+<h2 id="project_budgets">💰 تتبع الميزانية (project_budgets)</h2>
+<h3 id="_7">شو هو؟</h3>
 <p>جدول منفصل للمتابعة الدقيقة للميزانية — يربط المشروع بحسابات محاسبية.</p>
-
-<h3>مثال حقيقي من DB:</h3>
-
-<pre><code class="language-">
-المشروع: P-2026-001 (مشروع بناء فيلات السُّرَّي)
+<h3 id="db_1">مثال حقيقي من DB:</h3>
+<pre><code>المشروع: P-2026-001 (مشروع بناء فيلات السُّرَّي)
 الميزانية: 450,000.00 LYD
 المصرف: 0.00 LYD
 المتعهد به: 0.00 LYD (committed)
@@ -452,59 +368,54 @@ status=3 → مغلق (Closed/Cancelled)
   - cost_center: &quot;مشروع بناء فيلات السُّرَّي&quot;
   - account: (حساب الميزانية)
 </code></pre>
-
-<h3>الحقول:</h3>
-
+<h3 id="_8">الحقول:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`project_id`</td>
+<td><code>project_id</code></td>
 <td>المشروع</td>
 </tr>
 <tr>
-<td>`cost_center_id`</td>
+<td><code>cost_center_id</code></td>
 <td>مركز التكلفة (في Finance)</td>
 </tr>
 <tr>
-<td>`account_id`</td>
+<td><code>account_id</code></td>
 <td>حساب الميزانية (في Finance)</td>
 </tr>
 <tr>
-<td>`budget_amount`</td>
+<td><code>budget_amount</code></td>
 <td>المبلغ المرصود</td>
 </tr>
 <tr>
-<td>`spent_amount`</td>
+<td><code>spent_amount</code></td>
 <td>اللي اتصرف فعلاً (من القيود)</td>
 </tr>
 <tr>
-<td>`committed_amount`</td>
+<td><code>committed_amount</code></td>
 <td>اللي اتعهد بصرفه (POs مفتوحة)</td>
 </tr>
 <tr>
-<td>`last_recalculated_at`</td>
+<td><code>last_recalculated_at</code></td>
 <td>آخر تحديث</td>
 </tr>
-</tbody></table>
-
-<strong>الفرق المهم</strong>:
-<li>`spent`: اللي اتدفع فعلاً</li>
-<li>`committed`: اللي اتفق على دفعه (مثلاً PO مفتوحة)</li>
-<li>`committed + spent ≤ budget` → **OK** ✅</li>
-<li>`committed + spent &gt; budget` → **OVER BUDGET** ⚠️</li>
-
-<hr>
-
-<h2>🔗 الربط بالموديلات الثانية</h2>
-
-<h3>Projects ↔ Finance (الأقوى):</h3>
-
-<pre><code class="language-">
-كل مشروع → cost_center في Finance
+</tbody>
+</table>
+<p><strong>الفرق المهم</strong>:<br />
+- <code>spent</code>: اللي اتدفع فعلاً<br />
+- <code>committed</code>: اللي اتفق على دفعه (مثلاً PO مفتوحة)<br />
+- <code>committed + spent ≤ budget</code> → <strong>OK</strong> ✅<br />
+- <code>committed + spent &gt; budget</code> → <strong>OVER BUDGET</strong> ⚠️</p>
+<hr />
+<h2 id="_9">🔗 الربط بالموديلات الثانية</h2>
+<h3 id="projects-finance">Projects ↔ Finance (الأقوى):</h3>
+<pre><code>كل مشروع → cost_center في Finance
 كل مصروف على المشروع → قيد يومي على cost_center
 التقرير: &quot;تكلفة المشروع&quot; = مجموع القيود على cost_center
 
@@ -512,10 +423,8 @@ status=3 → مغلق (Closed/Cancelled)
   - لما يصرف مصروف → يطلع قيد → cost_center = project.cost_center_id
   - spent_amount في project_budgets يتحدث
 </code></pre>
-
-<strong>مثال عملي</strong>:
-<pre><code class="language-">
-1. المشروع: P-2026-001 (مركز تكلفة T1)
+<p><strong>مثال عملي</strong>:</p>
+<pre><code>1. المشروع: P-2026-001 (مركز تكلفة T1)
 2. شراء اسمنت بـ 5,000 LYD
 3. النظام يعمل قيد:
    - مدين: مصروف مواد (5100) — T1
@@ -524,11 +433,8 @@ status=3 → مغلق (Closed/Cancelled)
 
 التقرير: &quot;مشروع P-2026-001 صرف 5,000 من 450,000&quot;
 </code></pre>
-
-<h3>Projects ↔ HR (الموظفين):</h3>
-
-<pre><code class="language-">
-كل resource_assignments:
+<h3 id="projects-hr">Projects ↔ HR (الموظفين):</h3>
+<pre><code>كل resource_assignments:
   - يربط resource بـ project
   - resource ممكن يكون user (من جدول users)
   - user عنده employee record (من HR module)
@@ -538,11 +444,8 @@ status=3 → مغلق (Closed/Cancelled)
   - كم ساعة
   - التكلفة = hours × hourly_rate
 </code></pre>
-
-<h3>Projects ↔ Procurement (المشتريات):</h3>
-
-<pre><code class="language-">
-مشروع يحتاج مواد:
+<h3 id="projects-procurement">Projects ↔ Procurement (المشتريات):</h3>
+<pre><code>مشروع يحتاج مواد:
   1. تنشئ Purchase Order (PO)
   2. PO → items المطلوبة
   3. لما تستلم البضاعة → GRN
@@ -552,92 +455,87 @@ status=3 → مغلق (Closed/Cancelled)
 
 النتيجة: تكلفة المشروع = مشتريات + عمالة + مصاريف
 </code></pre>
-
-<hr>
-
-<h2>📊 التقارير اللي تطلع من Projects</h2>
-
+<hr />
+<h2 id="projects_1">📊 التقارير اللي تطلع من Projects</h2>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>التقرير</th>
 <th>شو يقول</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>**قائمة المشاريع**</td>
+<td><strong>قائمة المشاريع</strong></td>
 <td>كل المشاريع + حالتها + ميزانيتها</td>
 </tr>
 <tr>
-<td>**تفاصيل مشروع**</td>
+<td><strong>تفاصيل مشروع</strong></td>
 <td>كل المهام، الموارد، المصروفات</td>
 </tr>
 <tr>
-<td>**تكلفة المشروع الفعلية**</td>
+<td><strong>تكلفة المشروع الفعلية</strong></td>
 <td>مجموع المصروفات (من Finance cost_center)</td>
 </tr>
 <tr>
-<td>**ربحية المشروع**</td>
+<td><strong>ربحية المشروع</strong></td>
 <td>الإيرادات - التكاليف (لو لعميل)</td>
 </tr>
 <tr>
-<td>**استخدام الموارد**</td>
+<td><strong>استخدام الموارد</strong></td>
 <td>كم ساعة/يوم لكل مورد</td>
 </tr>
 <tr>
-<td>**المشاريع المتأخرة**</td>
+<td><strong>المشاريع المتأخرة</strong></td>
 <td>اللي progress_percent أقل من المتوقع</td>
 </tr>
-</tbody></table>
-
-<hr>
-
-<h2>🎯 ملخص سريع</h2>
-
+</tbody>
+</table>
+<hr />
+<h2 id="_10">🎯 ملخص سريع</h2>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الجدول</th>
 <th>الدور</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`projects`</td>
+<td><code>projects</code></td>
 <td>رأس المشروع (البيانات الأساسية)</td>
 </tr>
 <tr>
-<td>`project_tasks`</td>
+<td><code>project_tasks</code></td>
 <td>المهام الفرعية</td>
 </tr>
 <tr>
-<td>`project_budgets`</td>
+<td><code>project_budgets</code></td>
 <td>تتبع الميزانية (مخطط vs فعلي)</td>
 </tr>
 <tr>
-<td>`resources`</td>
+<td><code>resources</code></td>
 <td>الموارد (عمال + معدات)</td>
 </tr>
 <tr>
-<td>`resource_assignments`</td>
+<td><code>resource_assignments</code></td>
 <td>تعيين الموارد للمهام/المشاريع</td>
 </tr>
-</tbody></table>
-
-<strong>الربط الأساسي</strong>: كل مشروع له <code>cost_center_id</code> — هذا هو الجسر لـ Finance.
-
-<strong>الـ Workflow</strong>:
-<li>تنشئ مشروع → يولد cost_center تلقائياً</li>
-<li>تضيف مهام → تقسيم العمل</li>
-<li>تعيّن موارد → عمالة + معدات</li>
-<li>تبدأ الشغل → مصاريف تطلع (Finance قيود → cost_center)</li>
-<li>تخلص → تحسب الفعلي vs المخطط</li>
-
-<hr>
-
-<h2>📎 روابط مفيدة</h2>
-
-<li>📊 ERD: `/workspace/erd-images/projects.png`</li>
-<li>📋 Schema source: `/workspace/erd-source/erd_projects.mmd`</li>
+</tbody>
+</table>
+<p><strong>الربط الأساسي</strong>: كل مشروع له <code>cost_center_id</code> — هذا هو الجسر لـ Finance.</p>
+<p><strong>الـ Workflow</strong>:<br />
+1. تنشئ مشروع → يولد cost_center تلقائياً<br />
+2. تضيف مهام → تقسيم العمل<br />
+3. تعيّن موارد → عمالة + معدات<br />
+4. تبدأ الشغل → مصاريف تطلع (Finance قيود → cost_center)<br />
+5. تخلص → تحسب الفعلي vs المخطط</p>
+<hr />
+<h2 id="_11">📎 روابط مفيدة</h2>
+<ul>
+<li>📊 ERD: <code>/workspace/erd-images/projects.png</code></li>
+<li>📋 Schema source: <code>/workspace/erd-source/erd_projects.mmd</code></li>
 <li>🌐 Portal: https://xfe6jmg938jjh.space.minimax.io/#projects</li>
-
-</div>
+</ul>
 </body>
 </html>

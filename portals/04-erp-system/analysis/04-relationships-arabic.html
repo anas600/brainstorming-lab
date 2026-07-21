@@ -1,120 +1,56 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🔗 خريطة العلاقات الشاملة (Master Relationship Map) — شرح بالعربي</title>
 <style>
-:root {
-    --bg: #0f172a;
-    --bg-card: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --text-soft: #94a3b8;
-    --accent: #38bdf8;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
-    font-family: 'Segoe UI', Tahoma, sans-serif; 
-    background: var(--bg); 
-    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
     line-height: 1.7;
-    padding: 20px;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
 }
-.container { max-width: 900px; margin: 0 auto; }
-.back-link { 
-    display: inline-block;
-    color: var(--accent);
-    text-decoration: none;
-    margin-bottom: 20px;
-    font-size: 0.9em;
-}
-h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
-h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
-h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
-p { margin: 8px 0; color: var(--text); }
-blockquote {
-    background: var(--bg-card);
-    border-right: 4px solid var(--accent);
-    padding: 10px 15px;
-    margin: 10px 0;
-    color: var(--text-soft);
-}
-code {
-    background: var(--bg-card);
-    color: #f472b6;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-}
-pre {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 15px;
-    overflow-x: auto;
-    margin: 10px 0;
-}
-pre code {
-    background: transparent;
-    color: var(--text);
-    padding: 0;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    background: var(--bg-card);
-    border-radius: 6px;
-    overflow: hidden;
-}
-th {
-    background: var(--border);
-    color: var(--accent);
-    padding: 10px;
-    text-align: right;
-}
-td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-}
-tr:hover { background: rgba(56, 189, 248, 0.05); }
-ul, ol { padding-right: 30px; margin: 10px 0; }
-li { margin: 5px 0; }
-hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-strong { color: var(--accent); }
-em { color: var(--text-soft); }
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
 </style>
 </head>
 <body>
-<div class="container">
-<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
-<h1>🔗 خريطة العلاقات الشاملة (Master Relationship Map) — شرح بالعربي</h1>
-
-<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
-<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
-<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
-<p>&gt; <strong>الهدف</strong>: شرح شامل لكيف الموديلات كلها مرتبطة ببعض</p>
-
-<hr>
-
-<h2>🌍 الصورة الكبيرة (Big Picture)</h2>
-
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="master-relationship-map">🔗 خريطة العلاقات الشاملة (Master Relationship Map) — شرح بالعربي</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)<br />
+<strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)<br />
+<strong>الهدف</strong>: شرح شامل لكيف الموديلات كلها مرتبطة ببعض</p>
+</blockquote>
+<hr />
+<h2 id="big-picture">🌍 الصورة الكبيرة (Big Picture)</h2>
 <p>النظام فيه <strong>12 موديل</strong> كل واحد مسؤول عن شغلة معينة. لكنهم <strong>مش جزر منعزلة</strong> — مرتبطين بـ:</p>
-
-<li>🔗 **Foreign Keys** (روابط مباشرة في الـ DB)</li>
-<li>📬 **Events** (رسايل بين الموديلات)</li>
-<li>💰 **Cost Centers** (محاور مشتركة بين Projects و Finance)</li>
-<li>🏢 **Tenant** (الجذر المشترك لكل البيانات)</li>
-
-<hr>
-
-<h2>🏛️ الجذر: Tenants (المستأجرين)</h2>
-
-<pre><code class="language-">
-كل البيانات في النظام مرتبطة بـ tenant_id
+<ol>
+<li>🔗 <strong>Foreign Keys</strong> (روابط مباشرة في الـ DB)</li>
+<li>📬 <strong>Events</strong> (رسايل بين الموديلات)</li>
+<li>💰 <strong>Cost Centers</strong> (محاور مشتركة بين Projects و Finance)</li>
+<li>🏢 <strong>Tenant</strong> (الجذر المشترك لكل البيانات)</li>
+</ol>
+<hr />
+<h2 id="tenants">🏛️ الجذر: Tenants (المستأجرين)</h2>
+<pre><code>كل البيانات في النظام مرتبطة بـ tenant_id
 = كل شركة (أو مجموعة شركات) عندها data خاصة فيها
 = Multi-tenant architecture
 
@@ -123,15 +59,10 @@ Tenant 2: Al-Burj Construction &amp; Contracting
 Tenant 3: AlFajr Holding
 Tenant 4: الفجر (جديد)
 </code></pre>
-
-<strong>كل جدول عنده <code>tenant_id</code></strong> (إلا القليل مثل <code>VersionInfo</code>).
-
-<hr>
-
-<h2>🪪 Identity (الهوية) — الجذر التقني</h2>
-
-<pre><code class="language-">
-Tenants
+<p><strong>كل جدول عنده <code>tenant_id</code></strong> (إلا القليل مثل <code>VersionInfo</code>).</p>
+<hr />
+<h2 id="identity">🪪 Identity (الهوية) — الجذر التقني</h2>
+<pre><code>Tenants
   └── Users
         └── Roles (عبر user_roles)
               └── Permissions (داخل الـ role)
@@ -140,23 +71,17 @@ Refresh Tokens (للجلسات)
 Password Reset Tokens (لإعادة تعيين كلمة المرور)
 Audit Log (مين عمل شنو)
 </code></pre>
-
-<strong>Authentication flow</strong>:
-<pre><code class="language-">
-1. User يكتب email + password
+<p><strong>Authentication flow</strong>:</p>
+<pre><code>1. User يكتب email + password
 2. System يبحث في users table
 3. يتحقق من password_hash (bcrypt)
 4. يطلع JWT token
 5. يحفظ refresh token في refresh_tokens
 6. يحدّث last_login في audit_log
 </code></pre>
-
-<hr>
-
-<h2>🏢 Companies (الشركات)</h2>
-
-<pre><code class="language-">
-Tenants (الشركة القابضة)
+<hr />
+<h2 id="companies">🏢 Companies (الشركات)</h2>
+<pre><code>Tenants (الشركة القابضة)
   └── Companies (الشركات الفرعية)
         ├── Users (ممكن يكون مرتبط بشركة محددة)
         ├── Accounts (دليل حسابات)
@@ -167,18 +92,12 @@ Tenants (الشركة القابضة)
         ├── Employees
         └── Projects
 </code></pre>
-
-<strong>Multi-Company</strong> = داخل نفس الـ tenant ممكن يكون عدة شركات (subsidiaries).
-<p>كل عملية ممكن تنسب لشركة محددة.</p>
-
-<hr>
-
-<h2>💰 Finance ↔ كل الموديل الثانية</h2>
-
-<h3>Finance ↔ Procurement (المشتريات):</h3>
-
-<pre><code class="language-">
-عند استلام فاتورة من مورد (vendor_bill):
+<p><strong>Multi-Company</strong> = داخل نفس الـ tenant ممكن يكون عدة شركات (subsidiaries).<br />
+كل عملية ممكن تنسب لشركة محددة.</p>
+<hr />
+<h2 id="finance">💰 Finance ↔ كل الموديل الثانية</h2>
+<h3 id="finance-procurement">Finance ↔ Procurement (المشتريات):</h3>
+<pre><code>عند استلام فاتورة من مورد (vendor_bill):
   vendor_bill → يحفظ في accounts payable
   posting_rule → يطلع journal_entry:
     - مدين: حساب مصروفات (5100)
@@ -190,11 +109,8 @@ Tenants (الشركة القابضة)
     - مدين: حساب الدائنين (2100)
     - دائن: البنك (1202)
 </code></pre>
-
-<h3>Finance ↔ Sales (المبيعات):</h3>
-
-<pre><code class="language-">
-عند إصدار فاتورة (sales_invoice):
+<h3 id="finance-sales">Finance ↔ Sales (المبيعات):</h3>
+<pre><code>عند إصدار فاتورة (sales_invoice):
   posting_rule → يطلع journal_entry:
     - مدين: المدينين (1203) — بالمبلغ
     - دائن: إيرادات (4100)
@@ -206,22 +122,16 @@ Tenants (الشركة القابضة)
     - مدين: البنك (1202)
     - دائن: المدينين (1203)
 </code></pre>
-
-<h3>Finance ↔ HR (الرواتب):</h3>
-
-<pre><code class="language-">
-Payroll run → يحسب صافي الرواتب
+<h3 id="finance-hr">Finance ↔ HR (الرواتب):</h3>
+<pre><code>Payroll run → يحسب صافي الرواتب
   posting_rule → يطلع journal_entries متعددة:
     - مدين: مصروف رواتب (5001) — إجمالي
     - دائن: ضريبة رواتب مستحقة (2100) — لو في
     - دائن: خصومات (2100)
     - دائن: البنك (1202) — صافي
 </code></pre>
-
-<h3>Finance ↔ Inventory (المخزون):</h3>
-
-<pre><code class="language-">
-عند استلام بضاعة (GRN):
+<h3 id="finance-inventory">Finance ↔ Inventory (المخزون):</h3>
+<pre><code>عند استلام بضاعة (GRN):
   posting_rule → يطلع journal_entry:
     - مدين: المخزون (1300) — قيمة البضاعة
     - دائن: حساب مؤقت (2110) — awaiting vendor bill
@@ -236,11 +146,8 @@ Payroll run → يحسب صافي الرواتب
     - مدين: تكلفة البضاعة المباعة (5100)
     - دائن: المخزون (1300)
 </code></pre>
-
-<h3>Finance ↔ Projects (المشاريع):</h3>
-
-<pre><code class="language-">
-كل مشروع → cost_center_id
+<h3 id="finance-projects">Finance ↔ Projects (المشاريع):</h3>
+<pre><code>كل مشروع → cost_center_id
 كل مصروف → journal_line.cost_center_id
 التقرير: تكلفة المشروع = sum(القيود) where cost_center = project.cost_center_id
 
@@ -250,22 +157,16 @@ Payroll run → يحسب صافي الرواتب
     - cost_center_id: CC-001
     - account_id: (حساب الميزانية)
     - budget_amount: 450,000
-  
+
   لما يصير مصروف:
     - journal_line.cost_center_id = CC-001
     - spent_amount يتحدث
 </code></pre>
-
-<strong>هذا أقوى ربط</strong> — لأن كل مصروف ممكن ينسب لمشروع.
-
-<hr>
-
-<h2>📁 Projects ↔ HR + Procurement + Inventory</h2>
-
-<h3>Projects ↔ HR (الموارد البشرية):</h3>
-
-<pre><code class="language-">
-المشروع يحتاج عمالة:
+<p><strong>هذا أقوى ربط</strong> — لأن كل مصروف ممكن ينسب لمشروع.</p>
+<hr />
+<h2 id="projects-hr-procurement-inventory">📁 Projects ↔ HR + Procurement + Inventory</h2>
+<h3 id="projects-hr">Projects ↔ HR (الموارد البشرية):</h3>
+<pre><code>المشروع يحتاج عمالة:
   resource_assignments:
     - project_id: P-2026-001
     - task_id: T-001
@@ -278,21 +179,15 @@ Payroll run → يحسب صافي الرواتب
 التكلفة = actual_hours × hourly_rate
    = 200 hours × 25 = 5,000 LYD
 </code></pre>
-
-<h3>Projects ↔ Procurement (المشتريات):</h3>
-
-<pre><code class="language-">
-المشروع يحتاج مواد:
+<h3 id="projects-procurement">Projects ↔ Procurement (المشتريات):</h3>
+<pre><code>المشروع يحتاج مواد:
   1. Project → PO (purchase_order.project_id)
   2. PO → items (purchase_order_lines)
   3. عند الاستلام → GRN (goods_receipts.project_id)
   4. الفاتورة → vendor_bill → قيد على cost_center
 </code></pre>
-
-<h3>Projects ↔ Inventory (المخزون):</h3>
-
-<pre><code class="language-">
-عند صرف مواد للمشروع:
+<h3 id="projects-inventory">Projects ↔ Inventory (المخزون):</h3>
+<pre><code>عند صرف مواد للمشروع:
   - stock_movement: 
     - item_id: I-cement
     - quantity: -100 (خرج)
@@ -302,19 +197,12 @@ Payroll run → يحسب صافي الرواتب
 
 النتيجة: المخزون ينقص + المصروف يُسجّل على المشروع
 </code></pre>
-
-<hr>
-
-<h2>📬 Events (الأحداث) — العمود الفقري</h2>
-
-<pre><code class="language-">
-[موديل A] → outbox_events → [مستمعين Events] → [موديلات B, C, D]
+<hr />
+<h2 id="events">📬 Events (الأحداث) — العمود الفقري</h2>
+<pre><code>[موديل A] → outbox_events → [مستمعين Events] → [موديلات B, C, D]
 </code></pre>
-
-<h3>أمثلة من Finance و Projects:</h3>
-
-<pre><code class="language-">
-Finance event: &quot;journal_entry.posted&quot;
+<h3 id="finance-projects_1">أمثلة من Finance و Projects:</h3>
+<pre><code>Finance event: &quot;journal_entry.posted&quot;
   مستمعين:
     - Reports: يحدث الأرقام
     - Notifications: يبعت للمحاسب
@@ -334,13 +222,9 @@ Projects event: &quot;project_task.completed&quot;
     - HR: يحسب ساعات العمل الفعلية
     - Notifications: يبعت للعميل (لو project لعميل)
 </code></pre>
-
-<hr>
-
-<h2>🗺️ الخريطة الشاملة (Visual Map)</h2>
-
-<pre><code class="language-">
-                          TENANTS
+<hr />
+<h2 id="visual-map">🗺️ الخريطة الشاملة (Visual Map)</h2>
+<pre><code>                          TENANTS
                             │
             ┌───────────────┼───────────────┐
             │               │               │
@@ -369,18 +253,14 @@ Projects event: &quot;project_task.completed&quot;
                   PROJECT_BUDGETS
                        │
                        └─ (loop to ACCOUNTS via cost_center)
-                       
+
         ALL EVENTS → outbox_events → processed_events
                                   → notifications
                                   → audit_log
 </code></pre>
-
-<hr>
-
-<h2>🎯 سيناريو كامل: &quot;مشروع من البداية للنهاية&quot;</h2>
-
-<pre><code class="language-">
-1️⃣ Setup (الشروع):
+<hr />
+<h2 id="_1">🎯 سيناريو كامل: "مشروع من البداية للنهاية"</h2>
+<pre><code>1️⃣ Setup (الشروع):
    - Project: P-2026-001 (مشروع بناء فيلات)
    - cost_center: CC-001 (auto-created)
    - budget: 450,000 LYD
@@ -408,15 +288,10 @@ Projects event: &quot;project_task.completed&quot;
    - فاتورة العميل (لو في) → journal_entry إيراد
    - تقرير ربحية المشروع
 </code></pre>
-
-<strong>كل هذا مترابط</strong> — ما تحتاج تدخل يدوي في كل خطوة.
-
-<hr>
-
-<h2>🛡️ Multi-Tenancy + Security</h2>
-
-<pre><code class="language-">
-كل query في الـ API يفلتر بـ tenant_id
+<p><strong>كل هذا مترابط</strong> — ما تحتاج تدخل يدوي في كل خطوة.</p>
+<hr />
+<h2 id="multi-tenancy-security">🛡️ Multi-Tenancy + Security</h2>
+<pre><code>كل query في الـ API يفلتر بـ tenant_id
 = Tenant A ما يشوف بيانات Tenant B
 = حتى لو في نفس الـ DB
 
@@ -426,91 +301,87 @@ Projects event: &quot;project_task.completed&quot;
   - كل query يضيف WHERE tenant_id = ?
   - لا يمكن للـ user يدخل tenant غير بتاعه
 </code></pre>
-
-<strong>هذي أقوى حماية</strong> — لا يمكن تسرب بيانات بين الشركات.
-
-<hr>
-
-<h2>🎯 ملخص العلاقات</h2>
-
+<p><strong>هذي أقوى حماية</strong> — لا يمكن تسرب بيانات بين الشركات.</p>
+<hr />
+<h2 id="_2">🎯 ملخص العلاقات</h2>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>من</th>
 <th>إلى</th>
 <th>كيف</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
 <td>Tenant</td>
 <td>كل شي</td>
-<td>`tenant_id` في كل جدول</td>
+<td><code>tenant_id</code> في كل جدول</td>
 </tr>
 <tr>
 <td>User</td>
 <td>Role</td>
-<td>`user_roles` (many-to-many)</td>
+<td><code>user_roles</code> (many-to-many)</td>
 </tr>
 <tr>
 <td>Project</td>
 <td>Cost Center</td>
-<td>`cost_center_id`</td>
+<td><code>cost_center_id</code></td>
 </tr>
 <tr>
 <td>Cost Center</td>
 <td>Journal Line</td>
-<td>`cost_center_id`</td>
+<td><code>cost_center_id</code></td>
 </tr>
 <tr>
 <td>Resource</td>
 <td>Task</td>
-<td>`resource_assignments`</td>
+<td><code>resource_assignments</code></td>
 </tr>
 <tr>
 <td>PO</td>
 <td>Project</td>
-<td>`project_id`</td>
+<td><code>project_id</code></td>
 </tr>
 <tr>
 <td>GRN</td>
 <td>PO</td>
-<td>`purchase_order_id`</td>
+<td><code>purchase_order_id</code></td>
 </tr>
 <tr>
 <td>Vendor Bill</td>
 <td>PO</td>
-<td>`purchase_order_id`</td>
+<td><code>purchase_order_id</code></td>
 </tr>
 <tr>
 <td>كل Moudle</td>
 <td>Events</td>
-<td>`outbox_events`</td>
+<td><code>outbox_events</code></td>
 </tr>
 <tr>
 <td>Event</td>
 <td>Listener</td>
-<td>`processed_events`</td>
+<td><code>processed_events</code></td>
 </tr>
 <tr>
 <td>User</td>
 <td>Notification</td>
-<td>`user_id`</td>
+<td><code>user_id</code></td>
 </tr>
 <tr>
 <td>Entity</td>
 <td>Audit</td>
-<td>`audit_log.entity_id`</td>
+<td><code>audit_log.entity_id</code></td>
 </tr>
-</tbody></table>
-
-<hr>
-
-<h2>📎 روابط مفيدة</h2>
-
-<li>📊 ERD الكامل: `/workspace/erd-portal.html` (أو https://xfe6jmg938jjh.space.minimax.io)</li>
-<li>📋 Finance شرح: `/workspace/projects/erp-system/docs/analysis/01-finance-arabic.md`</li>
-<li>📋 Projects شرح: `/workspace/projects/erp-system/docs/analysis/02-projects-arabic.md`</li>
-<li>📋 Events شرح: `/workspace/projects/erp-system/docs/analysis/03-events-arabic.md`</li>
-
-</div>
+</tbody>
+</table>
+<hr />
+<h2 id="_3">📎 روابط مفيدة</h2>
+<ul>
+<li>📊 ERD الكامل: <code>/workspace/erd-portal.html</code> (أو https://xfe6jmg938jjh.space.minimax.io)</li>
+<li>📋 Finance شرح: <code>/workspace/projects/erp-system/docs/analysis/01-finance-arabic.md</code></li>
+<li>📋 Projects شرح: <code>/workspace/projects/erp-system/docs/analysis/02-projects-arabic.md</code></li>
+<li>📋 Events شرح: <code>/workspace/projects/erp-system/docs/analysis/03-events-arabic.md</code></li>
+</ul>
 </body>
 </html>

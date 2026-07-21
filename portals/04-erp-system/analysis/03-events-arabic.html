@@ -1,135 +1,63 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔔 الأحداث والربط بين الموديلات (Events &amp; Cross-Module) — شرح بالعربي</title>
+<title>🔔 الأحداث والربط بين الموديلات (Events & Cross-Module) — شرح بالعربي</title>
 <style>
-:root {
-    --bg: #0f172a;
-    --bg-card: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --text-soft: #94a3b8;
-    --accent: #38bdf8;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
-    font-family: 'Segoe UI', Tahoma, sans-serif; 
-    background: var(--bg); 
-    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
     line-height: 1.7;
-    padding: 20px;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
 }
-.container { max-width: 900px; margin: 0 auto; }
-.back-link { 
-    display: inline-block;
-    color: var(--accent);
-    text-decoration: none;
-    margin-bottom: 20px;
-    font-size: 0.9em;
-}
-h1 { color: var(--accent); margin: 30px 0 15px; font-size: 2em; }
-h2 { color: var(--accent); margin: 25px 0 10px; font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-h3 { color: var(--accent); margin: 20px 0 8px; font-size: 1.2em; }
-h4 { color: var(--accent-2, #818cf8); margin: 15px 0 5px; }
-p { margin: 8px 0; color: var(--text); }
-blockquote {
-    background: var(--bg-card);
-    border-right: 4px solid var(--accent);
-    padding: 10px 15px;
-    margin: 10px 0;
-    color: var(--text-soft);
-}
-code {
-    background: var(--bg-card);
-    color: #f472b6;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-}
-pre {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 15px;
-    overflow-x: auto;
-    margin: 10px 0;
-}
-pre code {
-    background: transparent;
-    color: var(--text);
-    padding: 0;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    background: var(--bg-card);
-    border-radius: 6px;
-    overflow: hidden;
-}
-th {
-    background: var(--border);
-    color: var(--accent);
-    padding: 10px;
-    text-align: right;
-}
-td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-}
-tr:hover { background: rgba(56, 189, 248, 0.05); }
-ul, ol { padding-right: 30px; margin: 10px 0; }
-li { margin: 5px 0; }
-hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-strong { color: var(--accent); }
-em { color: var(--text-soft); }
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
 </style>
 </head>
 <body>
-<div class="container">
-<a class="back-link" href="../index.html">← العودة للـ portal الرئيسي</a>
-<h1>🔔 الأحداث والربط بين الموديلات (Events &amp; Cross-Module) — شرح بالعربي</h1>
-
-<p>&gt; <strong>التاريخ</strong>: 2026-07-21</p>
-<p>&gt; <strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)</p>
-<p>&gt; <strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)</p>
-<p>&gt; <strong>المصدر</strong>: live DB via Neon MCP</p>
-
-<hr>
-
-<h2>🎯 شو هي &quot;الأحداث&quot;؟</h2>
-
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="events-cross-module">🔔 الأحداث والربط بين الموديلات (Events &amp; Cross-Module) — شرح بالعربي</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: المختبر التحليلي (Mavis Lab)<br />
+<strong>الجمهور</strong>: الفريق غير التقني (أنس + صاحبه)<br />
+<strong>المصدر</strong>: live DB via Neon MCP</p>
+</blockquote>
+<hr />
+<h2 id="_1">🎯 شو هي "الأحداث"؟</h2>
 <p>الأحداث هي <strong>الرسايل</strong> اللي تطلع من موديل لما يصير شي مهم، والموديلات الثانية تسمعها وتتفاعل معها.</p>
-
-<strong>مثال واقعي</strong>:
-<pre><code class="language-">
-في الـ ERP:
+<p><strong>مثال واقعي</strong>:</p>
+<pre><code>في الـ ERP:
 1. المبيعات يطلع فاتورة → حدث &quot;invoice_created&quot;
 2. Finance يسمع → يعمل قيد يومية تلقائي
 3. المخزون يسمع → ينقص الكمية
 4. الإشعارات تسمع → تبعت notification للعميل
 5. التقارير تسمع → تحدد الإحصائيات
 </code></pre>
-
-<strong>بدون الأحداث</strong>: الموديلات تكون &quot;جزر منعزلة&quot; — كل واحد يشتغل لحاله.
-
-<strong>مع الأحداث</strong>: النظام كله <strong>مترابط</strong> و <strong>ذكي</strong>.
-
-<hr>
-
-<h2>📬 طاولة outbox_events (صندوق الصادر)</h2>
-
-<h3>شو هي؟</h3>
-
-<strong>كل حدث في النظام</strong> يسجل هنا — قبل ما يتنفذ. زي &quot;صندوق بريد الصادر&quot; في الدوائر الحكومية.
-
-<h3>مثال على event:</h3>
-
-<pre><code class="language-json">
-{
+<p><strong>بدون الأحداث</strong>: الموديلات تكون "جزر منعزلة" — كل واحد يشتغل لحاله.</p>
+<p><strong>مع الأحداث</strong>: النظام كله <strong>مترابط</strong> و <strong>ذكي</strong>.</p>
+<hr />
+<h2 id="outbox_events">📬 طاولة outbox_events (صندوق الصادر)</h2>
+<h3 id="_2">شو هي؟</h3>
+<p><strong>كل حدث في النظام</strong> يسجل هنا — قبل ما يتنفذ. زي "صندوق بريد الصادر" في الدوائر الحكومية.</p>
+<h3 id="event">مثال على event:</h3>
+<pre><code class="language-json">{
   &quot;id&quot;: &quot;uuid-1234&quot;,
   &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
   &quot;event_type&quot;: &quot;sales_invoice.created&quot;,
@@ -143,57 +71,55 @@ em { color: var(--text-soft); }
   &quot;last_error&quot;: null
 }
 </code></pre>
-
-<h3>الحقول:</h3>
-
+<h3 id="_3">الحقول:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`event_type`</td>
-<td>نوع الحدث (مثلاً `sales_invoice.created`)</td>
+<td><code>event_type</code></td>
+<td>نوع الحدث (مثلاً <code>sales_invoice.created</code>)</td>
 </tr>
 <tr>
-<td>`aggregate_id`</td>
+<td><code>aggregate_id</code></td>
 <td>ID الكيان المرتبط (رقم الفاتورة مثلاً)</td>
 </tr>
 <tr>
-<td>`aggregate_type`</td>
-<td>نوع الكيان (`sales_invoice`، `payment`، ...)</td>
+<td><code>aggregate_type</code></td>
+<td>نوع الكيان (<code>sales_invoice</code>، <code>payment</code>، ...)</td>
 </tr>
 <tr>
-<td>`payload`</td>
+<td><code>payload</code></td>
 <td>محتوى الحدث (JSON بكل التفاصيل)</td>
 </tr>
 <tr>
-<td>`occurred_at`</td>
+<td><code>occurred_at</code></td>
 <td>متى وقع الحدث</td>
 </tr>
 <tr>
-<td>`processed_at`</td>
+<td><code>processed_at</code></td>
 <td>متى اتعالج (null = لسه ما اتعالج)</td>
 </tr>
 <tr>
-<td>`retry_count`</td>
+<td><code>retry_count</code></td>
 <td>كم محاولة فشلت</td>
 </tr>
 <tr>
-<td>`max_retries`</td>
+<td><code>max_retries</code></td>
 <td>الحد الأقصى للمحاولات</td>
 </tr>
 <tr>
-<td>`last_error`</td>
+<td><code>last_error</code></td>
 <td>رسالة الخطأ الأخيرة (لو فشلت)</td>
 </tr>
-</tbody></table>
-
-<h3>أنواع الأحداث الشائعة:</h3>
-
-<pre><code class="language-">
-# Finance events
+</tbody>
+</table>
+<h3 id="_4">أنواع الأحداث الشائعة:</h3>
+<pre><code># Finance events
 &quot;journal_entry.created&quot;
 &quot;journal_entry.posted&quot;
 &quot;payment.received&quot;
@@ -226,50 +152,32 @@ em { color: var(--text-soft); }
 &quot;project_task.completed&quot;
 &quot;budget.exceeded&quot;  # ⚠️ لو الميزانية انفقت
 </code></pre>
-
-<hr>
-
-<h2>✅ طاولة processed_events (الأحداث المعالجة)</h2>
-
-<h3>شو هي؟</h3>
-
+<hr />
+<h2 id="processed_events">✅ طاولة processed_events (الأحداث المعالجة)</h2>
+<h3 id="_5">شو هي؟</h3>
 <p>سجل بكل الأحداث اللي <strong>تمت معالجتها بنجاح</strong>. مهم للـ <strong>idempotency</strong> (ضمان عدم المعالجة المزدوجة).</p>
-
-<h3>مثال:</h3>
-
-<pre><code class="language-json">
-{
+<h3 id="_6">مثال:</h3>
+<pre><code class="language-json">{
   &quot;event_id&quot;: &quot;uuid-1234&quot;,
   &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
   &quot;processed_at&quot;: &quot;2026-07-21T15:30:05Z&quot;
 }
 </code></pre>
-
-<h3>ليش مهمة؟</h3>
-
-<strong>بدون processed_events</strong>: لو الـ event اتبعت مرتين (network issue) → قيد يتسجل مرتين → خطأ محاسبي!
-
-<strong>مع processed_events</strong>: قبل ما يعالج event، يتحقق لو <code>event_id</code> موجود في <code>processed_events</code>:
-<li>✅ موجود → skip (عُولج قبل)</li>
-<li>❌ مش موجود → عالج + سجّل في processed_events</li>
-
-<strong>هذا يضمن</strong>:
-<li>مرة واحدة فقط لكل event</li>
-<li>حتى لو فشلت المعالجة، retry ما يكرر</li>
-<li>Audit trail نظيف</li>
-
-<hr>
-
-<h2>📨 طاولة notifications (الإشعارات)</h2>
-
-<h3>شو هي؟</h3>
-
+<h3 id="_7">ليش مهمة؟</h3>
+<p><strong>بدون processed_events</strong>: لو الـ event اتبعت مرتين (network issue) → قيد يتسجل مرتين → خطأ محاسبي!</p>
+<p><strong>مع processed_events</strong>: قبل ما يعالج event، يتحقق لو <code>event_id</code> موجود في <code>processed_events</code>:<br />
+- ✅ موجود → skip (عُولج قبل)<br />
+- ❌ مش موجود → عالج + سجّل في processed_events</p>
+<p><strong>هذا يضمن</strong>:<br />
+- مرة واحدة فقط لكل event<br />
+- حتى لو فشلت المعالجة، retry ما يكرر<br />
+- Audit trail نظيف</p>
+<hr />
+<h2 id="notifications">📨 طاولة notifications (الإشعارات)</h2>
+<h3 id="_8">شو هي؟</h3>
 <p>الإشعارات اللي تطلع للمستخدمين (in-app). زي inbox صغير.</p>
-
-<h3>مثال:</h3>
-
-<pre><code class="language-json">
-{
+<h3 id="_9">مثال:</h3>
+<pre><code class="language-json">{
   &quot;id&quot;: &quot;uuid-9999&quot;,
   &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
   &quot;user_id&quot;: &quot;user-anas&quot;,
@@ -283,53 +191,51 @@ em { color: var(--text-soft); }
   &quot;read_at&quot;: null
 }
 </code></pre>
-
-<h3>الحقول:</h3>
-
+<h3 id="_10">الحقول:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`user_id`</td>
+<td><code>user_id</code></td>
 <td>مين يستلم الإشعار</td>
 </tr>
 <tr>
-<td>`type`</td>
+<td><code>type</code></td>
 <td>نوع الإشعار (مفتاح للـ icon واللون)</td>
 </tr>
 <tr>
-<td>`title`</td>
+<td><code>title</code></td>
 <td>العنوان القصير</td>
 </tr>
 <tr>
-<td>`message`</td>
+<td><code>message</code></td>
 <td>النص الكامل</td>
 </tr>
 <tr>
-<td>`reference_type`</td>
+<td><code>reference_type</code></td>
 <td>نوع الكيان المرتبط (project, invoice, ...)</td>
 </tr>
 <tr>
-<td>`reference_id`</td>
+<td><code>reference_id</code></td>
 <td>ID الكيان (للضغط عليه يفتح)</td>
 </tr>
 <tr>
-<td>`is_read`</td>
+<td><code>is_read</code></td>
 <td>هل المستخدم قرأه؟</td>
 </tr>
 <tr>
-<td>`read_at`</td>
+<td><code>read_at</code></td>
 <td>متى قرأه</td>
 </tr>
-</tbody></table>
-
-<h3>أنواع الإشعارات الشائعة:</h3>
-
-<pre><code class="language-">
-# Budget alerts
+</tbody>
+</table>
+<h3 id="_11">أنواع الإشعارات الشائعة:</h3>
+<pre><code># Budget alerts
 &quot;project_budget_warning&quot;  # 80% من الميزانية
 &quot;project_budget_exceeded&quot;  # 100%+
 &quot;project_budget_critical&quot;  # 110%+
@@ -350,19 +256,12 @@ em { color: var(--text-soft); }
 &quot;password_changed&quot;
 &quot;role_assigned&quot;
 </code></pre>
-
-<hr>
-
-<h2>📝 طاولة audit_log (سجل التدقيق)</h2>
-
-<h3>شو هي؟</h3>
-
-<strong>سجل كامل</strong> بكل التغييرات اللي صارت على البيانات — مين عمل شنو ومتى.
-
-<h3>مثال:</h3>
-
-<pre><code class="language-json">
-{
+<hr />
+<h2 id="audit_log">📝 طاولة audit_log (سجل التدقيق)</h2>
+<h3 id="_12">شو هي؟</h3>
+<p><strong>سجل كامل</strong> بكل التغييرات اللي صارت على البيانات — مين عمل شنو ومتى.</p>
+<h3 id="_13">مثال:</h3>
+<pre><code class="language-json">{
   &quot;id&quot;: 12345,
   &quot;tenant_id&quot;: &quot;alfajr-trading&quot;,
   &quot;entity_type&quot;: &quot;sales_invoice&quot;,
@@ -377,60 +276,56 @@ em { color: var(--text-soft); }
   &quot;created_at&quot;: &quot;2026-07-21T15:30:00Z&quot;
 }
 </code></pre>
-
-<h3>الحقول:</h3>
-
+<h3 id="_14">الحقول:</h3>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الحقل</th>
 <th>المعنى</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`entity_type`</td>
-<td>نوع الكيان (`sales_invoice`, `project`, ...)</td>
+<td><code>entity_type</code></td>
+<td>نوع الكيان (<code>sales_invoice</code>, <code>project</code>, ...)</td>
 </tr>
 <tr>
-<td>`entity_id`</td>
+<td><code>entity_id</code></td>
 <td>ID الكيان</td>
 </tr>
 <tr>
-<td>`action`</td>
-<td>الإجراء (`created`, `updated`, `deleted`, `viewed`, `exported`)</td>
+<td><code>action</code></td>
+<td>الإجراء (<code>created</code>, <code>updated</code>, <code>deleted</code>, <code>viewed</code>, <code>exported</code>)</td>
 </tr>
 <tr>
-<td>`user_id`</td>
+<td><code>user_id</code></td>
 <td>مين عمل الإجراء</td>
 </tr>
 <tr>
-<td>`changes`</td>
+<td><code>changes</code></td>
 <td>JSON فيه قبل وبعد التغيير</td>
 </tr>
 <tr>
-<td>`ip_address`</td>
+<td><code>ip_address</code></td>
 <td>IP المستخدم</td>
 </tr>
 <tr>
-<td>`created_at`</td>
+<td><code>created_at</code></td>
 <td>متى</td>
 </tr>
-</tbody></table>
-
-<h3>ليش مهمة؟</h3>
-
-<li>🔍 **تتبع الأخطاء** — &quot;مين عدّل هذا الرقم؟&quot;</li>
-<li>🛡️ **الأمان** — كشف التلاعب</li>
-<li>📋 **Compliance** — مطلوب قانونياً في كثير من الدول</li>
-<li>👨‍⚖️ **حل النزاعات** — &quot;الفاتورة كانت X أو Y؟&quot;</li>
-
-<hr>
-
-<h2>🔄 كيف يشتغل النظام كاملاً (Flow كامل)</h2>
-
-<h3>مثال واقعي: &quot;فاتورة مبيعات جديدة&quot;</h3>
-
-<pre><code class="language-">
-الخطوة 1: المستخدم يعمل فاتورة
+</tbody>
+</table>
+<h3 id="_15">ليش مهمة؟</h3>
+<ul>
+<li>🔍 <strong>تتبع الأخطاء</strong> — "مين عدّل هذا الرقم؟"</li>
+<li>🛡️ <strong>الأمان</strong> — كشف التلاعب</li>
+<li>📋 <strong>Compliance</strong> — مطلوب قانونياً في كثير من الدول</li>
+<li>👨‍⚖️ <strong>حل النزاعات</strong> — "الفاتورة كانت X أو Y؟"</li>
+</ul>
+<hr />
+<h2 id="flow">🔄 كيف يشتغل النظام كاملاً (Flow كامل)</h2>
+<h3 id="_16">مثال واقعي: "فاتورة مبيعات جديدة"</h3>
+<pre><code>الخطوة 1: المستخدم يعمل فاتورة
   ↓
   sales_invoice table: row جديد
   ↓
@@ -439,7 +334,7 @@ em { color: var(--text-soft); }
   outbox_events: 
     - event_type: &quot;sales_invoice.created&quot;
     - payload: {invoice_id, customer, total, ...}
-  
+
 الخطوة 3: مستمعين الأحداث يسمعون
   ↓
   ┌─────────────────────────────────────┐
@@ -466,102 +361,98 @@ em { color: var(--text-soft); }
   │    - سجّل في audit_log              │
   │    - سجّل في processed_events       │
   └─────────────────────────────────────┘
-  
+
 الخطوة 4: outbox_events → processed_at = now()
 الخطوة 5: sales_invoice: outbox marked as processed
 </code></pre>
-
-<strong>كل هذا في ثوانٍ معدودة — أوتوماتيكي بالكامل.</strong>
-
-<hr>
-
-<h2>🛡️ ضمانات الأمان (Reliability)</h2>
-
-<h3>1. Idempotency (مرة واحدة فقط)</h3>
-<li>`processed_events` يمنع المعالجة المكررة</li>
+<p><strong>كل هذا في ثوانٍ معدودة — أوتوماتيكي بالكامل.</strong></p>
+<hr />
+<h2 id="reliability">🛡️ ضمانات الأمان (Reliability)</h2>
+<h3 id="1-idempotency">1. Idempotency (مرة واحدة فقط)</h3>
+<ul>
+<li><code>processed_events</code> يمنع المعالجة المكررة</li>
 <li>حتى لو الـ event اتكرر (network glitch)</li>
-
-<h3>2. Retry Logic (إعادة المحاولة)</h3>
-<li>لو فشلت المعالجة → `retry_count++`</li>
-<li>لحد `max_retries` (عادة 5)</li>
-<li>لو وصلت الحد → `last_error` يُحفظ + alert</li>
-
-<h3>3. Transactional Outbox Pattern</h3>
-<li>الـ event يحفظ **في نفس الـ transaction** مع الـ data</li>
+</ul>
+<h3 id="2-retry-logic">2. Retry Logic (إعادة المحاولة)</h3>
+<ul>
+<li>لو فشلت المعالجة → <code>retry_count++</code></li>
+<li>لحد <code>max_retries</code> (عادة 5)</li>
+<li>لو وصلت الحد → <code>last_error</code> يُحفظ + alert</li>
+</ul>
+<h3 id="3-transactional-outbox-pattern">3. Transactional Outbox Pattern</h3>
+<ul>
+<li>الـ event يحفظ <strong>في نفس الـ transaction</strong> مع الـ data</li>
 <li>لو الـ data ما اتحفظت → الـ event ما يتحفظ</li>
 <li>ضمان: مفيش event بدون data، مفيش data بدون event</li>
-
-<h3>4. Eventual Consistency</h3>
+</ul>
+<h3 id="4-eventual-consistency">4. Eventual Consistency</h3>
+<ul>
 <li>الـ events ممكن تتأخر ثواني/دقائق</li>
 <li>لكن ما تضيع أبداً</li>
 <li>eventually consistent state</li>
-
-<hr>
-
-<h2>🎯 ملخص سريع</h2>
-
+</ul>
+<hr />
+<h2 id="_17">🎯 ملخص سريع</h2>
 <table>
-<thead><tr>
+<thead>
+<tr>
 <th>الطاولة</th>
 <th>الدور</th>
-</tr></thead>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>`outbox_events`</td>
+<td><code>outbox_events</code></td>
 <td>صندوق الصادر (كل الأحداث)</td>
 </tr>
 <tr>
-<td>`processed_events`</td>
+<td><code>processed_events</code></td>
 <td>اللي اتعالج (لـ idempotency)</td>
 </tr>
 <tr>
-<td>`notifications`</td>
+<td><code>notifications</code></td>
 <td>إشعارات المستخدمين (in-app)</td>
 </tr>
 <tr>
-<td>`audit_log`</td>
+<td><code>audit_log</code></td>
 <td>سجل التدقيق (مين عمل شنو)</td>
 </tr>
-</tbody></table>
-
-<strong>النمط</strong>: Transactional Outbox + Idempotency
-
-<strong>الفايدة</strong>: الموديلات مترابطة + آمنة + قابلة للتوسع
-
-<hr>
-
-<h2>📎 روابط مفيدة</h2>
-
-<li>📊 ERD: `/workspace/erd-images/notifications_events.png`</li>
-<li>📋 Schema: `/workspace/erd-source/erd_notifications_events.mmd`</li>
+</tbody>
+</table>
+<p><strong>النمط</strong>: Transactional Outbox + Idempotency</p>
+<p><strong>الفايدة</strong>: الموديلات مترابطة + آمنة + قابلة للتوسع</p>
+<hr />
+<h2 id="_18">📎 روابط مفيدة</h2>
+<ul>
+<li>📊 ERD: <code>/workspace/erd-images/notifications_events.png</code></li>
+<li>📋 Schema: <code>/workspace/erd-source/erd_notifications_events.mmd</code></li>
 <li>🌐 Portal: https://xfe6jmg938jjh.space.minimax.io/#notifications_events</li>
-
-<hr>
-
-<h2>🧠 الموديلات الثانية تستمع لـ events من Finance و Projects:</h2>
-
-<h3>Finance يبعت events عند:</h3>
-<li>✅ قيد مُرحّل → `journal_entry.posted`</li>
-<li>✅ دفعة مستلمة → `payment.received`</li>
-<li>✅ تجاوز ميزانية → `budget.exceeded`</li>
-
-<h3>Projects يبعت events عند:</h3>
-<li>✅ مشروع جديد → `project.created`</li>
-<li>✅ تغيير حالة → `project.status_changed`</li>
-<li>✅ تجاوز 80% من الميزانية → `project_budget_warning`</li>
-<li>✅ تجاوز 100% → `project_budget_exceeded`</li>
-<li>✅ مهمة مكتملة → `project_task.completed`</li>
-<li>✅ مشروع مكتمل → `project.completed`</li>
-
-<h3>اللي يسمع:</h3>
-<li>**HR**: يحسب تكلفة المشروع من ساعات العمل</li>
-<li>**Procurement**: يربط POs بالمشروع</li>
-<li>**Inventory**: ينقص الكمية</li>
-<li>**Reports**: يحدّث KPIs</li>
-<li>**Notifications**: يبعت للمستخدمين</li>
-
-<strong>النتيجة</strong>: <strong>نظام واحد متماسك</strong>، كل موديل يعرف شو يصير في الباقي بدون coupling مباشر.
-
-</div>
+</ul>
+<hr />
+<h2 id="events-finance-projects">🧠 الموديلات الثانية تستمع لـ events من Finance و Projects:</h2>
+<h3 id="finance-events">Finance يبعت events عند:</h3>
+<ul>
+<li>✅ قيد مُرحّل → <code>journal_entry.posted</code></li>
+<li>✅ دفعة مستلمة → <code>payment.received</code></li>
+<li>✅ تجاوز ميزانية → <code>budget.exceeded</code></li>
+</ul>
+<h3 id="projects-events">Projects يبعت events عند:</h3>
+<ul>
+<li>✅ مشروع جديد → <code>project.created</code></li>
+<li>✅ تغيير حالة → <code>project.status_changed</code></li>
+<li>✅ تجاوز 80% من الميزانية → <code>project_budget_warning</code></li>
+<li>✅ تجاوز 100% → <code>project_budget_exceeded</code></li>
+<li>✅ مهمة مكتملة → <code>project_task.completed</code></li>
+<li>✅ مشروع مكتمل → <code>project.completed</code></li>
+</ul>
+<h3 id="_19">اللي يسمع:</h3>
+<ul>
+<li><strong>HR</strong>: يحسب تكلفة المشروع من ساعات العمل</li>
+<li><strong>Procurement</strong>: يربط POs بالمشروع</li>
+<li><strong>Inventory</strong>: ينقص الكمية</li>
+<li><strong>Reports</strong>: يحدّث KPIs</li>
+<li><strong>Notifications</strong>: يبعت للمستخدمين</li>
+</ul>
+<p><strong>النتيجة</strong>: <strong>نظام واحد متماسك</strong>، كل موديل يعرف شو يصير في الباقي بدون coupling مباشر.</p>
 </body>
 </html>

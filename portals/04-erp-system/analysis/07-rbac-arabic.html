@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔐 الصلاحيات والأدوار (RBAC) — تحليل شامل بالعربي</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="rbac">🔐 الصلاحيات والأدوار (RBAC) — تحليل شامل بالعربي</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: Jimi تحليلي (Analytical Team Leader)<br />
+<strong>الجمهور</strong>: محاسبين، مدراء، مطوّرين، مراجعين أمنيين<br />
+<strong>المصادر</strong>: <code>Identity/Entities/Role.cs</code> + <code>Identity/Infrastructure/RoleRepository.cs</code> + <code>Identity/Application/Auth/*</code> + <code>Host/Program.cs</code> + <code>Host/Controllers/*</code> + <code>Host/AGENTS.md</code><br />
+<strong>الإصدار</strong>: v1.0 — يكشف الحقيقة من الكود</p>
+</blockquote>
+<hr />
+<h2 id="_1">🚨 تنبيه حرج قبل البداية</h2>
+<blockquote>
+<p><strong>النظام عنده أدوار، لكن الأدوار </strong>لا تُستخدم<strong> فعلياً.</strong></p>
+<ul>
+<li>✅ 4 أدوار افتراضية تُنشأ لكل tenant جديد</li>
+<li>✅ الأدوار تُضاف لـ JWT عند تسجيل الدخول</li>
+<li>❌ <strong>صفر</strong> controllers يستخدم <code>[Authorize(Roles=...)]</code></li>
+<li>❌ <strong>صفر</strong> usages لـ <code>User.IsInRole()</code> في الكود</li>
+<li>❌ <strong>صفر</strong> policies مسجّلة</li>
+</ul>
+<p><strong>النتيجة</strong>: أي مستخدم مسجّل يستطيع تنفيذ <strong>أي عملية</strong> (إنشاء/حذف/تعديل) في <strong>كل الـ endpoints</strong>.</p>
+</blockquote>
+<p><strong>هذا ثغرة حرجة</strong> يجب معالجتها قبل production.</p>
+<hr />
+<h2 id="rbac-erp-system">🎯 شو هو RBAC في ERP-SYSTEM؟</h2>
+<p>RBAC = <strong>Role-Based Access Control</strong> — نموذج أمني يربط:<br />
+- 👤 <strong>مستخدم</strong> (User) — شخص يستخدم النظام<br />
+- 🎭 <strong>دور</strong> (Role) — "محاسب"، "مدير"، "مشاهد"<br />
+- 🛡️ <strong>إذن</strong> (Permission) — حق الوصول لعملية معيّنة (يُستنتج من Role)</p>
+<h3 id="erp-system">في ERP-SYSTEM:</h3>
+<pre><code>User ─many-to-many─&gt; Role
+                       │
+                       └──&gt; Permissions (مُعرّفة ضمنياً عبر Role Name)
+</code></pre>
+<p><strong>ملاحظة</strong>: النظام <strong>لا يخزّن Permissions كجدول منفصل</strong> — الصلاحيات <strong>مُضمّنة في اسم الـ Role</strong> (Convention over Configuration).</p>
+<hr />
+<h2 id="current-implementation">🏗️ البنية الحالية (Current Implementation)</h2>
+<h3 id="1-roles-20260614_120000_createidentitytablescs">1️⃣ جدول <code>roles</code> (من <code>20260614_120000_CreateIdentityTables.cs</code>)</h3>
+<pre><code class="language-sql">CREATE TABLE roles (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(500) NOT NULL DEFAULT '',
+  created_at TIMESTAMP NOT NULL,
+  UNIQUE INDEX ix_roles_tenant_name (tenant_id, name)
+);
+</code></pre>
+<p><strong>ملاحظات</strong>:<br />
+- ✅ <code>tenant_id</code> — كل دور مربوط بمستأجر (multi-tenant)<br />
+- ✅ <code>UNIQUE (tenant_id, name)</code> — لا يمكن إنشاء دور مكرر داخل نفس الـ tenant<br />
+- ❌ لا يوجد <code>is_system</code> — لا يمكن التمييز بين "دور نظام" (لا يُحذف) و "دور مخصص"<br />
+- ❌ لا يوجد <code>permissions</code> JSON — الصلاحيات مش encode-able</p>
+<h3 id="2-user_roles-join-table">2️⃣ جدول <code>user_roles</code> (Join table)</h3>
+<pre><code class="language-sql">CREATE TABLE user_roles (
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  assigned_at TIMESTAMP NOT NULL,
+  PRIMARY KEY (user_id, role_id)
+);
+</code></pre>
+<p><strong>ملاحظات</strong>:<br />
+- ✅ Composite PK — مستخدم + دور = فريد<br />
+- ❌ لا يوجد <code>assigned_by</code> — مَن عيّن الدور؟ (audit gap)<br />
+- ❌ لا يوجد <code>expires_at</code> — أدوار دائمة فقط</p>
+<h3 id="3-entity-rolecs-userrolecs">3️⃣ Entity: <code>Role.cs</code> + <code>UserRole.cs</code></h3>
+<pre><code class="language-csharp">public class Role
+{
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class UserRole
+{
+    public Guid UserId { get; set; }
+    public Guid RoleId { get; set; }
+    public DateTime AssignedAt { get; set; }
+}
+</code></pre>
+<p><strong>POCO بسيط</strong> — لا يوجد navigation properties مُعقّدة.</p>
+<hr />
+<h2 id="4-default-roles">🎭 الأدوار الافتراضية الـ 4 (Default Roles)</h2>
+<p>من <code>RoleRepository.EnsureDefaultRolesAsync</code>:</p>
+<pre><code class="language-csharp">var defaults = new (string Name, string Description)[]
+{
+    (&quot;Admin&quot;, &quot;مدير النظام — صلاحيات كاملة داخل المستأجر&quot;),
+    (&quot;Accountant&quot;, &quot;محاسب — يدير القيود والفواتير&quot;),
+    (&quot;ProjectManager&quot;, &quot;مدير مشاريع&quot;),
+    (&quot;Viewer&quot;, &quot;صلاحيات قراءة فقط&quot;),
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Role</th>
+<th>الوصف الرسمي</th>
+<th>الصلاحيات <strong>المتوقعة</strong> (مُضمّنة ضمنياً)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Admin</strong></td>
+<td>مدير النظام — صلاحيات كاملة</td>
+<td>كل شي: CRUD على كل الكيانات، إدارة المستخدمين، Posting Rules، Manual Retry</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Accountant</strong></td>
+<td>محاسب — يدير القيود والفواتير</td>
+<td>Accounts، JournalEntries، Ledger، Reports (Finance فقط)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>ProjectManager</strong></td>
+<td>مدير مشاريع</td>
+<td>Projects، Tasks، Resources، Budgets (Projects فقط)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Viewer</strong></td>
+<td>صلاحيات قراءة فقط</td>
+<td>GET فقط على كل الكيانات، لا تعديل</td>
+</tr>
+</tbody>
+</table>
+<p><strong>⚠️ ملاحظة حاسمة</strong>: هذه الصلاحيات <strong>غير مطبّقة في الكود</strong>. هي مجرد <strong>توقعات</strong> موثّقة في الوصف.</p>
+<hr />
+<h2 id="auth-flow-4">🔐 Auth Flow الكامل (4 مراحل)</h2>
+<h3 id="1-register-post-apiauthregister">1️⃣ Register (<code>POST /api/auth/register</code>)</h3>
+<pre><code class="language-csharp">[HttpPost(&quot;register&quot;)]
+[AllowAnonymous]
+public async Task&lt;IActionResult&gt; Register([FromBody] RegisterRequest request, CancellationToken ct)
+{
+    // 1. Validate
+    // 2. If tenantId: ربط بـ tenant موجود
+    // 3. If tenantName: إنشاء tenant جديد
+    // 4. Insert user
+    // 5. await _roles.EnsureDefaultRolesAsync(tenant.Id, ct);  // 4 default roles
+    // 6. if (isNewTenant): assign &quot;Admin&quot; role to first user
+    // 7. return JWT
+}
+</code></pre>
+<p><strong>المنطق المهم</strong>:<br />
+- عند tenant جديد → المستخدم الأول = Admin تلقائياً<br />
+- عند tenant موجود → يُسجّل بدون دور (يحتاج Admin يعطيه دور)</p>
+<h3 id="2-login-post-apiauthlogin">2️⃣ Login (<code>POST /api/auth/login</code>)</h3>
+<pre><code class="language-csharp">// 1. Validate email + password (BCrypt.Verify)
+// 2. Get user
+// 3. await _users.GetRoleNamesAsync(user.Id, ct);  // ← يجلب كل أدوار المستخدم
+// 4. Generate JWT (claims include: sub, email, jti, tenant_id, full_name, [roles...])
+// 5. Generate refresh token
+// 6. Insert refresh token
+// 7. Return AuthResponse
+</code></pre>
+<h3 id="3-refresh-post-apiauthrefresh">3️⃣ Refresh (<code>POST /api/auth/refresh</code>)</h3>
+<pre><code class="language-csharp">// 1. Validate expired access token
+// 2. Validate refresh token (from DB, hash)
+// 3. Reuse Detection: if revoked → RevokeAllForUserAsync (defense in depth)
+// 4. Generate new access token (with current roles)
+// 5. Rotate refresh token (revoke old, issue new)
+// 6. Return
+</code></pre>
+<h3 id="4-logout-post-apiauthlogout">4️⃣ Logout (<code>POST /api/auth/logout</code>)</h3>
+<pre><code class="language-csharp">// 1. Get user from JWT
+// 2. Revoke the refresh token (sets revoked_at + revoked_reason)
+</code></pre>
+<hr />
+<h2 id="jwt-structure-jwttokenservicegenerateaccesstoken">🎫 JWT Structure (من <code>JwtTokenService.GenerateAccessToken</code>)</h2>
+<h3 id="claims">Claims المُضمّنة:</h3>
+<pre><code class="language-csharp">new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),       // user ID
+new(JwtRegisteredClaimNames.Email, user.Email),
+new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // unique token ID
+new(&quot;tenant_id&quot;, user.TenantId.ToString()),                  // ⚠️ custom claim
+new(&quot;full_name&quot;, user.FullName),
+// ثم لكل role:
+new(ClaimTypes.Role, role)  // ← كل role كـ claim منفصل
+</code></pre>
+<h3 id="token-validation-programcs">Token Validation (Program.cs):</h3>
+<pre><code class="language-csharp">options.TokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = jwtSettings.Issuer,
+    ValidAudience = jwtSettings.Audience,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+    ClockSkew = TimeSpan.FromSeconds(30),
+    NameClaimType = JwtRegisteredClaimNames.Sub,
+    RoleClaimType = ClaimTypes.Role,  // ← مهم للـ [Authorize(Roles=...)]
+};
+</code></pre>
+<h3 id="jwt-payload-decoded">مثال JWT payload (decoded):</h3>
+<pre><code class="language-json">{
+  &quot;sub&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,
+  &quot;email&quot;: &quot;admin@alfajer.local&quot;,
+  &quot;jti&quot;: &quot;abc123...&quot;,
+  &quot;tenant_id&quot;: &quot;7c9e6679-7425-40de-944b-e07fc1f90ae7&quot;,
+  &quot;full_name&quot;: &quot;مدير النظام&quot;,
+  &quot;http://schemas.microsoft.com/ws/2008/06/identity/claims/role&quot;: [&quot;Admin&quot;],
+  &quot;iss&quot;: &quot;ERPSystem&quot;,
+  &quot;aud&quot;: &quot;ERPSystem.Client&quot;,
+  &quot;exp&quot;: 1753132800,
+  &quot;nbf&quot;: 1753129200
+}
+</code></pre>
+<p><strong>الـ Role claim</strong> = <code>"http://schemas.microsoft.com/ws/2008/06/identity/claims/role"</code> (URI طويل) — <strong>مش</strong> <code>"role"</code> فقط.</p>
+<hr />
+<h2 id="middleware-pipeline-programcs">🛡️ Middleware Pipeline (من Program.cs)</h2>
+<pre><code class="language-csharp">app.UseAuthentication();         // JWT validation
+app.UseAuthorization();          // [Authorize] checks
+app.UseMiddleware&lt;TenantMiddleware&gt;();  // استخراج tenant_id + user_id من claims
+app.MapControllers();
+</code></pre>
+<h3 id="tenantmiddleware-sharedmultitenancytenantmiddlewarecs">TenantMiddleware (<code>Shared/MultiTenancy/TenantMiddleware.cs</code>)</h3>
+<pre><code class="language-csharp">public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext)
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+    var isPublic = IsPublicPath(path);
+
+    if (context.User?.Identity?.IsAuthenticated == true)
+    {
+        var tenantClaim = context.User.FindFirst(&quot;tenant_id&quot;)?.Value;
+        var userClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                        ?? context.User.FindFirst(&quot;sub&quot;)?.Value;
+
+        if (Guid.TryParse(tenantClaim, out var tenantId) &amp;&amp;
+            Guid.TryParse(userClaim, out var userId))
+        {
+            tenantContext.Set(tenantId, userId);
+        }
+        else if (!isPublic)
+        {
+            _logger.LogWarning(&quot;Authenticated request without tenant_id claim on path {Path}&quot;, path);
+        }
+    }
+
+    await _next(context);
+    tenantContext.Clear();
+}
+</code></pre>
+<p><strong>ما يفعله</strong>:<br />
+- ✅ يسحب <code>tenant_id</code> + <code>user_id</code> من JWT<br />
+- ✅ يحقنها في <code>ITenantContext</code> (Scoped service)</p>
+<p><strong>ما لا يفعله</strong>:<br />
+- ❌ <strong>لا يتحقق</strong> أن <code>tenant_id</code> في الـ token = <code>tenant_id</code> في الـ URL/body<br />
+- ❌ <strong>لا يمنع</strong> user من tenant A من الوصول لـ tenant B (إذا توصل لـ token من tenant B)<br />
+- ❌ <strong>لا يتحقق</strong> أن <code>tenant_id</code> في الـ JWT موجود فعلاً في <code>tenants</code> table</p>
+<p><strong>الـ isolation الفعلي</strong> يعتمد على:<br />
+- مطوّر يضيف <code>WHERE tenant_id = @tenantId</code> في <strong>كل</strong> query<br />
+- لا يوجد Global Query Filter (مثل EF Core)</p>
+<hr />
+<h2 id="21-controllers-hostcontrollers">📊 الواقع الحالي: 21 Controllers (من <code>Host/Controllers/</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>Controller</th>
+<th>Endpoints</th>
+<th>Auth</th>
+<th>Roles Enforced</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AccountsController</code></td>
+<td>5 (GET/POST/DELETE)</td>
+<td><code>[Authorize]</code></td>
+<td>❌ لا شيء</td>
+</tr>
+<tr>
+<td><code>AuthController</code></td>
+<td>5 (register/login/refresh/logout/me)</td>
+<td><code>[AllowAnonymous]</code> على register/login/refresh، <code>[Authorize]</code> على logout/me</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>CompaniesController</code></td>
+<td>7 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>CostCentersController</code></td>
+<td>5 (CRUD + budget)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>EventsController</code></td>
+<td>4 (outbox/processed/retry)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>HealthController</code></td>
+<td>2 (/health, /health/ready)</td>
+<td><code>[AllowAnonymous]</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>ItemCategoriesController</code></td>
+<td>4 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>ItemsController</code></td>
+<td>5 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>JournalEntriesController</code></td>
+<td>4 (CRUD + post)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>LedgerController</code></td>
+<td>2 (trial balance, account ledger)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>NotificationsController</code></td>
+<td>3 (list/unread/mark-read)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>PostingRulesController</code></td>
+<td>3 (list/create/trigger)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>ProjectsController</code></td>
+<td>8 (CRUD + status)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>ReportsController</code></td>
+<td>7 (project P&amp;L, inventory, etc.)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>ResourcesController</code></td>
+<td>4 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>StockLevelsController</code></td>
+<td>4 (list/low-stock)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>StockMovementsController</code></td>
+<td>5 (receive/issue/transfer/adjust/post)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>StockReservationsController</code></td>
+<td>3 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>TasksController</code></td>
+<td>4 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>UnitOfMeasuresController</code></td>
+<td>3 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>WarehousesController</code></td>
+<td>5 (CRUD)</td>
+<td><code>[Authorize]</code></td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الإجمالي</strong>: 21 controllers، <strong>101 endpoints</strong>، <strong>0 role checks</strong>.</p>
+<hr />
+<h2 id="audit">🔍 Audit: مَن يستطيع عمل شنو؟ (الوضع الحالي)</h2>
+<table>
+<thead>
+<tr>
+<th>العملية</th>
+<th>Endpoint</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>ProjectManager</th>
+<th>Viewer</th>
+<th>مسجّل بدون دور</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>عرض الحسابات</strong></td>
+<td><code>GET /api/finance/accounts</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>إنشاء حساب</strong></td>
+<td><code>POST /api/finance/accounts</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>حذف حساب</strong></td>
+<td><code>DELETE /api/finance/accounts/{id}</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>إنشاء قيد</strong></td>
+<td><code>POST /api/finance/journal-entries</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>ترحيل قيد</strong></td>
+<td><code>POST /api/finance/journal-entries/{id}/post</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Manual Retry Event</strong></td>
+<td><code>POST /api/events/retry/{id}</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>إنشاء Posting Rule</strong></td>
+<td><code>POST /api/finance/posting-rules</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>تشغيل Event يدوياً</strong></td>
+<td><code>POST /api/finance/posting-rules/trigger/{eventType}</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>حذف شركة</strong></td>
+<td><code>DELETE /api/companies/{id}</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>إنشاء مشروع</strong></td>
+<td><code>POST /api/projects</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>استلام بضاعة</strong></td>
+<td><code>POST /api/inventory/stock-movements/receive</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>صرف بضاعة</strong></td>
+<td><code>POST /api/inventory/stock-movements/issue</code></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>كل الأعمدة = ✅</strong> = لا يوجد فرق بين الأدوار. <strong>هذا مقصود في المرحلة MVP</strong> (الكل = admin داخل tenant) لكنه <strong>غير آمن</strong> للنمو.</p>
+<hr />
+<h2 id="critical-gaps">🚨 الثغرات الحرجة (Critical Gaps)</h2>
+<h3 id="gap-1-read-vs-write">🔴 Gap #1: لا يوجد تمييز بين القراءة والكتابة (Read vs Write)</h3>
+<p><strong>المشكلة</strong>: حتى <code>Viewer</code> (الموثّق "قراءة فقط") يستطيع إنشاء/حذف/تعديل.</p>
+<p><strong>الإصلاح المقترح</strong>:</p>
+<pre><code class="language-csharp">// حالياً
+[HttpGet]
+public async Task&lt;IActionResult&gt; List(...) { ... }
+
+[HttpPost]
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+// المقترح
+[HttpGet]
+[Authorize]  // أي مسجّل
+public async Task&lt;IActionResult&gt; List(...) { ... }
+
+[HttpPost]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]  // فقط Admin + Accountant
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+</code></pre>
+<hr />
+<h3 id="gap-2-manual-retry">🔴 Gap #2: Manual Retry مفتوح للجميع</h3>
+<p><strong>المشكلة</strong>: <code>POST /api/events/retry/{id}</code> موثّق "Admin: manual retry" في الـ comment، لكن <strong>لا يوجد <code>[Authorize(Roles = "Admin")]</code></strong>. أي محاسب يمكنه إعادة محاولة حدث يدوياً.</p>
+<p><strong>التأثير</strong>: لو المحاسب يعيد محاولة حدث فيه خطأ محاسبي، قد يُنشأ قيد مكرر.</p>
+<p><strong>الإصلاح</strong>:</p>
+<pre><code class="language-csharp">[HttpPost(&quot;retry/{id:guid}&quot;)]
+[Authorize(Roles = &quot;Admin&quot;)]  // ← الإصلاح
+public async Task&lt;IActionResult&gt; Retry(Guid id, CancellationToken ct) { ... }
+</code></pre>
+<hr />
+<h3 id="gap-3-posting-rule-createtrigger">🔴 Gap #3: Posting Rule Create/Trigger مفتوح للجميع</h3>
+<p><strong>المشكلة</strong>: <code>POST /api/finance/posting-rules</code> — أي مسجّل يقدر ينشئ قاعدة (تأثير على القيود التلقائية).</p>
+<p><strong>التأثير</strong>: مستخدم خبيث يضيف قاعدة تنشئ قيود مكررة أو في حسابات خاطئة.</p>
+<p><strong>الإصلاح</strong>:</p>
+<pre><code class="language-csharp">[HttpPost]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Create(...) { ... }
+
+[HttpPost(&quot;trigger/{eventType}&quot;)]
+[Authorize(Roles = &quot;Admin,Accountant&quot;)]
+public async Task&lt;IActionResult&gt; Trigger(...) { ... }
+</code></pre>
+<hr />
+<h3 id="gap-4-audit-log-role">🟠 Gap #4: لا يوجد Audit Log لعمليات Role</h3>
+<p><strong>المشكلة</strong>: <code>UserRole</code> لا يحفظ <code>assigned_by</code> أو <code>assigned_reason</code>. مَن عيّن Admin لـ X؟ متى؟</p>
+<p><strong>الإصلاح المقترح</strong>:</p>
+<pre><code class="language-sql">ALTER TABLE user_roles ADD COLUMN assigned_by UUID REFERENCES users(id);
+ALTER TABLE user_roles ADD COLUMN assigned_reason VARCHAR(200);
+ALTER TABLE user_roles ADD COLUMN revoked_at TIMESTAMP;
+ALTER TABLE user_roles ADD COLUMN revoked_by UUID REFERENCES users(id);
+</code></pre>
+<hr />
+<h3 id="gap-5-soft-revoke">🟠 Gap #5: لا يوجد Soft Revoke للأدوار</h3>
+<p><strong>المشكلة</strong>: <code>user_roles</code> join table — لو حذفنا row، <strong>نخسر التاريخ</strong>. ما نعرف كان عند المستخدم دور قبل.</p>
+<p><strong>الإصلاح</strong>: إضافة <code>revoked_at</code> (soft delete) + filter في queries.</p>
+<hr />
+<h3 id="gap-6-concept-of-permissions">🟠 Gap #6: لا يوجد Concept of "Permissions"</h3>
+<p><strong>المشكلة</strong>: الأدوار = strings ("Admin", "Accountant"). لا يوجد جدول permissions منفصل.</p>
+<p><strong>مثال على ما نريد</strong>:</p>
+<pre><code>Role &quot;Accountant&quot; {
+  permissions: [
+    &quot;journal_entries.create&quot;,
+    &quot;journal_entries.post&quot;,
+    &quot;accounts.read&quot;,
+    &quot;ledger.read&quot;,
+    &quot;reports.finance.read&quot;
+  ]
+}
+Role &quot;Viewer&quot; {
+  permissions: [
+    &quot;*.read&quot;  // wildcard
+  ]
+}
+</code></pre>
+<p><strong>الإصلاح المقترح (Phase 4)</strong>:<br />
+- جدول <code>permissions</code> (id, name, description)<br />
+- جدول <code>role_permissions</code> (role_id, permission_id)<br />
+- <code>IRequirePermission</code> attribute<br />
+- <code>IAuthorizationHandler</code> مخصص</p>
+<hr />
+<h3 id="gap-7-tenant-aware-role-check">🟠 Gap #7: لا يوجد Tenant-Aware Role Check</h3>
+<p><strong>المشكلة</strong>: عند Admin من tenant A يحاول يدخل tenant B — الكود <strong>لا يمنع</strong> ذلك (إذا وصل لـ token من tenant B).</p>
+<p><strong>الإصلاح</strong>:</p>
+<pre><code class="language-csharp">// في TenantMiddleware
+if (Guid.TryParse(tenantClaim, out var tenantId))
+{
+    var tenantExists = await _tenants.ExistsAsync(tenantId, ct);
+    if (!tenantExists)
+    {
+        context.Response.StatusCode = 403;
+        return;
+    }
+}
+</code></pre>
+<hr />
+<h2 id="permission-matrix-sprint-3">💡 مقترح: Permission Matrix (مُقترح للـ Sprint 3)</h2>
+<h3 id="dec-053">جدول الصلاحيات (مقترح — يحتاج DEC-053 منفصل للموافقة):</h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint / Action</th>
+<th>Admin</th>
+<th>Accountant</th>
+<th>ProjectManager</th>
+<th>Viewer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Accounts</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET accounts</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST accounts</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>DELETE accounts</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Journal Entries</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET journal entries</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST journal entry</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST journal entry/{id}/post</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Posting Rules</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET posting rules</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST posting rule</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST trigger event</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Companies</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET companies</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST company</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>DELETE company</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Projects</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET projects</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST project</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>PUT project</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>DELETE project</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Inventory (Stock Movements)</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET stock movements</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>POST receive</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST issue</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST transfer</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST adjust</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Events (Outbox)</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET outbox</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>GET processed</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>POST retry event</strong></td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>Users / Roles</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GET users</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>POST user</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Assign role</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الإجمالي</strong>: ~50 خلية في الجدول. 80% ✅ أذونات، 20% ❌ مقيدة.</p>
+<hr />
+<h2 id="roadmap">🎯 خطة الإصلاح (Roadmap)</h2>
+<h3 id="1-critical-production-sprint-3">المرحلة 1 (Critical — قبل production): <strong>Sprint 3</strong></h3>
+<ol>
+<li>✅ إضافة <code>[Authorize(Roles = "...")]</code> على كل Controller action</li>
+<li>✅ تحديد <code>Admin</code> كحد أدنى لـ Manual Retry + Posting Rule create + Company delete</li>
+<li>✅ تحديد <code>Admin, Accountant</code> للـ Finance write operations</li>
+<li>✅ تحديد <code>Admin, ProjectManager</code> للـ Projects write operations</li>
+<li>✅ إضافة <code>assigned_by</code> + <code>assigned_at</code> audit لـ <code>user_roles</code></li>
+</ol>
+<p><strong>التقدير</strong>: 3-5 أيام implementation + 2 أيام tests.</p>
+<h3 id="2-high-post-sprint-3">المرحلة 2 (High — قريب): <strong>Post-Sprint 3</strong></h3>
+<ol>
+<li>✅ إضافة <code>revoked_at</code> للـ <code>user_roles</code> (soft revoke)</li>
+<li>✅ Tenant existence check في <code>TenantMiddleware</code></li>
+<li>✅ UI لإدارة الأدوار (CRUD roles + assign/revoke)</li>
+<li>✅ Audit log لتغييرات الأدوار</li>
+</ol>
+<h3 id="3-medium-phase-2">المرحلة 3 (Medium — Phase 2+):</h3>
+<ol>
+<li>📋 جدول <code>permissions</code> منفصل</li>
+<li>📋 <code>IAuthorizationHandler</code> مخصص</li>
+<li>📋 Permission inheritance (مثلاً: Accountant يرث Viewer permissions)</li>
+<li>📋 Custom policies (CanApproveInvoice, CanViewPayroll, etc.)</li>
+<li>📋 Role templates (Admin Lite, Read-Only Admin, etc.)</li>
+</ol>
+<h3 id="4-low">المرحلة 4 (Low — مستقبلي):</h3>
+<ol>
+<li>🔮 Row-level security (Postgres RLS)</li>
+<li>🔮 Attribute-based access control (ABAC)</li>
+<li>🔮 Time-bound roles (ينتهي بعد X أيام)</li>
+<li>🔮 Delegation (Admin يفوّض صلاحياته مؤقتاً)</li>
+</ol>
+<hr />
+<h2 id="vs">📊 مقارنة: ما هو مُحقَّق vs ما هو مُخطَّط</h2>
+<table>
+<thead>
+<tr>
+<th>الميزة</th>
+<th>الحالة</th>
+<th>المصدر</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>جدول roles</td>
+<td>✅ مكتمل</td>
+<td><code>20260614_120000_CreateIdentityTables.cs</code></td>
+</tr>
+<tr>
+<td>4 default roles لكل tenant</td>
+<td>✅ مكتمل</td>
+<td><code>RoleRepository.EnsureDefaultRolesAsync</code></td>
+</tr>
+<tr>
+<td>User-role many-to-many</td>
+<td>✅ مكتمل</td>
+<td><code>Role.cs</code> (UserRole join)</td>
+</tr>
+<tr>
+<td>JWT يحتوي roles</td>
+<td>✅ مكتمل</td>
+<td><code>JwtTokenService.GenerateAccessToken</code></td>
+</tr>
+<tr>
+<td>Token validation</td>
+<td>✅ مكتمل</td>
+<td><code>Program.cs</code> (AddJwtBearer)</td>
+</tr>
+<tr>
+<td>Refresh token rotation</td>
+<td>✅ مكتمل</td>
+<td><code>AuthService.RefreshAsync</code></td>
+</tr>
+<tr>
+<td>Reuse detection</td>
+<td>✅ مكتمل</td>
+<td><code>AuthService.RefreshAsync</code></td>
+</tr>
+<tr>
+<td><strong>Role enforcement</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td><code>[Authorize(Roles=...)]</code> غير مستخدم</td>
+</tr>
+<tr>
+<td><strong>Permission matrix</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا يوجد جدول permissions</td>
+</tr>
+<tr>
+<td><strong>Audit log للأدوار</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا يوجد assigned_by/assigned_at</td>
+</tr>
+<tr>
+<td><strong>Soft revoke</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا يوجد revoked_at في user_roles</td>
+</tr>
+<tr>
+<td><strong>Tenant validation in JWT</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا يتحقق من tenant existence</td>
+</tr>
+<tr>
+<td><strong>UI لإدارة الأدوار</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا endpoints + لا UI</td>
+</tr>
+<tr>
+<td><strong>Custom policies</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا IAuthorizationHandler</td>
+</tr>
+<tr>
+<td><strong>Row-level security</strong></td>
+<td>❌ <strong>مفقود</strong></td>
+<td>لا Postgres RLS</td>
+</tr>
+</tbody>
+</table>
+<p><strong>الإجمالي</strong>: 7/15 مكتمل (47%).</p>
+<hr />
+<h2 id="jimi">🎯 توصيات Jimi تحليلي</h2>
+<h3 id="sprint-2-deliverable">للسجل (Sprint 2 deliverable):</h3>
+<p>✅ <strong>ما يفعله هذا الـ DEC-050</strong>: توثيق الوضع الحالي + تحديد الـ 7 gaps + اقتراح permission matrix + roadmap.</p>
+<h3 id="dec-053_1">للسجل (DEC-053 مقترح — منفصل):</h3>
+<p><strong>Permission Matrix + Implementation Plan</strong> — يحتاج:<br />
+1. مراجعة permission matrix مع stakeholders (أنس، CFO، PM)<br />
+2. تحديد أولوية التطبيق (Critical vs High vs Medium)<br />
+3. تقدير effort: Critical ≈ 1 أسبوع، High ≈ 2-3 أيام، Medium ≈ 1 أسبوع</p>
+<h3 id="mavis-root">لـ Mavis Root (تنفيذ):</h3>
+<p><strong>توصيتي</strong>: <br />
+- <strong>لا تنشر لـ production</strong> قبل تطبيق Critical gaps (المرحلة 1)<br />
+- <strong>Sprint 3 يبدأ فوراً</strong> بعد Sprint 2 (DEC-051 + DEC-052)<br />
+- <strong>افتح DEC-053</strong> منفصل للـ Permission Matrix + Implementation</p>
+<hr />
+<h2 id="_2">📎 روابط مفيدة</h2>
+<ul>
+<li>📋 Role entity: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Entities/Role.cs</code></li>
+<li>📋 Role repository: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Infrastructure/RoleRepository.cs</code></li>
+<li>📋 Auth service: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Application/Auth/AuthService.cs</code></li>
+<li>📋 JWT service: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/Application/Auth/JwtTokenService.cs</code></li>
+<li>📋 Tenant middleware: <code>/workspace/ERP-SYSTEM/src/backend/Shared/MultiTenancy/TenantMiddleware.cs</code></li>
+<li>📋 Program.cs: <code>/workspace/ERP-SYSTEM/src/backend/Host/Program.cs</code></li>
+<li>📋 Identity AGENTS.md: <code>/workspace/ERP-SYSTEM/src/backend/Modules/Identity/AGENTS.md</code></li>
+<li>📋 Host AGENTS.md: <code>/workspace/ERP-SYSTEM/src/backend/Host/AGENTS.md</code></li>
+<li>🔗 مرتبط: <code>00-glossary-arabic.md</code> (RBAC term)</li>
+<li>🔗 مرتبط: <code>05-posting-rules-arabic.md</code> (أين يجب تطبيق Role check)</li>
+</ul>
+<hr />
+<p><strong>Built with 🎯 Jimi تحليلي — يكشف أن "عندنا RBAC" ≠ "RBAC مطبَّق".</strong></p>
+</body>
+</html>

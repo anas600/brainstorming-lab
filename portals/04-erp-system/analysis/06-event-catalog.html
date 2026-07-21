@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔔 فهرس الأحداث الموحّد (Event Catalog) — مصدر الحقيقة</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="event-catalog">🔔 فهرس الأحداث الموحّد (Event Catalog) — مصدر الحقيقة</h1>
+<blockquote>
+<p><strong>التاريخ</strong>: 2026-07-21<br />
+<strong>المؤلف</strong>: Jimi تحليلي (Analytical Team Leader)<br />
+<strong>الإصدار</strong>: v1.0<br />
+<strong>الجمهور</strong>: مطوّرين (إضافة event جديد)، معماريين (توسعة النظام)، محققين (debug)<br />
+<strong>المصادر</strong>: <code>src/backend/Shared/Events/</code> (StockEvents.cs, EventBus.cs, OutboxProcessorHostedService.cs, OutboxRepository.cs) + AGENTS.md</p>
+</blockquote>
+<hr />
+<h2 id="event-catalog_1">🎯 شو هو Event Catalog؟</h2>
+<p>هو <strong>المرجع الرسمي</strong> لكل نوع حدث في النظام: شو هو، مَن ينتجه، مَن يستهلكه، شكل الـ payload، شو يأثر في DB.</p>
+<p><strong>بدونه</strong>: مطوّر جديد يضيف event → يخترع naming convention خاص → يتعارض مع events ثانية.</p>
+<p><strong>معه</strong>: <br />
+- إضافة event جديدة = إضافة صف للجدول + JSON Schema + handler<br />
+- تنسيق بين الموديلات (Finance, Inventory, Projects, ...)<br />
+- Audit trail واضح لكل integration</p>
+<hr />
+<h2 id="_1">📊 الإحصائيات السريعة</h2>
+<table>
+<thead>
+<tr>
+<th>المقياس</th>
+<th>القيمة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>عدد Event Types المُعرَّفة</td>
+<td><strong>5</strong> (في <code>StockEvents.cs</code>)</td>
+</tr>
+<tr>
+<td>عدد Event Handlers الفعّالة</td>
+<td><strong>2</strong> (StockReceivedEventHandler + StockIssuedEventHandler)</td>
+</tr>
+<tr>
+<td>عدد Placeholders</td>
+<td><strong>1</strong> (<code>JournalEntryPostedEvent</code> — للنوتifications مستقبلياً)</td>
+</tr>
+<tr>
+<td>Outbox Polling Interval</td>
+<td><strong>5 ثوان</strong></td>
+</tr>
+<tr>
+<td>Batch Size</td>
+<td><strong>50</strong> events</td>
+</tr>
+<tr>
+<td>Default MaxRetries</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td>API Endpoints</td>
+<td><strong>4</strong></td>
+</tr>
+<tr>
+<td>Production-Grade TODOs</td>
+<td><strong>3</strong> (مذكورة في الكود)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quick-reference-master-table">🗂️ المرجع السريع (Quick Reference — Master Table)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Event Type</th>
+<th>Owner (Producer)</th>
+<th>Consumer</th>
+<th>Effect</th>
+<th>الحالة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>StockReceivedEvent</code></td>
+<td>Inventory (StockMovementService.PostAsync: Receive)</td>
+<td>Finance (StockReceivedEventHandler)</td>
+<td>Dr Inventory (1300) / Cr A/P (2100)</td>
+<td>✅ Active</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>StockIssuedEvent</code></td>
+<td>Inventory (StockMovementService.PostAsync: Issue)</td>
+<td>Finance (StockIssuedEventHandler)</td>
+<td>Dr COGS (5100) / Cr Inventory (1300)</td>
+<td>✅ Active</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>StockTransferredEvent</code></td>
+<td>Inventory (StockMovementService.PostAsync: Transfer)</td>
+<td>(Audit / Analytics) — لا handler بعد</td>
+<td>— (no P&amp;L effect)</td>
+<td>🟡 Emitted but no handler</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>StockAdjustedEvent</code></td>
+<td>Inventory (StockMovementService.PostAsync: Adjust)</td>
+<td>(Variance Analytics) — لا handler بعد</td>
+<td>—</td>
+<td>🟡 Emitted but no handler</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>JournalEntryPostedEvent</code></td>
+<td>Finance (JournalEntryService.Post)</td>
+<td>(Notifications) — placeholder</td>
+<td>—</td>
+<td>🟡 Placeholder (PR #7+)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>⚠️ تناقض مع <code>03-events-arabic.md</code></strong>: الوثيقة القديمة تذكر ~25 event type لكن الكود يحتوي <strong>5 فقط</strong>. الباقي = مُقترح (Backlog).</p>
+</blockquote>
+<hr />
+<h2 id="outbox-schema-outbox_events">🏗️ Outbox Schema (من <code>outbox_events</code>)</h2>
+<p>من <code>OutboxEvent.cs</code> + <code>OutboxRepository.cs</code>:</p>
+<table>
+<thead>
+<tr>
+<th>العمود</th>
+<th>النوع</th>
+<th>المعنى</th>
+<th>ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID (PK)</td>
+<td>معرّف الصف</td>
+<td>generated</td>
+</tr>
+<tr>
+<td><code>tenant_id</code></td>
+<td>UUID</td>
+<td>المستأجر</td>
+<td>للـ routing + isolation</td>
+</tr>
+<tr>
+<td><code>event_type</code></td>
+<td>VARCHAR</td>
+<td>اسم الـ C# record (مثل "StockReceivedEvent")</td>
+<td>من <code>typeof(T).Name</code></td>
+</tr>
+<tr>
+<td><code>aggregate_id</code></td>
+<td>UUID</td>
+<td><code>EventId</code> (dedup key)</td>
+<td>⚠️ ليس ID الكيان الفعلي — للتوضيح</td>
+</tr>
+<tr>
+<td><code>aggregate_type</code></td>
+<td>VARCHAR</td>
+<td>نوع الكيان الجذري ("StockMovement", "JournalEntry", ...)</td>
+<td>من switch في <code>AggregateTypeOf()</code></td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td>TEXT (JSON)</td>
+<td>محتوى الحدث (camelCase)</td>
+<td>يُسلسل عبر <code>JsonSerializer.Serialize</code></td>
+</tr>
+<tr>
+<td><code>occurred_at</code></td>
+<td>TIMESTAMP</td>
+<td>متى وقع الحدث</td>
+<td>من <code>@event.OccurredAt</code></td>
+</tr>
+<tr>
+<td><code>processed_at</code></td>
+<td>TIMESTAMP?</td>
+<td>متى اتعالج (NULL = pending)</td>
+<td>يُحدّث عبر <code>MarkProcessedAsync</code></td>
+</tr>
+<tr>
+<td><code>retry_count</code></td>
+<td>INT</td>
+<td>عدد المحاولات الفاشلة</td>
+<td>يبدأ من 0</td>
+</tr>
+<tr>
+<td><code>max_retries</code></td>
+<td>INT</td>
+<td>الحد الأقصى</td>
+<td>Default: 3 (من EventBus)</td>
+</tr>
+<tr>
+<td><code>last_error</code></td>
+<td>VARCHAR(4000)?</td>
+<td>رسالة آخر خطأ</td>
+<td>يُقتطع لـ 4000 حرف</td>
+</tr>
+</tbody>
+</table>
+<h3 id="index-index-production-grade-todo">Index: لا يوجد حالياً index صريح! (Production-grade TODO)</h3>
+<p><strong>⚠️ مشكلة أداء</strong>: <code>FetchUnprocessedAsync</code> يستخدم <code>WHERE processed_at IS NULL AND retry_count &lt; max_retries ORDER BY occurred_at LIMIT 50</code> — بدون index، هذا full table scan عند نمو البيانات.</p>
+<p><strong>التوصية</strong>: </p>
+<pre><code class="language-sql">CREATE INDEX ix_outbox_pending 
+ON outbox_events (occurred_at) 
+WHERE processed_at IS NULL AND retry_count &lt; max_retries;
+</code></pre>
+<hr />
+<h2 id="integration-event-contract-iintegrationevent">📜 Integration Event Contract (من <code>IIntegrationEvent</code>)</h2>
+<pre><code class="language-csharp">public interface IIntegrationEvent
+{
+    Guid EventId { get; }      // Dedup key (idempotency)
+    Guid TenantId { get; }     // Routing (أي tenant)
+    DateTime OccurredAt { get; }  // Ordering + audit
+}
+</code></pre>
+<p><strong>كل event record يجب أن يطبّق هذا الـ interface</strong>.</p>
+<h3 id="stockreceivedevent">مثال StockReceivedEvent:</h3>
+<pre><code class="language-csharp">public record StockReceivedEvent(
+    Guid EventId, 
+    Guid TenantId, 
+    Guid StockMovementId,    // ← ID الكيان الفعلي
+    Guid ItemId, 
+    Guid WarehouseId, 
+    decimal Quantity, 
+    decimal UnitCost,
+    string? PurchaseOrderRef, 
+    DateTime OccurredAt
+) : IIntegrationEvent;
+</code></pre>
+<hr />
+<h2 id="5-events">📋 الـ 5 Events بالتفصيل</h2>
+<h3 id="1-stockreceivedevent-active">1️⃣ <code>StockReceivedEvent</code> ✅ Active</h3>
+<p><strong>Purpose</strong>: استلام بضاعة من مورد أو تحويل (+). يحدث قيد مالي + تحديث تكلفة المخزون.</p>
+<p><strong>Producer</strong>: <br />
+- <code>StockMovementService.PostAsync(movementType: "Receive")</code><br />
+- في نفس الـ transaction: يحدث stock_level + يطلق event</p>
+<p><strong>Consumer</strong>: <br />
+- <code>StockReceivedEventHandler</code> (من <code>EventHandlers.cs</code>)<br />
+- يستدعي <code>PostingRulesService.ApplyRulesAsync(StockReceived, payload)</code></p>
+<p><strong>Effect على DB</strong>:<br />
+1. <code>stock_movements</code> row (status=Posted)<br />
+2. <code>stock_levels</code> UPSERT (item_id, warehouse_id, qty += quantity)<br />
+3. <code>outbox_events</code> row (event_type='StockReceivedEvent')<br />
+4. <em>(بعد 5s)</em> <code>journal_entries</code> row + <code>journal_lines</code> rows<br />
+5. <em>(بعد 5s)</em> <code>outbox_events.processed_at</code> يُحدّث<br />
+6. <em>(بعد 5s)</em> <code>processed_events</code> row</p>
+<p><strong>JSON Schema (Payload)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;eventId&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;stockMovementId&quot;: &quot;uuid&quot;,
+  &quot;itemId&quot;: &quot;uuid&quot;,
+  &quot;warehouseId&quot;: &quot;uuid&quot;,
+  &quot;quantity&quot;: 100,
+  &quot;unitCost&quot;: 50.00,
+  &quot;purchaseOrderRef&quot;: &quot;PO-2026-0042&quot;,
+  &quot;occurredAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<p><strong>القيود</strong>:<br />
+- <code>quantity</code> &gt; 0 (إجباري)<br />
+- <code>unitCost</code> ≥ 0<br />
+- <code>purchaseOrderRef</code> اختياري<br />
+- حساب المبلغ = <code>quantity × unitCost</code> (يُمرَّر كـ <code>payload.Amount</code>)</p>
+<hr />
+<h3 id="2-stockissuedevent-active">2️⃣ <code>StockIssuedEvent</code> ✅ Active</h3>
+<p><strong>Purpose</strong>: صرف بضاعة (للبيع، للمشروع، للاستخدام الداخلي). يحدث قيد COGS.</p>
+<p><strong>Producer</strong>: <br />
+- <code>StockMovementService.PostAsync(movementType: "Issue")</code></p>
+<p><strong>Consumer</strong>: <br />
+- <code>StockIssuedEventHandler</code><br />
+- يستدعي <code>PostingRulesService.ApplyRulesAsync(StockIssued, payload)</code></p>
+<p><strong>Effect على DB</strong>:<br />
+1. <code>stock_movements</code> row (status=Posted)<br />
+2. <code>stock_levels</code> UPSERT (qty -= quantity)<br />
+3. <code>outbox_events</code> row<br />
+4. <em>(بعد 5s)</em> <code>journal_entries</code> row — <strong>Dr COGS (5100) / Cr Inventory (1300)</strong><br />
+5. <em>(بعد 5s)</em> <code>processed_events</code> row</p>
+<p><strong>JSON Schema (Payload)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;eventId&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;stockMovementId&quot;: &quot;uuid&quot;,
+  &quot;itemId&quot;: &quot;uuid&quot;,
+  &quot;warehouseId&quot;: &quot;uuid&quot;,
+  &quot;quantity&quot;: 100,
+  &quot;referenceType&quot;: &quot;SalesInvoice&quot; | &quot;Project&quot; | &quot;Manual&quot;,
+  &quot;referenceId&quot;: &quot;uuid&quot;,
+  &quot;occurredAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<hr />
+<h3 id="3-stocktransferredevent-emitted-but-no-handler">3️⃣ <code>StockTransferredEvent</code> 🟡 Emitted but no handler</h3>
+<p><strong>Purpose</strong>: تحويل بضاعة بين مخزنين (inter-warehouse). <strong>بدون تأثير P&amp;L</strong> — فقط audit + multi-warehouse analytics.</p>
+<p><strong>Producer</strong>: <br />
+- <code>StockMovementService.PostAsync(movementType: "Transfer")</code></p>
+<p><strong>Consumer</strong>: <br />
+- ❌ <strong>لا يوجد handler بعد</strong> (per <code>OutboxProcessorHostedService.cs</code> switch)<br />
+- يبقى في <code>outbox_events.processed_at</code> حتى يُعالج كـ "unknown event" ويُسجَّل warning</p>
+<p><strong>Effect</strong>:<br />
+1. <code>stock_movements</code> row (status=Posted, from_wh → to_wh)<br />
+2. <code>stock_levels</code> من المخزن المصدر -= qty<br />
+3. <code>stock_levels</code> للمخزن الهدف += qty<br />
+4. <code>outbox_events</code> row<br />
+5. <em>(بعد 5s)</em> ❌ لا handler → "Event has unknown event type" warning</p>
+<p><strong>JSON Schema (Payload)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;eventId&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;stockMovementId&quot;: &quot;uuid&quot;,
+  &quot;itemId&quot;: &quot;uuid&quot;,
+  &quot;fromWarehouseId&quot;: &quot;uuid&quot;,
+  &quot;toWarehouseId&quot;: &quot;uuid&quot;,
+  &quot;quantity&quot;: 50,
+  &quot;unitCost&quot;: 50.00,
+  &quot;occurredAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<p><strong>⚠️ Note</strong>: هذا الحدث يُسجَّل لكن <strong>لا يُعالج</strong>. قد ينمو <code>outbox_events</code> بدون فائدة. <strong>التوصية</strong>: إما إضافة handler (analytics) أو عدم إطلاقه أصلاً.</p>
+<hr />
+<h3 id="4-stockadjustedevent-emitted-but-no-handler">4️⃣ <code>StockAdjustedEvent</code> 🟡 Emitted but no handler</h3>
+<p><strong>Purpose</strong>: تعديل يدوي على المخزون (تصحيح فرق جرد، تالف، إلخ).</p>
+<p><strong>Producer</strong>: <br />
+- <code>StockMovementService.PostAsync(movementType: "Adjust")</code></p>
+<p><strong>Consumer</strong>: <br />
+- ❌ <strong>لا يوجد handler بعد</strong><br />
+- نفس مشكلة <code>StockTransferredEvent</code></p>
+<p><strong>Effect</strong>:<br />
+1. <code>stock_movements</code> row<br />
+2. <code>stock_levels</code> UPSERT (qty += QuantityDelta — قد تكون سالبة)<br />
+3. <code>outbox_events</code> row<br />
+4. ❌ لا handler</p>
+<p><strong>JSON Schema (Payload)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;eventId&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;stockMovementId&quot;: &quot;uuid&quot;,
+  &quot;itemId&quot;: &quot;uuid&quot;,
+  &quot;warehouseId&quot;: &quot;uuid&quot;,
+  &quot;quantityDelta&quot;: -5,
+  &quot;unitCost&quot;: 50.00,
+  &quot;reason&quot;: &quot;جرد دوري - نقص 5 وحدات&quot;,
+  &quot;occurredAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<p><strong>⚠️ تنبيه</strong>: تعديل يدوي بدون قيد مالي = مخاطرة محاسبية. لو الفرق جوهري، <strong>يجب</strong> يطلق event <code>JournalEntryPosted</code> أو قيد تسوية.</p>
+<hr />
+<h3 id="5-journalentrypostedevent-placeholder-pr-7">5️⃣ <code>JournalEntryPostedEvent</code> 🟡 Placeholder (PR #7+)</h3>
+<p><strong>Purpose</strong>: عند ترحيل قيد مالي → إشعار للـ Notifications module + Reports.</p>
+<p><strong>Producer</strong>: <br />
+- <code>JournalEntryService.PostAsync</code> (عند ترحيل قيد)<br />
+- <strong>غير مفعّل حالياً</strong> (placeholder)</p>
+<p><strong>Consumer</strong>: <br />
+- ❌ <strong>لا يوجد handler بعد</strong><br />
+- مذكور في <code>OutboxProcessorHostedService.cs:107</code> لكن لا handler</p>
+<p><strong>Effect المتوقع (مستقبلي)</strong>:<br />
+1. قيد مُرحَّل<br />
+2. <code>outbox_events</code> row<br />
+3. <em>(بعد 5s)</em> <code>notifications</code> row (للمستخدمين/المدراء)<br />
+4. <em>(بعد 5s)</em> Reports cache يتحدث</p>
+<p><strong>JSON Schema (Payload)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;eventId&quot;: &quot;uuid&quot;,
+  &quot;tenantId&quot;: &quot;uuid&quot;,
+  &quot;journalEntryId&quot;: &quot;uuid&quot;,
+  &quot;reference&quot;: &quot;PO-2026-0042&quot;,
+  &quot;occurredAt&quot;: &quot;2026-07-21T20:30:00Z&quot;
+}
+</code></pre>
+<hr />
+<h2 id="lifecycle-7-stages">🔄 Lifecycle (7 Stages)</h2>
+<pre><code>[Stage 1: Business Operation]
+   ↓
+   User: POST /api/inventory/movements/{id}/post
+   ↓
+   StockMovementService.PostAsync()
+   ├─ Update movement (status=Posted)
+   ├─ UPSERT stock_level
+   ├─ INSERT outbox_event  ← Stage 2 starts here
+   └─ COMMIT (atomic with Stage 1)
+
+[Stage 2: Event Persisted]
+   ↓
+   outbox_events row exists (processed_at = NULL)
+
+[Stage 3: Response Sent]
+   ↓
+   HTTP 200 OK to user (fast, no waiting)
+
+[Stage 4: Background Polling]
+   ↓
+   OutboxProcessorHostedService (every 5s)
+   FetchUnprocessedAsync(50)
+   ↓
+   [List of up to 50 unprocessed events]
+
+[Stage 5: Idempotency Check]
+   ↓
+   For each event:
+     IsProcessedAsync(eventId)?
+     ├─ YES → MarkProcessedAsync (skip) → continue
+     └─ NO ↓
+
+[Stage 6: Dispatch]
+   ↓
+   Deserialize payload → find handler via DI
+   ↓
+   IIntegrationEventHandler&lt;T&gt;.HandleAsync(evt, ct)
+   ├─ Calls PostingRulesService.ApplyRulesAsync
+   ├─ Creates JournalEntry
+   └─ Posts JournalEntry
+
+[Stage 7: Mark]
+   ↓
+   ├─ MarkProcessedAsync (processed_events row inserted)
+   ├─ outbox_events.processed_at = NOW
+   └─ Log: &quot;Event X processed&quot;
+
+[Failure Path]
+   ↓
+   if (exception in Stage 6):
+     retry_count++
+     last_error = ex.Message (truncated 4000)
+     if (retry_count &gt;= max_retries):
+       MarkProcessedAsync (gives up) + ERROR log
+       Admin must use POST /api/events/retry/{id}
+</code></pre>
+<p><strong>زمن end-to-end</strong>: في <strong>أفضل حالة 5 ثوان</strong> (polling interval). في أسوأ حالة (handler بطيء) = ~10-15s. <strong>ليس real-time</strong>.</p>
+<hr />
+<h2 id="api-endpoints-agentsmd">🌐 API Endpoints (من AGENTS.md)</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>الوصف</th>
+<th>Auth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/events/outbox</code></td>
+<td>قائمة events معلقة (pending) للـ tenant</td>
+<td>✅ JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/events/processed</code></td>
+<td>قائمة events معالَجة (audit trail)</td>
+<td>✅ JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/events/pending-count</code></td>
+<td>عدد events معلقة فقط (headcount)</td>
+<td>✅ JWT</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/events/retry/{id}</code></td>
+<td>إعادة محاولة يدوية (admin) — <code>retry_count=0, last_error=null</code></td>
+<td>✅ JWT + Admin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Query params لـ GET</strong>:<br />
+- <code>skip</code> (default 0) + <code>take</code> (default 50)<br />
+- <code>unprocessedOnly</code> (bool, default false)</p>
+<p><strong>مثال</strong>:</p>
+<pre><code class="language-bash">curl https://api.erp.com/api/events/outbox?unprocessedOnly=true&amp;skip=0&amp;take=20
+</code></pre>
+<hr />
+<h2 id="end-to-end-stockreceivedevent">🎯 مثال End-to-End كامل: <code>StockReceivedEvent</code></h2>
+<pre><code class="language-sql">-- T=0: User posts GRN via UI
+POST /api/inventory/movements/M-001/post
+{
+  &quot;movementType&quot;: &quot;Receive&quot;,
+  &quot;itemId&quot;: &quot;I-cement&quot;,
+  &quot;warehouseId&quot;: &quot;W-main&quot;,
+  &quot;quantity&quot;: 100,
+  &quot;unitCost&quot;: 50.00,
+  &quot;purchaseOrderRef&quot;: &quot;PO-2026-0042&quot;
+}
+
+-- T=0.05s: Service in transaction
+BEGIN TRANSACTION
+  UPDATE stock_movements SET status='Posted' WHERE id='M-001'
+  UPSERT stock_levels SET qty = qty + 100 WHERE item='I-cement' AND warehouse='W-main'
+  INSERT INTO outbox_events (id, event_type='StockReceivedEvent', aggregate_id=event.EventId, payload='{...}', occurred_at=NOW())
+COMMIT
+
+-- T=0.06s: HTTP 200 to user
+{&quot;status&quot;:&quot;Posted&quot;}
+
+-- T=5s: OutboxProcessor polls
+SELECT * FROM outbox_events WHERE processed_at IS NULL ORDER BY occurred_at LIMIT 50
+-- Picks our event
+
+-- T=5.01s: Idempotency check
+SELECT 1 FROM processed_events WHERE event_id = '...' 
+-- Result: NULL → not processed yet → proceed
+
+-- T=5.02s: Dispatch
+Deserialize payload → StockReceivedEvent record
+DI lookup: IIntegrationEventHandler&lt;StockReceivedEvent&gt; → StockReceivedEventHandler
+Call: StockReceivedEventHandler.HandleAsync(evt, ct)
+  └─ IPostingRulesService.ApplyRulesAsync(tenantId, userId, StockReceived, payload)
+       └─ Find active rules for StockReceived
+       └─ Deserialize template_json
+       └─ For each line:
+            └─ AccountCode 1300 → resolve to AccountId
+            └─ AmountFormula &quot;{amount}&quot; → payload.Quantity * payload.UnitCost = 5000
+            └─ Add to journal lines: Dr 1300 = 5000
+            └─ For credit line: AccountCode 2100 → resolve
+            └─ Add: Cr 2100 = 5000
+       └─ Validate: totalDebit (5000) == totalCredit (5000) ✓
+       └─ CreateDraftAsync(JournalEntry)
+       └─ PostAsync(JournalEntry) → Dr Inventory 5000, Cr A/P 5000
+
+-- T=5.5s: Mark processed
+INSERT INTO processed_events (event_id, tenant_id, processed_at) VALUES (...)
+UPDATE outbox_events SET processed_at = NOW() WHERE id = '...'
+
+-- T=5.51s: Log
+[INFO] Event 'StockReceivedEvent' (id=...) processed — JournalEntry JE-2026-0042 created
+
+-- User now sees the journal entry in UI
+</code></pre>
+<p><strong>Total time</strong>: ~5.5s من POST لـ JournalEntry visible.</p>
+<hr />
+<h2 id="backlog-events">📋 Backlog (Events مُقترحة — غير مُنفّذة)</h2>
+<p>من <code>03-events-arabic.md</code> + السياق + أفق المنتج:</p>
+<table>
+<thead>
+<tr>
+<th>Event Type</th>
+<th>الموديل المُقترح</th>
+<th>الغرض</th>
+<th>الأولوية</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SalesInvoiceCreatedEvent</code></td>
+<td>Sales</td>
+<td>عند إصدار فاتورة مبيعات → قيد إيراد + تحديث AR</td>
+<td>🟠 عالية</td>
+</tr>
+<tr>
+<td><code>SalesInvoicePaidEvent</code></td>
+<td>Sales</td>
+<td>عند استلام دفعة → تقليل AR</td>
+<td>🟠 عالية</td>
+</tr>
+<tr>
+<td><code>PurchaseOrderCreatedEvent</code></td>
+<td>Procurement</td>
+<td>PO جديد → Approval flow</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td><code>PurchaseOrderApprovedEvent</code></td>
+<td>Procurement</td>
+<td>موافقة PO → حرية الاستلام</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td><code>VendorBillCreatedEvent</code></td>
+<td>Procurement/Bills</td>
+<td>فاتورة مورد → قيد AP</td>
+<td>🟠 عالية</td>
+</tr>
+<tr>
+<td><code>PaymentMadeEvent</code></td>
+<td>Payments</td>
+<td>دفع لمورد → تقليل AP</td>
+<td>🟠 عالية</td>
+</tr>
+<tr>
+<td><code>ItemStockLowEvent</code></td>
+<td>Inventory</td>
+<td>تنبيه: الكمية تحت الحد الأدنى</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td><code>ProjectCreatedEvent</code></td>
+<td>Projects</td>
+<td>مشروع جديد → cost center auto-create</td>
+<td>🟢 منخفضة</td>
+</tr>
+<tr>
+<td><code>ProjectStatusChangedEvent</code></td>
+<td>Projects</td>
+<td>تغيير حالة → Notifications</td>
+<td>🟢 منخفضة</td>
+</tr>
+<tr>
+<td><code>ProjectBudgetExceededEvent</code></td>
+<td>Projects/Finance</td>
+<td>تجاوز ميزانية → Alert</td>
+<td>🔴 حرجة (مذكورة في 03-events)</td>
+</tr>
+<tr>
+<td><code>EmployeeHiredEvent</code></td>
+<td>HR</td>
+<td>تعيين موظف → Welcome email</td>
+<td>🟢 منخفضة</td>
+</tr>
+<tr>
+<td><code>PayrollRunCompletedEvent</code></td>
+<td>HR</td>
+<td>انتهاء payroll → قيد مصروف رواتب</td>
+<td>🟠 عالية</td>
+</tr>
+<tr>
+<td><code>LeaveRequestApprovedEvent</code></td>
+<td>HR</td>
+<td>موافقة إجازة → تحديث رصيد</td>
+<td>🟢 منخفضة</td>
+</tr>
+<tr>
+<td><code>RoleAssignedEvent</code></td>
+<td>Identity</td>
+<td>تعيين دور → Audit + notification</td>
+<td>🟡 متوسطة</td>
+</tr>
+<tr>
+<td><code>TenantCreatedEvent</code></td>
+<td>Identity</td>
+<td>إنشاء tenant → CoA + default rules</td>
+<td>🟡 متوسطة</td>
+</tr>
+</tbody>
+</table>
+<p><strong>المجموع</strong>: 15 event مُقترح، 4 منها عالية الأولوية (🟠🔴).</p>
+<hr />
+<h2 id="governance-event">🛡️ Governance: مَن يضيف event جديد؟</h2>
+<h3 id="process-3">Process (3 خطوات):</h3>
+<ol>
+<li><strong>DEC رسمي</strong>: </li>
+<li>افتح DEC-XXX (Event Addition)</li>
+<li>حدّد: اسم الـ event، JSON Schema، Producer، Consumer، Effect</li>
+<li>
+<p>أضف صف لـ Master Table هنا (Catalog)</p>
+</li>
+<li>
+<p><strong>Implementation</strong>:</p>
+</li>
+<li>أضف <code>record XxxEvent(...) : IIntegrationEvent</code></li>
+<li>أضف <code>IIntegrationEventHandler&lt;XxxEvent&gt;</code> + class</li>
+<li>DI Register: <code>services.AddScoped&lt;IIntegrationEventHandler&lt;XxxEvent&gt;, XxxEventHandler&gt;()</code></li>
+<li>أضف case في <code>OutboxProcessorHostedService.DispatchAsync</code> (switch)</li>
+<li>
+<p>Publish في business logic: <code>await _eventBus.PublishAsync(new XxxEvent(...), ct)</code></p>
+</li>
+<li>
+<p><strong>Tests</strong>:</p>
+</li>
+<li>Test للـ handler (successful path)</li>
+<li>Test لـ retry logic (handler throws)</li>
+<li>Test لـ idempotency (same EventId twice)</li>
+</ol>
+<h3 id="_2">⚠️ ممنوع:</h3>
+<ul>
+<li>❌ إضافة event بدون JSON Schema موثّق</li>
+<li>❌ تخطي الـ IIntegrationEvent interface (EventId/TenantId/OccurredAt إجبارية)</li>
+<li>❌ إطلاق event من خارج transaction (يكسر atomicity guarantee)</li>
+<li>❌ تعديل event existing بدون versioning (سيكسر consumers)</li>
+</ul>
+<hr />
+<h2 id="versioning-strategy">🔢 Versioning Strategy</h2>
+<h3 id="payload">عند تغيير payload لحدث موجود:</h3>
+<ol>
+<li><strong>Backward-compatible changes</strong> (إضافة field اختياري):</li>
+<li>✅ يمكن بدون version جديد</li>
+<li>
+<p>Consumers الحاليون يتجاهلون الـ field الجديد</p>
+</li>
+<li>
+<p><strong>Breaking changes</strong> (تغيير/حذف field، تغيير type):</p>
+</li>
+<li>❌ <strong>لا تعدّل</strong> الـ event الموجود</li>
+<li>✅ أنشئ event جديد: <code>XxxEventV2</code></li>
+<li>أطلق الاثنين لفترة انتقالية</li>
+<li>
+<p>أوقف V1 بعد ما كل consumers يهاجر</p>
+</li>
+<li>
+<p><strong>Schema في Master Table</strong>:</p>
+</li>
+<li><code>version</code> column (V1, V2, ...)</li>
+<li><code>deprecated_at</code> (timestamp)</li>
+<li><code>replaced_by</code> (V2)</li>
+</ol>
+<hr />
+<h2 id="production-grade-todos">⚠️ Production-Grade TODOs (من الكود)</h2>
+<p>من <code>OutboxProcessorHostedService.cs</code> comments + تحليل:</p>
+<h3 id="1-polling-listennotify-todo">1. <strong>Polling → LISTEN/NOTIFY</strong> (موجود في TODO)</h3>
+<p><strong>الحالي</strong>: </p>
+<pre><code class="language-csharp">private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
+</code></pre>
+<p><strong>المستقبلي</strong>: Postgres LISTEN/NOTIFY (push-based) — latency → ~10ms.</p>
+<p><strong>التأثير</strong>: حالياً latency = 5s ثابت. في multi-tenant ثقيل، قد يكون الـ queue طويلاً.</p>
+<h3 id="2-multi-instance-safety-todo">2. <strong>Multi-instance Safety</strong> (موجود في TODO)</h3>
+<p><strong>الحالي</strong>: Single-instance فقط. لو شغّلت 2 instances من الـ backend:<br />
+- كلاهما يقرأ نفس الـ outbox events<br />
+- <strong>كلاهما</strong> يحاول يطبق القواعد<br />
+- النتيجة: قيود مكررة + race conditions</p>
+<p><strong>المستقبلي</strong>: <code>FOR UPDATE SKIP LOCKED</code> على outbox_events:</p>
+<pre><code class="language-sql">SELECT ... FROM outbox_events 
+WHERE processed_at IS NULL
+ORDER BY occurred_at
+LIMIT @Batch
+FOR UPDATE SKIP LOCKED;
+</code></pre>
+<h3 id="3-processed_events-expiry-agentsmd">3. <strong>processed_events Expiry</strong> (مذكور في AGENTS.md)</h3>
+<p><strong>الحالي</strong>: <code>processed_events</code> ينمو forever.</p>
+<p><strong>المستقبلي</strong>: TTL (مثلاً 30 يوم) + cleanup job.</p>
+<p><strong>التأثير</strong>: عند 1M events/يوم = 30M rows بعد شهر. Storage cost.</p>
+<h3 id="4-index-outbox_events-catalog">4. <strong>Index على outbox_events</strong> (مكتشف في هذا الـ Catalog)</h3>
+<p><strong>المشكلة</strong>: <code>FetchUnprocessedAsync</code> بدون index → full table scan.</p>
+<p><strong>الإصلاح</strong>: </p>
+<pre><code class="language-sql">CREATE INDEX ix_outbox_pending 
+ON outbox_events (occurred_at) 
+WHERE processed_at IS NULL AND retry_count &lt; max_retries;
+</code></pre>
+<h3 id="5-aggregatetype-unknown-todo">5. <strong>AggregateType = "Unknown"</strong> (TODO في الكود)</h3>
+<p>من <code>EventBus.AggregateTypeOf</code>:</p>
+<pre><code class="language-csharp">private static string AggregateTypeOf(IIntegrationEvent evt) =&gt; evt switch
+{
+    StockReceivedEvent =&gt; &quot;StockMovement&quot;,
+    StockIssuedEvent =&gt; &quot;StockMovement&quot;,
+    JournalEntryPostedEvent =&gt; &quot;JournalEntry&quot;,
+    _ =&gt; &quot;Unknown&quot;  // ← StockTransferredEvent + StockAdjustedEvent = &quot;Unknown&quot;
+};
+</code></pre>
+<p><strong>الإصلاح</strong>: أضف cases.</p>
+<hr />
+<h2 id="_3">📌 ملخص سريع</h2>
+<table>
+<thead>
+<tr>
+<th>المفهوم</th>
+<th>الحقيقة</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>عدد events</td>
+<td><strong>5</strong> (3 Stock + 1 Journal + 1 placeholder)</td>
+</tr>
+<tr>
+<td>Active handlers</td>
+<td><strong>2</strong> (StockReceived, StockIssued)</td>
+</tr>
+<tr>
+<td>Polling</td>
+<td>كل <strong>5 ثوان</strong> (batch=50)</td>
+</tr>
+<tr>
+<td>Default retries</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td>Backlog</td>
+<td><strong>15+ events</strong> مُقترحة</td>
+</tr>
+<tr>
+<td>Production TODOs</td>
+<td><strong>5</strong> (مذكورة أعلاه)</td>
+</tr>
+<tr>
+<td>Multi-instance support</td>
+<td>❌ (single-instance only)</td>
+</tr>
+<tr>
+<td>Real-time</td>
+<td>❌ (eventual consistency ~5s)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="jimi">🎯 توصيات Jimi تحليلي</h2>
+<h3 id="multi-tenant-scale">أولوية عالية (قبل multi-tenant scale):</h3>
+<ol>
+<li>✅ إضافة Index على <code>outbox_events</code> (DB performance)</li>
+<li>✅ إصلاح <code>AggregateType</code> للـ <code>StockTransferred</code> + <code>StockAdjusted</code></li>
+<li>✅ إضافة handler لـ <code>JournalEntryPostedEvent</code> (Notifications) — PR #7</li>
+</ol>
+<h3 id="_4">أولوية متوسطة:</h3>
+<ol>
+<li>إما إضافة handlers أو إيقاف إطلاق <code>StockTransferred</code> + <code>StockAdjusted</code></li>
+<li>Documentation: أمثلة JSON Schema لكل event في Swagger (PR docs)</li>
+<li>Dashboard: UI لمراقبة outbox (count, lag, errors)</li>
+</ol>
+<h3 id="phase-2">أولوية منخفضة (Phase 2+):</h3>
+<ol>
+<li>LISTEN/NOTIFY (real-time)</li>
+<li>FOR UPDATE SKIP LOCKED (multi-instance)</li>
+<li>processed_events TTL + cleanup job</li>
+<li>Event versioning tooling (V2 migration helpers)</li>
+</ol>
+<hr />
+<h2 id="_5">📎 روابط مفيدة</h2>
+<ul>
+<li>📋 الكود: <code>/workspace/ERP-SYSTEM/src/backend/Shared/Events/</code></li>
+<li>📋 AGENTS.md: <code>/workspace/ERP-SYSTEM/src/backend/Shared/Events/AGENTS.md</code></li>
+<li>📋 Outbox: <code>Infrastructure/OutboxEvent.cs</code> + <code>OutboxRepository.cs</code></li>
+<li>📋 OutboxProcessor: <code>Application/Services/OutboxProcessorHostedService.cs</code></li>
+<li>📋 EventBus: <code>Application/Services/EventBus.cs</code></li>
+<li>📋 StockEvents: <code>StockEvents.cs</code></li>
+<li>🔗 مرتبط: <code>05-posting-rules-arabic.md</code> (handler consumer)</li>
+<li>🔗 مرتبط: <code>00-glossary-arabic.md</code> (مصطلحات)</li>
+</ul>
+<hr />
+<p><strong>Built with 🎯 Jimi تحليلي — لتحويل "أحداث غامضة" إلى contracts رسمية قابلة للـ versioning.</strong></p>
+</body>
+</html>
