@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 DEC-055 — HF Space & Neon Control Tools (Quick Win)</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="dec-055-hf-space-neon-control-tools-quick-win">📋 DEC-055 — HF Space &amp; Neon Control Tools (Quick Win)</h1>
+<blockquote>
+<p><strong>Date</strong>: 2026-07-22 00:43 UTC<br />
+<strong>Status</strong>: 🟡 Active<br />
+<strong>Author</strong>: Mavis (Coordinator) on behalf of Anas<br />
+<strong>Audience</strong>: Jimi (Tech Lead) + Lab (Analytical Team)</p>
+</blockquote>
+<h2 id="goal">🎯 Goal</h2>
+<p>Pass HF Space control tools + Neon DB connection management to Jimi (Tech Lead) so he can orchestrate deployment, testing, and database operations from his sandbox.</p>
+<h2 id="tools-to-pass-to-jimi">🛠️ Tools to Pass to Jimi</h2>
+<h3 id="1-hf-space-control">1. HF Space Control</h3>
+<ul>
+<li><strong>Token location</strong>: <code>/workspace/.mavis/secrets/hf.token</code> (chmod 600)</li>
+<li><strong>Capabilities</strong>: Deploy, start, stop, restart, view logs, view status</li>
+<li><strong>SDK</strong>: <code>huggingface_hub</code> Python lib (v1.24.0+)</li>
+<li><strong>CLI</strong>: <code>hf</code> (v1.24.0+) — <code>hf auth login --token &lt;token&gt;</code></li>
+</ul>
+<h3 id="2-neon-db-control">2. Neon DB Control</h3>
+<ul>
+<li><strong>Token location</strong>: <code>/workspace/.mavis/secrets/neon.key</code> (chmod 600)</li>
+<li><strong>Capabilities</strong>: Query, schema inspection, run migrations, view logs</li>
+<li><strong>MCP</strong>: <code>https://mcp.neon.tech/mcp</code> via <code>Authorization: Bearer napi_*</code></li>
+<li><strong>Connection string</strong>: stored in <code>/workspace/.mavis/secrets/neon.url</code> (chmod 600)</li>
+</ul>
+<h2 id="connection-lifecycle-policy-critical">🔒 Connection Lifecycle Policy (CRITICAL)</h2>
+<p><strong>RULE</strong>: Every connection must follow: <strong>open → use → close</strong>. Never leave connections open.</p>
+<pre><code class="language-python"># Correct pattern
+conn = psycopg2.connect(os.environ['NEON_URL'])
+try:
+    # use connection
+    cursor.execute(&quot;...&quot;)
+finally:
+    conn.close()  # ALWAYS close
+</code></pre>
+<p><strong>Why</strong>: Idle connections consume Neon compute units. Open = paid. Closed = free.</p>
+<h2 id="two-copy-documentation">📂 Two-Copy Documentation</h2>
+<p>This DEC lives in:<br />
+1. <strong>Mavis internal</strong>: <code>/workspace/.mavis/DEC-2026-07-22-055-...</code><br />
+2. <strong>Brainstorming Lab portal</strong>: <code>portals/04-erp-system/decisions/</code> (4th portal)<br />
+3. <strong>ERP-SYSTEM repo</strong>: <code>AGENTS.md</code> (Jimi's responsibility to commit)</p>
+<h2 id="permissions-matrix">📊 Permissions Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Anas</th>
+<th>Mavis</th>
+<th>Jimi</th>
+<th>Lab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read docs</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Deploy to HF</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Run Neon queries</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>✅</td>
+<td>⚠️</td>
+</tr>
+<tr>
+<td>Modify DEC files</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Push to repos</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>⚠️ = requires explicit approval per case</p>
+<h2 id="action-items">🚀 Action Items</h2>
+<ul>
+<li>[x] Mavis creates this DEC</li>
+<li>[x] Mavis communicates tools to Jimi (via session 408773242015948)</li>
+<li>[ ] Jimi reads + acknowledges</li>
+<li>[ ] Jimi documents in ERP-SYSTEM AGENTS.md</li>
+<li>[ ] Lab updates brainstorming-lab portal with this DEC</li>
+<li>[ ] Both repos cross-link</li>
+</ul>
+<h2 id="related-decs">📎 Related DECs</h2>
+<ul>
+<li>DEC-043 — Neon API Key Received</li>
+<li>DEC-044 — ERD Generated (uses Neon)</li>
+<li>DEC-046 — Jimi تحليلي (new session)</li>
+<li>DEC-055 — THIS (HF + Neon control)</li>
+</ul>
+<h2 id="anass-words-verbatim">💬 Anas's words (verbatim):</h2>
+<blockquote>
+<p>"جيمي قائد القائد، يقوم بعملية التطوير وكذا برنامج.. ودبلومنت ويشغل المساحة، النظام يشغله"<br />
+"المفروض يكون عنده التوكن ويتحكم هو.. ويسكر الـ connection لما.. يقدر يتحكم في الـ neon ويسكر الـ connection"</p>
+</blockquote>
+</body>
+</html>
