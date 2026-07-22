@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEC-056 — الـ 14 إجابة (1-Click Approval)</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --bg-soft: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #818cf8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+header { 
+    background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+h1 { font-size: 2.4em; color: var(--accent); margin-bottom: 10px; }
+h2 { 
+    font-size: 1.6em; 
+    color: var(--accent); 
+    margin: 30px 0 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+.subtitle { color: var(--text-soft); font-size: 1.1em; }
+.lead { color: var(--text-soft); font-size: 1em; margin-top: 10px; }
+.toc { 
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+.toc h3 { color: var(--accent); margin-bottom: 10px; }
+.toc-list { list-style: none; padding: 0; }
+.toc-list li { 
+    padding: 5px 0; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+}
+.toc-list a { 
+    color: var(--accent); 
+    text-decoration: none; 
+    font-size: 0.95em;
+}
+.toc-list a:hover { text-decoration: underline; }
+.q-card { 
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 15px 0;
+    scroll-margin-top: 20px;
+}
+.q-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.q-num { 
+    background: var(--accent);
+    color: var(--bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+.q-rec { 
+    background: var(--success);
+    color: var(--bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+.q-delta { 
+    background: var(--warning);
+    color: var(--bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+.q-q { 
+    color: var(--text);
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.q-reason { 
+    color: var(--text-soft); 
+    margin: 10px 0;
+    padding-right: 15px;
+    border-right: 3px solid var(--accent);
+}
+.q-meta { 
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.q-meta-item { 
+    color: var(--text-soft);
+    font-size: 0.9em;
+}
+.q-meta-item strong { color: var(--accent); }
+.risk-low { color: var(--success); }
+.risk-high { color: var(--warning); }
+.risk-crit { color: var(--danger); }
+.summary { 
+    background: var(--bg-soft);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 25px;
+    margin: 25px 0;
+}
+.summary h3 { color: var(--accent); margin-bottom: 12px; }
+.summary table { width: 100%; margin-top: 10px; }
+.summary th { background: var(--border); padding: 8px; text-align: right; color: var(--accent); }
+.summary td { padding: 8px; border-bottom: 1px solid var(--border); }
+.back-link { 
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 20px;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+footer { 
+    text-align: center; 
+    color: var(--text-soft); 
+    margin-top: 50px; 
+    padding: 30px 20px;
+    border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<a class="back-link" href="../index.html">← العودة للبروتال</a>
+
+<header>
+    <h1>📋 DEC-056 — الـ 14 إجابة</h1>
+    <p class="subtitle">1-Click Approval Package (per Anas — 2026-07-22 02:13 UTC)</p>
+    <p class="lead">ملخص سريع لكل سؤال مع التوصية، الـ Reasoning، و Effort/Cost/Risk</p>
+</header>
+
+<div class="summary">
+    <h3>📊 الملخص العام</h3>
+    <table>
+        <tr>
+            <th>المقياس</th>
+            <th>القيمة</th>
+        </tr>
+        <tr>
+            <td>إجمالي Effort</td>
+            <td><strong>10-15 يوم</strong></td>
+        </tr>
+        <tr>
+            <td>إجمالي Cost</td>
+            <td><strong>~$135/سنة</strong> (Neon Launch $11/mo + R2 $0.22)</td>
+        </tr>
+        <tr>
+            <td>إجمالي Risk</td>
+            <td><strong>⬇️ Low</strong> (الـ 14 كلها)</td>
+        </tr>
+        <tr>
+            <td>Outcome</td>
+            <td>Production-ready في 4 أسابيع</td>
+        </tr>
+    </table>
+</div>
+
+<div class="toc">
+    <h3>📑 جدول المحتويات (14 إجابة)</h3>
+    <ul class="toc-list">
+        <li><strong>المجموعة A: الأمان (DEC-053)</strong></li>
+        <li><a href="#q1">Q1: Deployment Freeze</a></li>
+        <li><a href="#q2">Q2: Al-Burj + AlFajr Data</a></li>
+        <li><a href="#q3">Q3: أولوية DEC-051 vs DEC-053</a></li>
+        <li><a href="#q4">Q4: Jimi تنفيذي Allocation</a></li>
+        <li><strong>المجموعة B: الموثوقية (DEC-051)</strong></li>
+        <li><a href="#q5">Q5: Phase 1 أو Phase 2</a></li>
+        <li><a href="#q6">Q6: متى Phase 2</a></li>
+        <li><a href="#q7">Q7: DR Drill (⚠️ delta)</a></li>
+        <li><a href="#q8">Q8: Disaster Plan الآن</a></li>
+        <li><a href="#q9">Q9: من يدير Backup (⚠️ delta)</a></li>
+        <li><strong>المجموعة C: الامتثال (DEC-052)</strong></li>
+        <li><a href="#q10">Q10: Retention Period</a></li>
+        <li><a href="#q11">Q11: متى Cleanup Phase 1</a></li>
+        <li><a href="#q12">Q12: audit_log Table</a></li>
+        <li><a href="#q13">Q13: GDPR Endpoint</a></li>
+        <li><a href="#q14">Q14: Cleanup Location (⚠️ delta)</a></li>
+    </ul>
+</div>
+
+<h2>🔴 المجموعة A: الأمان (DEC-053)</h2>
+
+<div class="q-card" id="q1">
+    <div class="q-header">
+        <span class="q-num">Q1</span>
+        <span class="q-rec">التوصية: A — Freeze + Hotfix</span>
+    </div>
+    <div class="q-q">نوقف الـ deployment لحد ما نحلّ الثغرات؟</div>
+    <div class="q-reason">ثغرة active أهم من سرعة الـ deployment. PITR (6h) + manual snapshot = safety net كافي. Admin = Anas. Freeze = أسبوع واحد.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 0d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q2">
+    <div class="q-header">
+        <span class="q-num">Q2</span>
+        <span class="q-rec">التوصية: A — لا شي</span>
+    </div>
+    <div class="q-q">بيانات Al-Burj + AlFajr (حقيقية على HF) — شو نعمل؟</div>
+    <div class="q-reason">الثغرة في الـ auth، مو في الـ data. No migration. بعد Phase 1: Anas يفتح `/api/auth/me` → يعيّن roles. Unauth=401, auth-without-role=403.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 0d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q3">
+    <div class="q-header">
+        <span class="q-num">Q3</span>
+        <span class="q-rec">التوصية: A — DEC-053 أولاً</span>
+    </div>
+    <div class="q-q">أي DEC نعمله أولاً — DEC-051 (Backup) ولا DEC-053 (Permission Matrix)؟</div>
+    <div class="q-reason">Security > Reliability (NIST CSF, ISO 27001). DEC-053 = active vulnerability. الترتيب: snapshot → DEC-053 P1 → DEC-051 P2 + DEC-052 P1.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> sequencing</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q4">
+    <div class="q-header">
+        <span class="q-num">Q4</span>
+        <span class="q-rec">التوصية: A — 100% على hotfixes</span>
+    </div>
+    <div class="q-q">Jimi تنفيذي — متفرّغ للـ hotfixes ولا parallel مع warshet-احمد؟</div>
+    <div class="q-reason">13 controller × 4 roles × 2-3 tests = 100+ قرار في 5 أيام. context-switching = جودة أقل للاثنين.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 5d focused</span>
+        <span class="q-meta-item"><strong>Cost:</strong> 5d warshet delay</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<h2>🟡 المجموعة B: الموثوقية (DEC-051)</h2>
+
+<div class="q-card" id="q5">
+    <div class="q-header">
+        <span class="q-num">Q5</span>
+        <span class="q-rec">التوصية: Phase 2</span>
+    </div>
+    <div class="q-q">Phase 1 (مجاني) ولا Phase 2 ($11/شهر)؟</div>
+    <div class="q-reason">$11/شهر = $0.37/يوم = قهوة واحدة. Phase 1 لوحده = region failure > 6h بلا حماية. Phase 2 = 7d PITR + snapshots + R2 external.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 3-5d setup</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $135/yr</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q6">
+    <div class="q-header">
+        <span class="q-num">Q6</span>
+        <span class="q-rec">التوصية: After hotfix</span>
+    </div>
+    <div class="q-q">متى نطبّق Phase 2؟</div>
+    <div class="q-reason">Hotfix يحتاج manual snapshot أولاً. الترتيب: snapshot Day 0 → DEC-053 P1 Days 1-5 → DEC-051 P2 Days 6-10.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 3-5d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $11/mo from Day 6</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q7">
+    <div class="q-header">
+        <span class="q-num">Q7</span>
+        <span class="q-rec">التوصية: Tabletop first</span>
+        <span class="q-delta">⚠️ delta</span>
+    </div>
+    <div class="q-q">متى DR Drill؟</div>
+    <div class="q-reason"><strong>التغيير من Jimi:</strong> Tabletop أولاً (1-2 ساعة، 0 مخاطرة) — يكتشف gaps في الـ runbook. Full sim بعد Phase 2. رخيص وآمن.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 1d+</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q8">
+    <div class="q-header">
+        <span class="q-num">Q8</span>
+        <span class="q-rec">التوصية: Approve runbook</span>
+    </div>
+    <div class="q-q">لو حصل disaster الآن — شو الخطة؟</div>
+    <div class="q-reason">اعتمد الـ 6-step manual procedure كما هو: (1) Open Neon → (2) Pick timestamp → (3) Restore → (4) Verify → (5) Promote → (6) Update DNS. RTO اليوم: 1-2h.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 0d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q9">
+    <div class="q-header">
+        <span class="q-num">Q9</span>
+        <span class="q-rec">التوصية: Monthly → Quarterly</span>
+        <span class="q-delta">⚠️ delta</span>
+    </div>
+    <div class="q-q">من يدير الـ backup؟</div>
+    <div class="q-reason"><strong>التغيير من Jimi:</strong> CI = automated | Manual = Anas + Mavis | Restore = Jimi تنفيذي. Drills = monthly tabletop × 3 أشهر، ثم quarterly. يبني muscle memory أولاً.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> ongoing</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<h2>🟢 المجموعة C: الامتثال (DEC-052)</h2>
+
+<div class="q-card" id="q10">
+    <div class="q-header">
+        <span class="q-num">Q10</span>
+        <span class="q-rec">التوصية: 7 سنوات (IFRS)</span>
+    </div>
+    <div class="q-q">كم سنة نحتفظ بالبيانات — 5y (ليبي) ولا 7y (IFRS)؟</div>
+    <div class="q-reason">7y يغطي كل شي (ليبي + IFRS + دولي). الكلفة الإضافية: $0.05/شهر (تقريباً لا شي).</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 0d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0.6/yr</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q11">
+    <div class="q-header">
+        <span class="q-num">Q11</span>
+        <span class="q-rec">التوصية: Parallel w/ 053</span>
+    </div>
+    <div class="q-q">متى Phase 1 (cleanup jobs)؟</div>
+    <div class="q-reason">بالتوازي مع DEC-053 hotfix (Week 1). مستقل، نقدر نشحنهم مع بعض.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 1-2d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q12">
+    <div class="q-header">
+        <span class="q-num">Q12</span>
+        <span class="q-rec">التوصية: الآن</span>
+    </div>
+    <div class="q-q">متى نفعّل audit_log — الآن ولا Phase 3؟</div>
+    <div class="q-reason">IFRS يطلب audit trail. بدونه، DEC-053 = enforceable لكن not auditable = half-solution.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 1d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q13">
+    <div class="q-header">
+        <span class="q-num">Q13</span>
+        <span class="q-rec">التوصية: Phase 2 (defer)</span>
+    </div>
+    <div class="q-q">متى GDPR endpoint — الآن ولا Phase 3؟</div>
+    <div class="q-reason">كل الـ tenants الحاليين ليبيين (لا EU). Libyan law = 5y، لا "right to be forgotten". نشغّله لو: EU tenant signed أو قرار EU.</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 1-2d (when triggered)</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="q-card" id="q14">
+    <div class="q-header">
+        <span class="q-num">Q14</span>
+        <span class="q-rec">التوصية: pg_cron T2 + CI T1</span>
+        <span class="q-delta">⚠️ delta</span>
+    </div>
+    <div class="q-q">فين نعمل cleanup — pg_cron ولا CI؟</div>
+    <div class="q-reason"><strong>التغيير من Jimi:</strong> Tier 2 (30-90 يوم، operational): pg_cron. Tier 1 (7 سنوات archive لـ R2): CI. Split حسب tier لأن archive له external deps (R2).</div>
+    <div class="q-meta">
+        <span class="q-meta-item"><strong>Effort:</strong> 1.5d</span>
+        <span class="q-meta-item"><strong>Cost:</strong> $0</span>
+        <span class="q-meta-item"><strong>Risk:</strong> <span class="risk-low">⬇️ Low</span></span>
+    </div>
+</div>
+
+<div class="summary">
+    <h3>📅 Run Order (per Jimi)</h3>
+    <table>
+        <tr>
+            <th>الأسبوع</th>
+            <th>الأسئلة</th>
+            <th>المحتوى</th>
+        </tr>
+        <tr>
+            <td><strong>Week 1</strong></td>
+            <td>Q1, Q2, Q3, Q4, Q11, Q12</td>
+            <td>Process + DEC-053 + DEC-052 P1</td>
+        </tr>
+        <tr>
+            <td><strong>Week 2</strong></td>
+            <td>Q5, Q6, Q7, Q9, Q14</td>
+            <td>DEC-051 P2 + drills</td>
+        </tr>
+        <tr>
+            <td><strong>Week 3</strong></td>
+            <td>Q10</td>
+            <td>Archive config (7y)</td>
+        </tr>
+        <tr>
+            <td><strong>When triggered</strong></td>
+            <td>Q13</td>
+            <td>GDPR endpoint (when EU tenant)</td>
+        </tr>
+    </table>
+</div>
+
+<footer>
+    <p>📋 <strong>DEC-056</strong> — Generated by Jimi تحليلي (new session 422422630588494)</p>
+    <p>📅 Date: 2026-07-22 01:25 UTC</p>
+    <p>📍 Master file: <code>/workspace/.mavis/DEC-2026-07-22-056-recommendations-on-14-questions.md</code></p>
+    <p>🚀 Status: <strong>Ready for Anas approval</strong> (per workflow at 02:13 UTC)</p>
+    <p>👤 <a href="../index.html" style="color: var(--accent);">Back to Portal</a></p>
+</footer>
+
+</div>
+</body>
+</html>
