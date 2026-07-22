@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEC-056: Recommendations on 14 Open Questions — Ready for 1-Click Approval</title>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+h1, h2, h3, h4 { color: #38bdf8; margin: 20px 0 10px; }
+h1 { border-bottom: 2px solid #334155; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #334155; padding-bottom: 8px; }
+code { background: #1e293b; color: #f472b6; padding: 2px 6px; border-radius: 3px; }
+pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 15px; overflow-x: auto; }
+pre code { background: transparent; color: #e2e8f0; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #1e293b; border-radius: 6px; overflow: hidden; }
+th { background: #334155; color: #38bdf8; padding: 10px; text-align: left; }
+td { padding: 8px 10px; border-bottom: 1px solid #334155; }
+blockquote { background: #1e293b; border-left: 4px solid #38bdf8; padding: 12px 15px; margin: 10px 0; }
+a { color: #38bdf8; }
+.back-link { display: inline-block; color: #38bdf8; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; background: #1e293b; border-radius: 6px; border: 1px solid #334155; }
+ul, ol { padding-left: 30px; }
+hr { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to Portal</a>
+<h1 id="dec-056-recommendations-on-14-open-questions-ready-for-1-click-approval">DEC-056: Recommendations on 14 Open Questions — Ready for 1-Click Approval</h1>
+<blockquote>
+<p><strong>Author</strong>: Jimi تحليلي (new session 422422630588494)<br />
+<strong>Date</strong>: 2026-07-22 01:25 UTC<br />
+<strong>Status</strong>: 🟢 READY to forward to Anas<br />
+<strong>Format</strong>: All 14 in one bundle (per user request for speed)</p>
+</blockquote>
+<h2 id="process-notes">📌 Process Notes</h2>
+<p>The prior Jimi تحليلي session (422317715140767) authored DEC-051, DEC-052, DEC-053, DEC-054 with all 14 draft recommendations. I validated each draft against the underlying DEC body, sharpened the reasoning, confirmed cost/effort, and added <strong>3 small deltas</strong> (Q7, Q9, Q14).</p>
+<hr />
+<h2 id="group-a-security-dec-053-4-qs">GROUP A: SECURITY (DEC-053) — 4 Q's</h2>
+<h3 id="q1-deployment-freeze-critical-fixes">Q1: Deployment freeze حتى Critical fixes تنحل؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>A — Freeze + Hotfix only</strong></li>
+<li><strong>Reasoning</strong>: Active vulnerability &gt; deployment velocity. PITR (6h) + manual snapshot for the freeze = enough safety. Admin = Anas; can manage roles via DB. Freeze = 1 week (matches Phase 1).</li>
+<li><strong>Effort</strong>: 0d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q2-al-burj-alfajr-data-hf">Q2: Al-Burj + AlFajr data (حقيقي على HF) — شو نعمل؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>A — لا شي، fix على auth/authorization فقط</strong></li>
+<li><strong>Reasoning</strong>: Vulnerability is at auth layer, not data integrity. No migration needed.</li>
+<li><strong>Effort</strong>: 0d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q3-priority-dec-051-backup-dec-053-permission-matrix">Q3: Priority — DEC-051 (Backup) قبل DEC-053 (Permission Matrix)؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>A — DEC-053 أولاً</strong></li>
+<li><strong>Reasoning</strong>: Security &gt; Reliability. Snapshot T+0h, then DEC-053, then DEC-051/052.</li>
+<li><strong>Effort</strong>: sequencing | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q4-jimi-allocation-parallel-warshet-">Q4: Jimi تنفيذي allocation — متفرّغ أم parallel مع warshet-احمد؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>A — 100% على hotfixes، warshet-احمد paused</strong></li>
+<li><strong>Reasoning</strong>: 13 controllers × 4 roles × 2-3 tests = 100+ decisions in 5 days.</li>
+<li><strong>Effort</strong>: 5d focused | <strong>Cost</strong>: 5d warshet delay | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<hr />
+<h2 id="group-b-reliability-dec-051-5-qs">GROUP B: RELIABILITY (DEC-051) — 5 Q's</h2>
+<h3 id="q5-phase-1-phase-2-launch-r2">Q5: Phase 1 (مجاني) أو Phase 2 (Launch + R2)؟</h3>
+<ul>
+<li><strong>Rec</strong>: 🔴 <strong>Phase 2</strong> (~$11/month)</li>
+<li><strong>Reasoning</strong>: $11/mo = $0.37/day. Phase 1 alone leaves region failure unmitigated.</li>
+<li><strong>Effort</strong>: 3-5d setup | <strong>Cost</strong>: $11.27/mo (~$135/yr) | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q6-phase-2">Q6: متى Phase 2 نطبّق؟</h3>
+<ul>
+<li><strong>Rec</strong>: ⏱️ <strong>After DEC-053 hotfix، before any new deployment</strong></li>
+<li><strong>Reasoning</strong>: Hotfix needs manual snapshot first. Don't parallel.</li>
+<li><strong>Effort</strong>: 3-5d after hotfix | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q7-dr-drill-delta">Q7: DR Drill متى؟ ⚠️ <em>delta</em></h3>
+<ul>
+<li><strong>Rec</strong>: 🛡️ <strong>After Phase 1 (1-2 weeks), starting with tabletop</strong></li>
+<li><strong>Reasoning</strong>: Tabletop first (paper walkthrough, 1-2h, 0 risk). Full sim after P2.</li>
+<li><strong>Delta</strong>: Tabletop first, then full sim (catches runbook gaps early).</li>
+<li><strong>Effort</strong>: Tabletop 2h + full sim 1d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q8-disaster">Q8: لو حصل disaster الآن — شو الخطة؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>Approve the 6-step manual procedure as-is</strong></li>
+<li><strong>RTO today</strong>: 1-2h | <strong>RPO today</strong>: 6h | <strong>After P2</strong>: RTO 1h, RPO 24h</li>
+<li><strong>Effort</strong>: 0d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q9-backup-delta">Q9: من يدير backup؟ ⚠️ <em>delta</em></h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>Approve with one tweak</strong></li>
+<li><strong>Reasoning</strong>: CI = automated, Manual = Anas + Mavis, Restore = Jimi تنفيذي, Drills = monthly tabletop × 3 months, then quarterly</li>
+<li><strong>Delta</strong>: monthly drills for 3 months, then quarterly (build muscle memory first)</li>
+<li><strong>Effort</strong>: 1d setup + ongoing | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<hr />
+<h2 id="group-c-compliance-dec-052-5-qs">GROUP C: COMPLIANCE (DEC-052) — 5 Q's</h2>
+<h3 id="q10-retention-5y-libyan-7y-ifrs">Q10: Retention — 5y (Libyan) أو 7y (IFRS)؟</h3>
+<ul>
+<li><strong>Rec</strong>: 🔴 <strong>7 سنوات (IFRS)</strong></li>
+<li><strong>Reasoning</strong>: 7y covers everything. Marginal cost: $0.05/mo extra.</li>
+<li><strong>Effort</strong>: 0d | <strong>Cost</strong>: $0.6/yr | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q11-phase-1-cleanup-jobs">Q11: متى Phase 1 (cleanup jobs)؟</h3>
+<ul>
+<li><strong>Rec</strong>: ⏱️ <strong>Parallel with DEC-053 hotfix (Week 1)</strong></li>
+<li><strong>Reasoning</strong>: Independent of DEC-053. Ship both Week 1.</li>
+<li><strong>Effort</strong>: 1-2d parallel | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q12-audit_log-table-phase-3">Q12: audit_log table — الآن أو Phase 3؟</h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>الآن (Phase 1)</strong></li>
+<li><strong>Reasoning</strong>: IFRS requires audit trail. Without audit_log, DEC-053 is half-solution.</li>
+<li><strong>Effort</strong>: 1d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q13-gdpr-endpoint-phase-3">Q13: GDPR endpoint — الآن أو Phase 3؟</h3>
+<ul>
+<li><strong>Rec</strong>: ⏱️ <strong>Phase 2 (defer)</strong></li>
+<li><strong>Reasoning</strong>: All current tenants Libyan. No EU.</li>
+<li><strong>Effort</strong>: 1-2d when triggered | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<h3 id="q14-cleanup-location-pg_cron-ci-delta">Q14: Cleanup location — pg_cron أو CI؟ ⚠️ <em>delta</em></h3>
+<ul>
+<li><strong>Rec</strong>: ✅ <strong>pg_cron for Tier 2, CI for Tier 1 archive</strong></li>
+<li><strong>Reasoning</strong>: Tier 2 (30-90d) = pg_cron (in-DB, simple). Tier 1 (7y archive) = CI (R2 upload, better retry).</li>
+<li><strong>Delta</strong>: Split by tier because 7y archive has external deps.</li>
+<li><strong>Effort</strong>: 0.5d (pg_cron) + 1d (CI) = 1.5d | <strong>Cost</strong>: $0 | <strong>Risk</strong>: ⬇️ Low</li>
+</ul>
+<hr />
+<h2 id="1-click-approval-table">📋 1-CLICK APPROVAL TABLE</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Q Topic</th>
+<th>Rec</th>
+<th>Effort</th>
+<th>Cost/yr</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>Deployment freeze</td>
+<td>A: Freeze + Hotfix</td>
+<td>0d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Al-Burj/AlFajr data</td>
+<td>A: No change</td>
+<td>0d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>DEC-051 vs 053 priority</td>
+<td>A: 053 first</td>
+<td>seq</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>Jimi تنفيذي allocation</td>
+<td>A: 100% hotfix</td>
+<td>5d</td>
+<td>5d delay</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>DEC-051 Phase 1 or 2</td>
+<td>Phase 2</td>
+<td>3-5d</td>
+<td>$135/yr</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>When Phase 2</td>
+<td>After hotfix</td>
+<td>3-5d</td>
+<td>—</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>DR Drill</td>
+<td>After P1, tabletop</td>
+<td>1d+</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>Disaster plan now</td>
+<td>Approve runbook</td>
+<td>0d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td>Backup manager</td>
+<td>Approve + monthly→Q</td>
+<td>ongoing</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q10</td>
+<td>Retention period</td>
+<td>7 years</td>
+<td>0d</td>
+<td>$0.6/yr</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q11</td>
+<td>When cleanup Phase 1</td>
+<td>Parallel w/ 053</td>
+<td>1-2d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q12</td>
+<td>audit_log table</td>
+<td>Now</td>
+<td>1d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q13</td>
+<td>GDPR endpoint</td>
+<td>Phase 2 (defer)</td>
+<td>1-2d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td>Q14</td>
+<td>Cleanup location</td>
+<td>pg_cron T2, CI T1</td>
+<td>1.5d</td>
+<td>$0</td>
+<td>⬇️ Low</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td></td>
+<td><strong>10-15d</strong></td>
+<td><strong>~$135/yr</strong></td>
+<td><strong>⬇️ Low</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="cross-cutting-notes">🎯 Cross-Cutting Notes</h2>
+<ol>
+<li><strong>Foundation Trio</strong> (DEC-051 + DEC-052 + DEC-053) = smallest unit for "production-ready."</li>
+<li><strong>Affordable</strong>: &lt;$135/yr + 15 days.</li>
+<li><strong>3 freebies</strong> (Q1, Q2, Q8) = process/runbook only.</li>
+<li><strong>Run order</strong>:</li>
+<li><strong>Week 1</strong>: Q1, Q2, Q3, Q4, Q11, Q12</li>
+<li><strong>Week 2</strong>: Q5, Q6, Q7, Q9, Q14</li>
+<li><strong>Week 3</strong>: Q10 (archive config)</li>
+<li><strong>When triggered</strong>: Q13</li>
+<li><strong>3 ⚠️ deltas</strong> (additive, not directional):</li>
+<li>Q7: tabletop first, then full sim</li>
+<li>Q9: monthly drills for 3 months, then quarterly</li>
+<li>Q14: pg_cron for Tier 2, CI for Tier 1</li>
+</ol>
+<p>— Jimi تحليلي (new session 422422630588494) — 2026-07-22 01:25 UTC</p>
+</body>
+</html>
